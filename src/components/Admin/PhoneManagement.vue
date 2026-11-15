@@ -365,62 +365,141 @@
               </div>
             </div>
 
-            <!-- Ảnh sản phẩm URL / Tải từ máy / Chụp trực tiếp (DienThoai.MacDinh) -->
+            <!-- ============================================================================ -->
+            <!-- QUẢN LÝ BỘ SƯU TẬP ẢNH SẢN PHẨM (ALBUM ĐA GÓC CHỤP & TẢI NHIỀU ẢNH)          -->
+            <!-- ============================================================================ -->
             <div class="col-12">
-              <label class="form-label small fw-bold">Ảnh Sản Phẩm (Dán link URL hoặc tải ảnh trực tiếp từ máy) *</label>
-              <div class="row g-2 align-items-center">
-                <div class="col-md-8">
-                  <div class="input-group">
-                    <input
-                      type="text"
-                      class="form-control form-control-sm"
-                      v-model="formData.MacDinh"
-                      placeholder="Dán link ảnh https://... hoặc bấm nút tải ảnh"
-                      required
-                    />
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-bold mb-0">
+                  <i class="fa fa-picture-o text-primary me-1"></i> Album Ảnh Sản Phẩm (Tải lên nhiều ảnh / Dán link) *
+                </label>
+                <span class="badge bg-primary-subtle text-primary fw-semibold small">
+                  {{ (formData.hinhAnh || []).length }} ảnh trong album
+                </span>
+              </div>
+              <small class="text-muted d-block mb-2">
+                Hỗ trợ tải lên cùng lúc nhiều ảnh từ máy tính (giữ phím Shift hoặc Ctrl khi chọn file), chụp bằng camera hoặc dán link ảnh.
+              </small>
+
+              <!-- THANH CÔNG CỤ THÊM ẢNH (DÁN LINK HOẶC BẤM TẢI / CHỤP) -->
+              <div class="card p-2.5 bg-light border rounded-3 mb-2">
+                <div class="row g-2 align-items-center">
+                  <div class="col-lg-7">
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text bg-white"><i class="fa fa-link text-muted"></i></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="newImageUrlInput"
+                        placeholder="Dán đường dẫn ảnh https://... rồi bấm 'Thêm link'"
+                        @keyup.enter="addImageFromUrl"
+                      />
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        @click="addImageFromUrl"
+                        :disabled="!newImageUrlInput.trim()"
+                      >
+                        <i class="fa fa-plus me-1"></i> Thêm link
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-5 d-flex gap-2">
+                    <!-- Nút Tải nhiều ảnh từ máy tính -->
                     <button
                       type="button"
-                      class="btn btn-outline-secondary btn-sm"
+                      class="btn btn-success btn-sm flex-fill d-flex align-items-center justify-content-center gap-1"
                       @click="triggerImageUpload"
-                      title="Tải file ảnh từ máy tính"
+                      title="Chọn nhiều file ảnh từ máy tính"
                     >
-                      <i class="fa fa-upload me-1"></i> Tải ảnh
+                      <i class="fa fa-upload"></i> Tải nhiều ảnh
                     </button>
+
+                    <!-- Nút Chụp ảnh bằng camera -->
                     <button
                       type="button"
-                      class="btn btn-outline-primary btn-sm"
+                      class="btn btn-outline-primary btn-sm flex-fill d-flex align-items-center justify-content-center gap-1"
                       @click="openPhoneCamera"
-                      title="Chụp ảnh máy trực tiếp bằng Camera"
+                      title="Chụp ảnh thiết bị trực tiếp qua Camera"
                     >
-                      <i class="fa fa-camera me-1"></i> Chụp ảnh
+                      <i class="fa fa-camera"></i> Chụp ảnh
                     </button>
                   </div>
-                  <!-- Input file ẩn để chọn ảnh từ máy tính -->
-                  <input
-                    type="file"
-                    ref="phoneFileInputRef"
-                    accept="image/*"
-                    class="d-none"
-                    @change="onPhoneFileSelected"
-                  />
                 </div>
 
-                <!-- Khung xem trước ảnh sản phẩm -->
-                <div class="col-md-4">
-                  <div class="d-flex align-items-center gap-2 p-1.5 bg-light rounded border">
-                    <img
-                      :src="formData.MacDinh || 'https://via.placeholder.com/80?text=Chua+co+anh'"
-                      alt="Preview"
-                      class="rounded border bg-white"
-                      style="width: 48px; height: 48px; object-fit: contain;"
-                      @error="onImgError"
-                    />
-                    <div class="min-w-0 flex-grow-1">
-                      <small class="d-block fw-bold text-dark text-truncate" style="font-size: 0.78rem;">Ảnh hiển thị</small>
-                      <small class="text-success d-block" style="font-size: 0.7rem;"><i class="fa fa-check me-0.5"></i> Đã sẵn sàng</small>
+                <!-- Input file ẩn cho phép chọn NHIỀU ẢNH (multiple) -->
+                <input
+                  type="file"
+                  ref="phoneFileInputRef"
+                  accept="image/*"
+                  multiple
+                  class="d-none"
+                  @change="onPhoneFilesSelected"
+                />
+              </div>
+
+              <!-- KHU VỰC HIỂN THỊ DANH SÁCH ẢNH ĐÃ TẢI LÊN (GALLERY GRID) -->
+              <div v-if="(formData.hinhAnh || []).length > 0" class="image-gallery-manager p-2 border rounded-3 bg-white">
+                <div class="row g-2">
+                  <div
+                    v-for="(img, idx) in formData.hinhAnh"
+                    :key="idx"
+                    class="col-md-3 col-sm-4 col-6"
+                  >
+                    <div
+                      class="gallery-item-card border rounded-3 p-1.5 position-relative text-center"
+                      :class="{ 'border-primary shadow-sm bg-primary-subtle': formData.MacDinh === img }"
+                    >
+                      <!-- Huy hiệu Ảnh đại diện chính (Cover Badge) -->
+                      <span
+                        v-if="formData.MacDinh === img"
+                        class="badge bg-primary position-absolute top-1 start-1 px-1.5 py-0.5 small"
+                        style="font-size: 0.68rem;"
+                      >
+                        <i class="fa fa-star me-0.5"></i> Ảnh bìa chính
+                      </span>
+
+                      <!-- Nút xóa ảnh -->
+                      <button
+                        type="button"
+                        class="btn-delete-img position-absolute top-1 end-1 rounded-circle"
+                        @click="removeImage(idx)"
+                        title="Xóa ảnh này khỏi album"
+                      >
+                        &times;
+                      </button>
+
+                      <!-- Ảnh hiển thị -->
+                      <img
+                        :src="img"
+                        :alt="`Ảnh ${idx + 1}`"
+                        class="gallery-thumb-img rounded-2 mb-1"
+                        @error="onImgError"
+                      />
+
+                      <!-- Nút đặt làm ảnh đại diện -->
+                      <button
+                        v-if="formData.MacDinh !== img"
+                        type="button"
+                        class="btn btn-outline-primary btn-xs w-100 py-0.5"
+                        style="font-size: 0.7rem;"
+                        @click="setAsPrimaryImage(img)"
+                      >
+                        Đặt làm ảnh bìa
+                      </button>
+                      <div v-else class="text-primary fw-bold small py-0.5" style="font-size: 0.72rem;">
+                        <i class="fa fa-check-circle"></i> Đang là ảnh bìa
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <!-- Trạng thái trống nếu chưa có ảnh nào -->
+              <div v-else class="text-center py-3 px-2 border border-dashed rounded-3 bg-light text-muted small">
+                <i class="fa fa-image fs-3 d-block mb-1 text-secondary"></i>
+                Chưa có ảnh nào trong album. Hãy dán link ảnh hoặc bấm <b>"Tải nhiều ảnh"</b> để thêm vào danh sách.
               </div>
             </div>
 
@@ -830,35 +909,111 @@ const setTienCocPreset = (num) => {
 };
 
 // ============================================================================================
-// LOGIC TẢI ẢNH TỪ MÁY TÍNH & CAMERA CHỤP ẢNH MÁY TRỰC TIẾP
+// LOGIC QUẢN LÝ ALBUM ẢNH SẢN PHẨM: TẢI NHIỀU ẢNH, DÁN LINK URL & CHỤP TỪ CAMERA
 // ============================================================================================
 const phoneFileInputRef = ref(null);
 const isPhoneCameraOpen = ref(false);
 const phoneVideoRef = ref(null);
+const newImageUrlInput = ref('');
 let phoneMediaStream = null;
 
+// Kích hoạt hộp thoại chọn file ảnh từ máy tính (cho phép chọn nhiều ảnh)
 const triggerImageUpload = () => {
   if (phoneFileInputRef.value) {
     phoneFileInputRef.value.click();
   }
 };
 
-const onPhoneFileSelected = (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+// Xử lý khi người dùng chọn một hoặc nhiều file ảnh từ máy
+const onPhoneFilesSelected = (e) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
 
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    formData.value.MacDinh = event.target.result;
-    Swal.fire({
-      icon: 'success',
-      title: 'Đã tải ảnh lên!',
-      text: 'Ảnh từ máy tính đã được nạp thành công.',
-      timer: 1500,
-      showConfirmButton: false
-    });
-  };
-  reader.readAsDataURL(file);
+  if (!formData.value.hinhAnh) {
+    formData.value.hinhAnh = [];
+  }
+
+  let countLoaded = 0;
+  const totalFiles = files.length;
+
+  Array.from(files).forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target.result;
+      formData.value.hinhAnh.push(dataUrl);
+
+      // Nếu chưa có ảnh bìa hoặc album đang trống, đặt ảnh đầu tiên làm ảnh bìa
+      if (!formData.value.MacDinh) {
+        formData.value.MacDinh = dataUrl;
+      }
+
+      countLoaded++;
+      if (countLoaded === totalFiles) {
+        Swal.fire({
+          icon: 'success',
+          title: `Đã tải lên ${totalFiles} ảnh!`,
+          text: 'Tất cả ảnh đã được thêm vào album của máy thành công.',
+          timer: 1800,
+          showConfirmButton: false
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Reset input để có thể chọn lại file nếu cần
+  e.target.value = '';
+};
+
+// Thêm ảnh từ đường dẫn URL nhập vào
+const addImageFromUrl = () => {
+  const url = newImageUrlInput.value.trim();
+  if (!url) return;
+
+  if (!formData.value.hinhAnh) {
+    formData.value.hinhAnh = [];
+  }
+
+  formData.value.hinhAnh.push(url);
+
+  if (!formData.value.MacDinh) {
+    formData.value.MacDinh = url;
+  }
+
+  newImageUrlInput.value = '';
+  Swal.fire({
+    icon: 'success',
+    title: 'Đã thêm ảnh vào album!',
+    timer: 1200,
+    showConfirmButton: false,
+    toast: true,
+    position: 'top-end'
+  });
+};
+
+// Đặt một ảnh bất kỳ trong album làm ảnh bìa đại diện chính
+const setAsPrimaryImage = (img) => {
+  formData.value.MacDinh = img;
+  Swal.fire({
+    icon: 'success',
+    title: 'Đã đặt làm ảnh bìa!',
+    timer: 1200,
+    showConfirmButton: false,
+    toast: true,
+    position: 'top-end'
+  });
+};
+
+// Xóa một ảnh khỏi album
+const removeImage = (idx) => {
+  if (!formData.value.hinhAnh) return;
+  const removedImg = formData.value.hinhAnh[idx];
+  formData.value.hinhAnh.splice(idx, 1);
+
+  // Nếu ảnh vừa xóa đang là ảnh bìa, chọn ảnh đầu tiên còn lại làm ảnh bìa mới
+  if (formData.value.MacDinh === removedImg) {
+    formData.value.MacDinh = formData.value.hinhAnh[0] || '';
+  }
 };
 
 const openPhoneCamera = async () => {
@@ -890,12 +1045,21 @@ const capturePhonePhoto = () => {
   ctx.drawImage(phoneVideoRef.value, 0, 0, canvas.width, canvas.height);
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
-  formData.value.MacDinh = dataUrl;
+  if (!formData.value.hinhAnh) {
+    formData.value.hinhAnh = [];
+  }
+  formData.value.hinhAnh.push(dataUrl);
+
+  if (!formData.value.MacDinh) {
+    formData.value.MacDinh = dataUrl;
+  }
+
   closePhoneCamera();
 
   Swal.fire({
     icon: 'success',
     title: 'Đã chụp ảnh máy thành công!',
+    text: 'Ảnh chụp vừa được thêm vào album của máy.',
     timer: 1500,
     showConfirmButton: false
   });
@@ -1397,6 +1561,7 @@ const openAddModal = () => {
   closeAllPriceDropdowns();
   isEditMode.value = false;
   currentEditId.value = null;
+  const defaultImg = 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-16-pro-max.jpg';
   formData.value = {
     TenDienThoai: '',
     hangSanXuat: 'APPLE',
@@ -1406,9 +1571,11 @@ const openAddModal = () => {
     Chipset: 'Apple A17 Pro',
     RAM_ROM: '8GB / 256GB',
     TinhTrangMay: 'SAN_SANG',
-    MacDinh: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png',
+    MacDinh: defaultImg,
+    hinhAnh: [defaultImg],
     moTa: 'Máy nguyên zin 100%, ngoại quan 99%, pin 100%.'
   };
+  newImageUrlInput.value = '';
   giaThueDisplay.value = formatCurrency(250000);
   tienCocDisplay.value = formatCurrency(12000000);
   isModalOpen.value = true;
@@ -1422,6 +1589,11 @@ const openEditModal = (phone) => {
   closeAllPriceDropdowns();
   isEditMode.value = true;
   currentEditId.value = phone.maDienThoai;
+
+  const existingImages = (phone.hinhAnh && phone.hinhAnh.length)
+    ? [...phone.hinhAnh]
+    : (phone.MacDinh ? [phone.MacDinh] : []);
+
   formData.value = {
     TenDienThoai: phone.TenDienThoai,
     hangSanXuat: phone.hangSanXuat,
@@ -1431,9 +1603,11 @@ const openEditModal = (phone) => {
     Chipset: phone.cauHinh?.Chipset || '',
     RAM_ROM: phone.cauHinh?.RAM_ROM || '',
     TinhTrangMay: phone.TinhTrangMay,
-    MacDinh: phone.MacDinh,
+    MacDinh: phone.MacDinh || existingImages[0] || '',
+    hinhAnh: existingImages,
     moTa: phone.moTa || ''
   };
+  newImageUrlInput.value = '';
   giaThueDisplay.value = formatCurrency(phone.giaThueNgay);
   tienCocDisplay.value = formatCurrency(phone.tienCocYeuCau);
   isModalOpen.value = true;
@@ -1445,6 +1619,21 @@ const openEditModal = (phone) => {
 // ERD: INSERT INTO DienThoai ... / UPDATE DienThoai SET ...
 // ============================================================================================
 const savePhone = async () => {
+  const images = (formData.value.hinhAnh && formData.value.hinhAnh.length)
+    ? formData.value.hinhAnh
+    : (formData.value.MacDinh ? [formData.value.MacDinh] : []);
+
+  if (images.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Thiếu hình ảnh!',
+      text: 'Vui lòng tải lên hoặc dán link ít nhất 1 hình ảnh sản phẩm vào album.'
+    });
+    return;
+  }
+
+  const primaryCover = formData.value.MacDinh || images[0] || 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-16-pro-max.jpg';
+
   const payload = {
     TenDienThoai: formData.value.TenDienThoai,
     hangSanXuat: formData.value.hangSanXuat,
@@ -1456,8 +1645,8 @@ const savePhone = async () => {
     SoLuong: 5,
     isFeatured: true,
     isHot: true,
-    MacDinh: formData.value.MacDinh || 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png',
-    hinhAnh: [formData.value.MacDinh || 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png'],
+    MacDinh: primaryCover,
+    hinhAnh: images,
     moTa: formData.value.moTa || 'Máy nguyên zin 100%, ngoại quan 99%, pin 100%.',
     cauHinh: {
       Chipset: formData.value.Chipset || 'Apple A17 Pro',
@@ -1473,7 +1662,7 @@ const savePhone = async () => {
     Swal.fire({
       icon: 'success',
       title: 'Đã cập nhật thiết bị!',
-      text: 'Thông tin điện thoại đã được lưu và cập nhật đồng bộ toàn hệ thống.',
+      text: 'Thông tin điện thoại và album ảnh đã được lưu thành công.',
       timer: 2000,
       showConfirmButton: false
     });
@@ -1482,7 +1671,7 @@ const savePhone = async () => {
     Swal.fire({
       icon: 'success',
       title: 'Thêm thiết bị thành công!',
-      text: 'Thiết bị mới đã được lưu vào kho và lập tức hiển thị ngoài trang chủ cho khách thuê!',
+      text: 'Thiết bị mới và album ảnh đã được lưu vào kho và lập tức hiển thị ngoài trang chủ cho khách thuê!',
       timer: 2200,
       showConfirmButton: false
     });
@@ -1647,5 +1836,59 @@ const handleDeleteCategory = (cat) => {
 
 .scanner-frame.detected .scanner-corner {
   border-color: #198754;
+}
+
+/* ============================================================================================ */
+/* CSS CHO KHU VỰC QUẢN LÝ BỘ SƯU TẬP ẢNH SẢN PHẨM (MULTI-IMAGE GALLERY MANAGER)                */
+/* ============================================================================================ */
+.image-gallery-manager {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.gallery-item-card {
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.gallery-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.gallery-thumb-img {
+  width: 100%;
+  height: 85px;
+  object-fit: contain;
+  background: #ffffff;
+  padding: 4px;
+}
+
+.btn-delete-img {
+  width: 22px;
+  height: 22px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+  transition: background 0.2s ease;
+}
+
+.btn-delete-img:hover {
+  background: #dc3545;
+  transform: scale(1.1);
+}
+
+.btn-xs {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 </style>
