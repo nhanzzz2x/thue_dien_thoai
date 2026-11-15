@@ -83,7 +83,7 @@
             class="cart-item-row p-2.5 rounded-3 border mb-2 d-flex align-items-center gap-3 bg-white"
           >
             <!-- Ảnh đại diện của máy -->
-            <img :src="item.phone.MacDinh" :alt="item.phone.TenDienThoai" class="cart-item-img" />
+            <img :src="item.phone.MacDinh" :alt="item.phone.TenDienThoai" class="cart-item-img" @error="onImgError" />
             
             <!-- Chi tiết tên máy và giá thuê ngày -->
             <div class="flex-grow-1 min-w-0">
@@ -262,7 +262,7 @@ import { useCartStore } from '@/stores/cart.store';
 import { useOrderStore } from '@/stores/order.store';
 import { useUserStore } from '@/stores/user.store';
 import { depositMethods } from '@/data/mockData';
-import { convertToVND } from '@/utils/formatters';
+import { convertToVND, onImgError } from '@/utils/formatters';
 import ContractConfirmModal from './ContractConfirmModal.vue';
 import Swal from 'sweetalert2';
 

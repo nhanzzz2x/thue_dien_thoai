@@ -29,3 +29,13 @@ export function formatDate(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('vi-VN');
 }
+
+// Ảnh đại diện dự phòng chất lượng cao khi đường dẫn ảnh bên thứ ba bị lỗi
+export const DEFAULT_PHONE_IMAGE = 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-16-pro-max.jpg';
+
+export function onImgError(event, fallbackUrl = DEFAULT_PHONE_IMAGE) {
+  if (event && event.target) {
+    event.target.onerror = null; // Ngăn chặn vòng lặp lỗi
+    event.target.src = fallbackUrl;
+  }
+}

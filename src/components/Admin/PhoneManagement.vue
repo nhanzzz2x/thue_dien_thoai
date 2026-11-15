@@ -118,7 +118,7 @@
 
               <!-- Ảnh sản phẩm (DienThoai.MacDinh) -->
               <td>
-                <img :src="phone.MacDinh" :alt="phone.TenDienThoai" class="phone-admin-thumb rounded-3 border p-1" />
+                <img :src="phone.MacDinh" :alt="phone.TenDienThoai" class="phone-admin-thumb rounded-3 border p-1" @error="onImgError" />
               </td>
 
               <!-- Tên máy & cấu hình vi xử lý, RAM (CauHinh_PhienBan) -->
@@ -413,6 +413,7 @@
                       alt="Preview"
                       class="rounded border bg-white"
                       style="width: 48px; height: 48px; object-fit: contain;"
+                      @error="onImgError"
                     />
                     <div class="min-w-0 flex-grow-1">
                       <small class="d-block fw-bold text-dark text-truncate" style="font-size: 0.78rem;">Ảnh hiển thị</small>
@@ -705,7 +706,7 @@
 import { ref, computed } from 'vue';
 import Swal from 'sweetalert2';
 import { usePhoneStore } from '@/stores/phone.store';
-import { convertToVND } from '@/utils/formatters';
+import { convertToVND, onImgError } from '@/utils/formatters';
 
 // Khởi tạo phone store
 // Initialize phone store

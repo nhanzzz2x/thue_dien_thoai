@@ -28,7 +28,7 @@
         <!-- 3. Ảnh đại diện sản phẩm (Default Product Image - ERD: DienThoai.MacDinh) -->
         <!-- Click vào ảnh sẽ mở modal xem nhanh (Quick View Modal) -->
         <div class="img-container" @click="phoneStore.openQuickView(phone)">
-          <img :src="phone.MacDinh" :alt="phone.TenDienThoai" class="product-img" loading="lazy" />
+          <img :src="phone.MacDinh" :alt="phone.TenDienThoai" class="product-img" loading="lazy" @error="onImgError" />
         </div>
 
         <!-- 4. Thanh công cụ nổi khi rê chuột (Floating action buttons: Quick view & Compare) -->
@@ -160,7 +160,7 @@
 import { computed } from 'vue';
 import { usePhoneStore } from '@/stores/phone.store';    // Pinia Phone Store
 import { useCartStore } from '@/stores/cart.store';      // Pinia Cart Store
-import { convertToVND } from '@/utils/formatters';       // Hàm chuyển đổi số sang tiền VNĐ
+import { convertToVND, onImgError } from '@/utils/formatters';       // Hàm chuyển đổi số sang tiền VNĐ & xử lý ảnh lỗi
 import Swal from 'sweetalert2';                          // Popup thông báo
 
 // Khai báo Props nhận vào đối tượng điện thoại từ component cha (Home.vue)

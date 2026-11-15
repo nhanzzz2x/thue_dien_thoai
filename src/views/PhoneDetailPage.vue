@@ -55,6 +55,7 @@
                   :src="activeImage || phone.MacDinh"
                   :alt="phone.TenDienThoai"
                   class="img-fluid main-img"
+                  @error="onImgError"
                 />
               </div>
 
@@ -68,7 +69,7 @@
                   :class="{ active: (activeImage || phone.MacDinh) === img }"
                   @click="activeImage = img"
                 >
-                  <img :src="img" :alt="phone.TenDienThoai" class="thumb-img" />
+                  <img :src="img" :alt="phone.TenDienThoai" class="thumb-img" @error="onImgError" />
                 </div>
               </div>
 
@@ -344,7 +345,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { usePhoneStore } from '@/stores/phone.store';
 import { useCartStore } from '@/stores/cart.store';
-import { convertToVND } from '@/utils/formatters';
+import { convertToVND, onImgError } from '@/utils/formatters';
 import Header from '@/components/Header.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
 import Footer from '@/components/Footer.vue';

@@ -85,7 +85,7 @@
               :key="device.maDienThoai"
               class="device-row d-flex align-items-center gap-3 py-2"
             >
-              <img :src="device.MacDinh" :alt="device.TenDienThoai" class="device-thumb rounded-3 border p-1" />
+              <img :src="device.MacDinh" :alt="device.TenDienThoai" class="device-thumb rounded-3 border p-1" @error="onImgError" />
               <div class="flex-grow-1">
                 <h6 class="fw-bold mb-1">{{ device.TenDienThoai }}</h6>
                 <div class="small text-muted d-flex flex-wrap gap-3">
@@ -296,7 +296,7 @@
 import { ref, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { useOrderStore } from '@/stores/order.store';
-import { convertToVND } from '@/utils/formatters';
+import { convertToVND, onImgError } from '@/utils/formatters';
 import Header from '@/components/Header.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
 import Footer from '@/components/Footer.vue';

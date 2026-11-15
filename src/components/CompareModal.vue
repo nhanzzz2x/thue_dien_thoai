@@ -64,7 +64,7 @@
                     &times;
                   </button>
                   <!-- Ảnh đại diện của máy (ERD: DienThoai.MacDinh) -->
-                  <img :src="phone.MacDinh" :alt="phone.TenDienThoai" class="compare-thumb mx-auto mb-2" />
+                  <img :src="phone.MacDinh" :alt="phone.TenDienThoai" class="compare-thumb mx-auto mb-2" @error="onImgError" />
                   <!-- Tên điện thoại (ERD: DienThoai.TenDienThoai) -->
                   <div class="fw-bold small px-2">{{ phone.TenDienThoai }}</div>
                 </div>
@@ -182,7 +182,7 @@
 
 import { usePhoneStore } from '@/stores/phone.store';    // Store quản lý kho điện thoại và danh sách so sánh
 import { useCartStore } from '@/stores/cart.store';      // Store quản lý giỏ thuê
-import { convertToVND } from '@/utils/formatters';       // Hàm tiện ích định dạng tiền Việt Nam
+import { convertToVND, onImgError } from '@/utils/formatters';       // Hàm tiện ích định dạng tiền Việt Nam & xử lý ảnh lỗi
 import Swal from 'sweetalert2';                          // Popup thông báo
 
 const phoneStore = usePhoneStore();

@@ -20,7 +20,7 @@
         <div class="col-md-5 text-center">
           <!-- Ảnh lớn chính đang được chọn hiển thị -->
           <div class="main-img-box p-3 bg-light rounded-4 mb-3">
-            <img :src="selectedImg || phone.MacDinh" :alt="phone.TenDienThoai" class="img-fluid quick-img" />
+            <img :src="selectedImg || phone.MacDinh" :alt="phone.TenDienThoai" class="img-fluid quick-img" @error="onImgError" />
           </div>
           <!-- Danh sách ảnh thumbnail các góc máy (Click để đổi ảnh lớn) -->
           <div v-if="phone.hinhAnh?.length > 1" class="d-flex justify-content-center gap-2">
@@ -32,6 +32,7 @@
               :class="{ active: selectedImg === img }"
               @click="selectedImg = img"
               :alt="`Góc chụp ${idx + 1}`"
+              @error="onImgError"
             />
           </div>
         </div>
@@ -189,7 +190,7 @@
 import { ref, computed } from 'vue';
 import { usePhoneStore } from '@/stores/phone.store';    // Store quản lý kho máy
 import { useCartStore } from '@/stores/cart.store';      // Store quản lý giỏ hàng
-import { convertToVND } from '@/utils/formatters';       // Định dạng tiền tệ VNĐ
+import { convertToVND, onImgError } from '@/utils/formatters';       // Định dạng tiền tệ VNĐ & xử lý ảnh lỗi
 import Swal from 'sweetalert2';                          // Popup thông báo
 
 const phoneStore = usePhoneStore();

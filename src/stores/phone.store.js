@@ -19,6 +19,37 @@ function getInitialPhones() {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Tự động kiểm tra và vá lại ảnh mới nhất từ mockPhones cho các máy mặc định nếu link cũ bị chết
+        const mockMap = new Map(mockPhones.map(m => [m.maDienThoai, m]));
+        let hasChanges = false;
+        parsed.forEach(p => {
+          const mock = mockMap.get(p.maDienThoai);
+          if (mock) {
+            // Kiểm tra các link ảnh bị lỗi hoặc thiếu
+            if (
+              !p.MacDinh ||
+              p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
+              p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
+              p.MacDinh.includes('cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-6')
+            ) {
+              p.MacDinh = mock.MacDinh;
+              p.hinhAnh = mock.hinhAnh;
+              hasChanges = true;
+            }
+          }
+        });
+
+        // Thêm các thiết bị mới từ mockPhones nếu chưa có
+        mockPhones.forEach(m => {
+          if (!parsed.some(p => p.maDienThoai === m.maDienThoai)) {
+            parsed.push(m);
+            hasChanges = true;
+          }
+        });
+
+        if (hasChanges) {
+          localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(parsed));
+        }
         return parsed;
       }
     }
@@ -167,12 +198,33 @@ export const usePhoneStore = defineStore('phone', {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
+            const mockMap = new Map(mockPhones.map(m => [m.maDienThoai, m]));
+            parsed.forEach(p => {
+              const mock = mockMap.get(p.maDienThoai);
+              if (
+                mock &&
+                (!p.MacDinh ||
+                  p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
+                  p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
+                  p.MacDinh.includes('cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-6'))
+              ) {
+                p.MacDinh = mock.MacDinh;
+                p.hinhAnh = mock.hinhAnh;
+              }
+            });
+            mockPhones.forEach(m => {
+              if (!parsed.some(p => p.maDienThoai === m.maDienThoai)) {
+                parsed.push(m);
+              }
+            });
             this.phones = parsed;
+            return;
           }
         }
       } catch (e) {
         console.warn('Lỗi syncFromStorage phones:', e);
       }
+      this.phones = [...mockPhones];
     },
 
     // Tự động tải từ MySQL Backend API (nếu có server chạy)

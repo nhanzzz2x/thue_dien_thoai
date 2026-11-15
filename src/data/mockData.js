@@ -233,16 +233,18 @@ export const mockPhones = [
     maDienThoai: 8,
     TenDienThoai: "Samsung Galaxy Z Flip6 5G 12GB/256GB",
     hangSanXuat: "SAMSUNG",
-    category: "FLAGSHIP",
+    category: "SAMSUNG",
     isHot: false,
     isFeatured: true,
     SoIMEI_Serial: "359012345678901",
     TinhTrangMay: "SAN_SANG",
     TinhTrangMayText: "Sẵn sàng thuê",
     SoLuong: 4,
-    MacDinh: "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-6-xanh-mint_1.png",
+    MacDinh: "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-z-flip6-1.jpg",
     hinhAnh: [
-      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-6-xanh-mint_1.png"
+      "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-z-flip6-1.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/e/e3/%E4%B8%89%E6%98%9FGalaxy_Z_Flip6.png",
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/f/r/frame_166_3.png"
     ],
     giaThueNgay: 210000,
     giaKhuyenMai: 179000,
@@ -268,12 +270,13 @@ export const mockPhones = [
     isHot: false,
     isFeatured: false,
     SoIMEI_Serial: "357890123456789",
-    TinhTrangMay: "DANG_THUE", // Đang thuê
-    TinhTrangMayText: "Đang cho thuê (Dự kiến trả 02/11)",
-    SoLuong: 0,
-    MacDinh: "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/n/u/nubia-red-magic-9-pro-plus-den_1.png",
+    TinhTrangMay: "SAN_SANG",
+    TinhTrangMayText: "Sẵn sàng thuê",
+    SoLuong: 3,
+    MacDinh: "https://fdn2.gsmarena.com/vv/pics/zte/zte-nubia-red-magic-9-pro-1.jpg",
     hinhAnh: [
-      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/n/u/nubia-red-magic-9-pro-plus-den_1.png"
+      "https://fdn2.gsmarena.com/vv/pics/zte/zte-nubia-red-magic-9-pro-1.jpg",
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-nubia-red-magic-9-pro_1.png"
     ],
     giaThueNgay: 240000,
     giaKhuyenMai: 200000,
@@ -290,6 +293,68 @@ export const mockPhones = [
       DungLuongPin: "6500 mAh (Sạc nhanh 80W)"
     },
     moTa: "Màn hình vô khuyết camera ẩn dưới màn hình, pin khủng 6500mAh cày game cả ngày dài."
+  },
+  {
+    maDienThoai: 10,
+    TenDienThoai: "iPhone 16 Plus 128GB - Xanh Mòng Két",
+    hangSanXuat: "APPLE",
+    category: "APPLE",
+    isHot: true,
+    isFeatured: true,
+    SoIMEI_Serial: "354991122334455",
+    TinhTrangMay: "SAN_SANG",
+    TinhTrangMayText: "Sẵn sàng thuê",
+    SoLuong: 5,
+    MacDinh: "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-16-plus-1.jpg",
+    hinhAnh: [
+      "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-16-plus-1.jpg"
+    ],
+    giaThueNgay: 200000,
+    giaKhuyenMai: 169000,
+    tienCocYeuCau: 10500000,
+    cauHinh: {
+      MaCauHinh: "CH_IP16P_128",
+      Chipset: "Apple A18 (3nm)",
+      RAM_ROM: "8GB / 128GB",
+      RAM: "8GB",
+      ROM: "128GB",
+      HeDieuHanh: "iOS 18",
+      ThongSoCamera_Pin: "Camera kép 48MP Fushion, Nút Camera Control & Action Button, Pin 4674 mAh cực trâu",
+      KichThuocManHinh: "6.7 inch Super Retina XDR",
+      DungLuongPin: "4674 mAh"
+    },
+    moTa: "Màn hình lớn 6.7 inch trải nghiệm phim ảnh sắc nét, thời lượng pin trâu nhất lịch sử các dòng iPhone tiêu chuẩn."
+  },
+  {
+    maDienThoai: 11,
+    TenDienThoai: "Xiaomi 14T Pro 5G 12GB/512GB (Leica)",
+    hangSanXuat: "XIAOMI",
+    category: "XIAOMI",
+    isHot: false,
+    isFeatured: true,
+    SoIMEI_Serial: "356611223344556",
+    TinhTrangMay: "SAN_SANG",
+    TinhTrangMayText: "Sẵn sàng thuê",
+    SoLuong: 4,
+    MacDinh: "https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14t-pro-1.jpg",
+    hinhAnh: [
+      "https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14t-pro-1.jpg"
+    ],
+    giaThueNgay: 210000,
+    giaKhuyenMai: 175000,
+    tienCocYeuCau: 11500000,
+    cauHinh: {
+      MaCauHinh: "CH_MI14TP_512",
+      Chipset: "MediaTek Dimensity 9300+ (4nm)",
+      RAM_ROM: "12GB / 512GB",
+      RAM: "12GB",
+      ROM: "512GB",
+      HeDieuHanh: "Xiaomi HyperOS (Android 14)",
+      ThongSoCamera_Pin: "Hệ thống ống kính quang học Leica Summilux, Cảm biến Light Fusion 900, Pin 5000 mAh Sạc 120W",
+      KichThuocManHinh: "6.67 inch CrystalRes 144Hz AI",
+      DungLuongPin: "5000 mAh (HyperCharge 120W)"
+    },
+    moTa: "Ống kính quang học Leica thế hệ mới, sạc thần tốc 120W chỉ 19 phút đầy 100%, chip Dimensity 9300+ chạm đỉnh hiệu năng."
   }
 ];
 
