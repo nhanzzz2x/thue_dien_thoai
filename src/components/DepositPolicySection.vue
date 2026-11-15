@@ -158,4 +158,20 @@ import { depositMethods } from '@/data/mockData';
   justify-content: center;
   font-size: 1.1rem;
 }
+
+@media (max-width: 768px) {
+  .deposit-policy-section {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+    border-radius: 16px;
+  }
+  .workflow-card {
+    padding: 1.25rem !important;
+  }
+  .policy-method-card {
+    padding: 1.25rem !important;
+  }
+}
 </style>

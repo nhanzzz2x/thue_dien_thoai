@@ -524,4 +524,41 @@ const handleRentNow = () => {
 .cursor-pointer {
   cursor: pointer;
 }
+
+/* ============================================================================================ */
+/* VIETNAMESE: TỐI ƯU GIAO DIỆN TRANG CHI TIẾT KHI XEM TRÊN ĐIỆN THOẠI DI ĐỘNG                */
+/* ============================================================================================ */
+@media (max-width: 768px) {
+  .phone-detail-page main.container {
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 10px !important;
+  }
+
+  .main-image-box {
+    min-height: 220px;
+    padding: 10px !important;
+  }
+
+  .main-img {
+    max-height: 200px;
+  }
+
+  .phone-detail-page h3 {
+    font-size: 1.25rem;
+  }
+
+  .specs-tags .badge {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+  }
+
+  .price-banner {
+    padding: 10px !important;
+  }
+
+  .rental-calculator-card {
+    padding: 12px !important;
+  }
+}
 </style>

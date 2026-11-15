@@ -21,7 +21,7 @@
       <!-- VIETNAMESE: DANH SÁCH THẺ ĐIỆN THOẠI NỔI BẬT (PhoneCard.vue)                         -->
       <!-- ENGLISH: SPOTLIGHT PHONE CARDS ROW (PhoneCard.vue)                                   -->
       <!-- ==================================================================================== -->
-      <div class="row">
+      <div class="row g-2 g-md-3 g-xl-4">
         <PhoneCard
           v-for="phone in hotPhones"
           :key="phone.maDienThoai"
@@ -62,5 +62,18 @@ const hotPhones = computed(() => {
 .spotlight-badge {
   font-size: 0.82rem;
   letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.25rem !important;
+  }
+  .section-subtitle {
+    font-size: 0.82rem !important;
+  }
+  .phone-spotlight-section {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
 }
 </style>

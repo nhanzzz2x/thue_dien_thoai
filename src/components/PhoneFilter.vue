@@ -5,7 +5,7 @@
   <!-- Hỗ trợ lọc theo: Hãng máy, Chipset, RAM/ROM, Hệ điều hành, Mức giá và Tình trạng máy kho   -->
   <!-- ========================================================================================= -->
   <div id="filter-config-section" class="filter-card my-4">
-    <div class="card border-0 shadow-sm rounded-4 p-4">
+    <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
       
       <!-- ===================================================================================== -->
       <!-- TIÊU ĐỀ BỘ LỌC & NÚT XÓA BỘ LỌC (FILTER HEADER & RESET BUTTON)                        -->
@@ -17,26 +17,26 @@
           </div>
           <div>
             <h5 class="fw-bold mb-0">Bộ Lọc Cấu Hình Đa Tiêu Chí (ERD Filter)</h5>
-            <small class="text-muted">Ánh xạ trực tiếp thực thể <code>DienThoai</code> & <code>CauHinh_PhienBan</code></small>
+            <small class="text-muted d-none d-sm-inline">Ánh xạ trực tiếp thực thể <code>DienThoai</code> & <code>CauHinh_PhienBan</code></small>
           </div>
         </div>
 
         <!-- Nút xóa tất cả bộ lọc về mặc định (Chỉ hiện khi có ít nhất 1 tiêu chí lọc đang bật) -->
         <button
           v-if="hasActiveFilters"
-          class="btn btn-sm btn-outline-danger rounded-pill px-3"
+          class="btn btn-sm btn-outline-danger rounded-pill px-2 px-sm-3"
           @click="phoneStore.resetFilters"
         >
-          <i class="fa fa-refresh me-1"></i> Xóa tất cả bộ lọc
+          <i class="fa fa-refresh me-1"></i> <span class="d-none d-sm-inline">Xóa tất cả bộ lọc</span><span class="d-inline d-sm-none">Xóa lọc</span>
         </button>
       </div>
 
       <!-- ===================================================================================== -->
       <!-- LƯỚI 5 TIÊU CHÍ LỌC CHI TIẾT (5 FILTER CONTROLS GRID)                                 -->
       <!-- ===================================================================================== -->
-      <div class="row g-3">
+      <div class="row g-2 g-md-3">
         <!-- 1. TIÊU CHÍ 1: LỌC THEO HÃNG MÁY / DANH MỤC (ERD: TheLoai.ten_loai / DienThoai.category) -->
-        <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="col-6 col-md-4 col-lg-2">
           <label class="filter-label"><i class="fa fa-tag me-1 text-primary"></i> Hãng máy</label>
           <select v-model="phoneStore.selectedCategory" class="form-select filter-select">
             <option value="ALL">Tất cả hãng (All Brands)</option>
@@ -47,7 +47,7 @@
         </div>
 
         <!-- 2. TIÊU CHÍ 2: LỌC THEO VI XỬ LÝ (CHIPSET) (ERD: CauHinh_PhienBan.Chipset) -->
-        <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="col-6 col-md-4 col-lg-3">
           <label class="filter-label"><i class="fa fa-microchip me-1 text-info"></i> Vi xử lý (Chipset)</label>
           <select v-model="phoneStore.selectedChipset" class="form-select filter-select">
             <option value="">Tất cả Chipset</option>
@@ -59,7 +59,7 @@
         </div>
 
         <!-- 3. TIÊU CHÍ 3: LỌC THEO BỘ NHỚ RAM / ROM (ERD: CauHinh_PhienBan.RAM_ROM) -->
-        <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="col-6 col-md-4 col-lg-2">
           <label class="filter-label"><i class="fa fa-database me-1 text-warning"></i> Bộ nhớ (RAM/ROM)</label>
           <select v-model="phoneStore.selectedRamRom" class="form-select filter-select">
             <option value="">Tất cả dung lượng</option>
@@ -71,7 +71,7 @@
         </div>
 
         <!-- 4. TIÊU CHÍ 4: LỌC THEO HỆ ĐIỀU HÀNH (ERD: CauHinh_PhienBan.HeDieuHanh) -->
-        <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="col-6 col-md-4 col-lg-2">
           <label class="filter-label"><i class="fa fa-cogs me-1 text-secondary"></i> Hệ điều hành</label>
           <select v-model="phoneStore.selectedOs" class="form-select filter-select">
             <option value="">Tất cả HĐH</option>
@@ -81,7 +81,7 @@
         </div>
 
         <!-- 5. TIÊU CHÍ 5: LỌC THEO MỨC GIÁ THUÊ / NGÀY (ERD: DienThoai.giaThueNgay) -->
-        <div class="col-lg-3 col-md-4 col-sm-6">
+        <div class="col-12 col-md-4 col-lg-3">
           <label class="filter-label"><i class="fa fa-money me-1 text-success"></i> Giá thuê theo ngày</label>
           <select v-model="phoneStore.selectedPriceRange" class="form-select filter-select">
             <option value="ALL">Tất cả mức giá</option>
@@ -186,5 +186,24 @@ const hasActiveFilters = computed(() => {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+@media (max-width: 576px) {
+  .filter-label {
+    font-size: 0.72rem;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .filter-select {
+    font-size: 0.78rem;
+    padding: 6px 8px;
+  }
+  .filter-icon-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
 }
 </style>

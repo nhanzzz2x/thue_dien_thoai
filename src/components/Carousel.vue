@@ -44,7 +44,7 @@
                     Trải nghiệm đỉnh cao công nghệ chỉ từ <strong>220.000₫/ngày</strong>. 
                     Phục vụ chụp ảnh du lịch, sự kiện văn nghệ, quay phim chuyên nghiệp, test app iOS/Android.
                   </p>
-                  <div class="d-flex flex-wrap gap-3">
+                  <div class="d-flex flex-wrap gap-2 gap-md-3 hero-btn-group">
                     <a href="#phone-catalog-section" class="btn btn-light btn-lg px-4 py-2.5 fw-bold rounded-pill shadow">
                       <i class="fa fa-bolt text-primary me-2"></i> Thuê ngay hôm nay
                     </a>
@@ -82,7 +82,7 @@
                     Không bắt buộc cọc 100% tiền mặt! Khách hàng có thể thế chân bằng 
                     <strong>Căn cước công dân gắn chip</strong>, <strong>Laptop / iPad</strong> hoặc <strong>Chuyển khoản</strong>.
                   </p>
-                  <div class="d-flex flex-wrap gap-3">
+                  <div class="d-flex flex-wrap gap-2 gap-md-3 hero-btn-group">
                     <a href="#deposit-policy-section" class="btn btn-warning btn-lg px-4 py-2.5 fw-bold text-dark rounded-pill shadow">
                       <i class="fa fa-id-card me-2"></i> Xem chi tiết thế chân
                     </a>
@@ -120,7 +120,7 @@
                     Ghi nhận tem niêm phong lúc giao <em>(TinhTrangLucGiao)</em>. 
                     Khi trả máy nguyên vẹn đúng hạn, hệ thống quyết toán hoàn cọc 100% tức thì trong 5 phút!
                   </p>
-                  <div class="d-flex flex-wrap gap-3">
+                  <div class="d-flex flex-wrap gap-2 gap-md-3 hero-btn-group">
                     <a href="#phone-catalog-section" class="btn btn-light btn-lg px-4 py-2.5 fw-bold rounded-pill shadow">
                       <i class="fa fa-mobile me-2"></i> Chọn điện thoại thuê
                     </a>
@@ -218,5 +218,40 @@
   width: 30px;
   height: 6px;
   border-radius: 4px;
+}
+
+/* ============================================================================================ */
+/* RESPONSIVE BANNER CHO ĐIỆN THOẠI & TABLET (< 768px)                                         */
+/* ============================================================================================ */
+@media (max-width: 768px) {
+  .slide-content {
+    min-height: 270px;
+    padding: 22px 0 35px 0;
+  }
+  .hero-title {
+    font-size: 1.35rem;
+    line-height: 1.3;
+    margin-bottom: 0.5rem !important;
+  }
+  .hero-desc {
+    font-size: 0.84rem;
+    line-height: 1.45;
+    margin-bottom: 0.85rem !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hero-btn-group a {
+    padding: 7px 14px !important;
+    font-size: 0.8rem !important;
+  }
+  .carousel-indicators {
+    bottom: 2px;
+  }
+  .carousel-indicators [data-bs-target] {
+    width: 18px;
+    height: 4px;
+  }
 }
 </style>

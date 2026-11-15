@@ -2,6 +2,9 @@
   <div id="app">
     <router-view />
 
+    <!-- Thanh điều hướng đáy dành riêng cho thiết bị di động (Mobile Bottom Navigation) -->
+    <MobileBottomNav v-if="!isAdminRoute" />
+
     <!-- Nút cuộn nhanh lên đầu trang (Back to top) tiện lợi khi lướt xem sản phẩm -->
     <button
       v-show="showBackToTop"
@@ -16,11 +19,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { usePhoneStore } from '@/stores/phone.store';
+import MobileBottomNav from '@/components/MobileBottomNav.vue';
 
+const route = useRoute();
 const phoneStore = usePhoneStore();
 const showBackToTop = ref(false);
+
+const isAdminRoute = computed(() => {
+  return route.path && route.path.startsWith('/admin');
+});
 
 const handleScroll = () => {
   showBackToTop.value = window.scrollY > 300;
@@ -67,5 +77,20 @@ onUnmounted(() => {
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
   color: #fff;
+}
+
+/* Tối ưu trải nghiệm khi dùng điện thoại */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 64px; /* Tránh để thanh điều hướng dưới đáy che mất nội dung trang */
+  }
+
+  .btn-back-to-top {
+    bottom: 74px; /* Đẩy nút Lên đầu trang lên trên thanh bottom nav */
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    font-size: 0.95rem;
+  }
 }
 </style>

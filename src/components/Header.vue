@@ -3,19 +3,19 @@
     <!-- Top info bar -->
     <div class="top-info-bar">
       <div class="container d-flex justify-content-between align-items-center">
-        <div class="top-left d-flex align-items-center gap-3">
+        <div class="top-left d-flex align-items-center gap-2 gap-sm-3">
           <span><i class="fa fa-phone me-1 text-info"></i> Hotline: <strong>0988.123.456</strong></span>
-          <span class="divider">|</span>
-          <span><i class="fa fa-clock-o me-1 text-warning"></i> Giờ làm việc: <strong>08:00 - 21:30 (Cả CN & Lễ)</strong></span>
+          <span class="divider d-none d-sm-inline">|</span>
+          <span class="d-none d-sm-inline"><i class="fa fa-clock-o me-1 text-warning"></i> 08:00 - 21:30</span>
           <span class="divider d-none d-md-inline">|</span>
-          <span class="d-none d-md-inline"><i class="fa fa-map-marker me-1 text-danger"></i> 180 Cao Lỗ, Phường 4, Quận 8, TP.HCM (Cổng trường STU)</span>
+          <span class="d-none d-md-inline"><i class="fa fa-map-marker me-1 text-danger"></i> 180 Cao Lỗ, P.4, Q.8, TP.HCM</span>
         </div>
-        <div class="top-right d-flex align-items-center gap-3">
+        <div class="top-right d-flex align-items-center gap-2 gap-sm-3">
           <router-link to="/lich-su-thue" class="text-white text-decoration-none small">
             <i class="fa fa-history me-1 text-info"></i> Lịch Sử Thuê
           </router-link>
-          <span class="divider d-none d-sm-inline">|</span>
-          <span class="policy-tag d-none d-sm-inline"><i class="fa fa-shield me-1 text-success"></i> Cam kết 100% Nguyên Tem Niêm Phong</span>
+          <span class="divider d-none d-md-inline">|</span>
+          <span class="policy-tag d-none d-md-inline"><i class="fa fa-shield me-1 text-success"></i> Cam kết 100% Nguyên Tem Niêm Phong</span>
         </div>
       </div>
     </div>
@@ -539,7 +539,31 @@ const scrollToProducts = () => {
 @media (max-width: 576px) {
   .top-info-bar {
     font-size: 0.72rem;
-    padding: 4px 0;
+    padding: 5px 0;
+  }
+  .header-actions {
+    gap: 8px !important;
+  }
+  .action-item-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-icon-box {
+    width: 34px;
+    height: 34px;
+    font-size: 1.15rem;
+  }
+  .brand-name {
+    font-size: 1.05rem;
+  }
+  .user-dropdown-card {
+    right: -10px;
+    width: 260px;
   }
 }
 </style>

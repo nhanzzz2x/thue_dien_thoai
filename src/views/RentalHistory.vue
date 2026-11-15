@@ -576,4 +576,26 @@ const cancelOrder = (orderId) => {
   z-index: 1050;
   backdrop-filter: blur(4px);
 }
+
+/* Tối ưu giao diện khi hiển thị trên màn hình điện thoại */
+@media (max-width: 576px) {
+  .order-card {
+    padding: 14px !important;
+  }
+  .stepper-wrapper {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .stepper {
+    min-width: 320px;
+  }
+  .step-label {
+    font-size: 0.68rem;
+  }
+  .step-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+}
 </style>

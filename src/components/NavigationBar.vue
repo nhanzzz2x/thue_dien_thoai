@@ -45,8 +45,8 @@
             <i class="fa fa-chevron-down dropdown-arrow ms-1" :class="{ 'rotate-180': isDropdownOpen }"></i>
           </button>
 
-          <!-- MENU ÚP XUỐNG HIỂN THỊ DANH SÁCH CÁC HÃNG MÁY -->
-          <div v-if="isDropdownOpen" class="category-dropdown-menu shadow-lg rounded-4 py-2 border">
+          <!-- MENU ÚP XUỐNG HIỂN THỊ DANH SÁCH CÁC HÃNG MÁY TRÊN DESKTOP (MÀN HÌNH LỚN) -->
+          <div v-if="isDropdownOpen && !isMobile" class="category-dropdown-menu shadow-lg rounded-4 py-2 border">
             <div class="dropdown-header px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
               <span class="text-muted small fw-bold text-uppercase">
                 <i class="fa fa-tag me-1 text-primary"></i> Danh sách các hãng máy ({{ brandCategories.length }})
@@ -109,6 +109,103 @@
       </div>
 
     </div>
+
+    <!-- ===================================================================================== -->
+    <!-- BẢNG CHỌN DANH SÁCH ĐIỆN THOẠI TRÊN MOBILE (TELEPORT TRÁNH BỊ CHE KHUẤT)              -->
+    <!-- ===================================================================================== -->
+    <Teleport to="body">
+      <!-- Lớp phủ mờ nền khi mở danh sách trên di động -->
+      <transition name="fade">
+        <div
+          v-if="isDropdownOpen && isMobile"
+          class="mobile-brand-backdrop"
+          @click="isDropdownOpen = false"
+        ></div>
+      </transition>
+
+      <!-- Bảng chọn hãng máy trượt lên từ cạnh dưới màn hình -->
+      <transition name="slide-up">
+        <div
+          v-if="isDropdownOpen && isMobile"
+          class="mobile-brand-sheet shadow-lg"
+        >
+          <!-- Tiêu đề Header của Sheet -->
+          <div class="mobile-sheet-header d-flex justify-content-between align-items-center px-3 py-3 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <div class="header-icon-badge">
+                <i class="fa fa-th-list text-primary fs-5"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-0 text-dark">Danh Sách Điện Thoại Cho Thuê</h6>
+                <small class="text-muted">Chọn hãng máy hoặc xem toàn bộ kho</small>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn-close-sheet"
+              @click="isDropdownOpen = false"
+              aria-label="Đóng"
+            >
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+
+          <!-- Danh sách các hãng máy -->
+          <div class="mobile-sheet-body p-2">
+            <!-- Mục 1: Tất cả điện thoại -->
+            <button
+              type="button"
+              class="mobile-brand-item d-flex align-items-center justify-content-between p-2.5 w-100 rounded-3 border-0 bg-transparent mb-1"
+              :class="{ 'item-active': isAllCategoryActive }"
+              @click="handleAllPhonesClick"
+            >
+              <div class="d-flex align-items-center gap-3">
+                <div class="brand-icon-box bg-primary-subtle text-primary">
+                  <i class="fa fa-mobile fs-4"></i>
+                </div>
+                <div class="text-start">
+                  <strong class="d-block text-dark">Tất cả điện thoại</strong>
+                  <small class="text-muted">Xem toàn bộ kho máy sẵn sàng thuê</small>
+                </div>
+              </div>
+              <span class="badge bg-light text-primary border rounded-pill px-2.5 py-1">
+                {{ phoneStore.phones.length }} máy
+              </span>
+            </button>
+
+            <!-- Mục 2: Từng hãng (Apple, Samsung, Xiaomi, Gaming...) -->
+            <button
+              v-for="brand in brandCategories"
+              :key="brand.id"
+              type="button"
+              class="mobile-brand-item d-flex align-items-center justify-content-between p-2.5 w-100 rounded-3 border-0 bg-transparent mb-1"
+              :class="{ 'item-active': phoneStore.selectedCategory === brand.id && !isHomePage }"
+              @click="selectBrandFromDropdown(brand.id)"
+            >
+              <div class="d-flex align-items-center gap-3">
+                <div class="brand-icon-box">
+                  <i class="fa" :class="brand.icon || 'fa-mobile'"></i>
+                </div>
+                <div class="text-start">
+                  <strong class="d-block text-dark">{{ brand.name }}</strong>
+                  <small class="text-muted">{{ getBrandDesc(brand) }}</small>
+                </div>
+              </div>
+              <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1">
+                {{ getPhoneCount(brand.id) }} máy
+              </span>
+            </button>
+          </div>
+
+          <!-- Cam kết chân sheet -->
+          <div class="mobile-sheet-footer px-3 py-2 bg-light border-top text-center">
+            <small class="text-muted">
+              <i class="fa fa-shield text-success me-1"></i> Cam kết 100% nguyên tem niêm phong, cọc linh hoạt bằng CCCD
+            </small>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
   </nav>
 </template>
 
@@ -116,7 +213,7 @@
 // =========================================================================================
 // KHU VỰC SCRIPT VUE 3: LOGIC THANH MENU & NÚT ÚP XUỐNG DANH SÁCH THUÊ ĐIỆN THOẠI
 // =========================================================================================
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { usePhoneStore } from '@/stores/phone.store';
 
@@ -126,6 +223,24 @@ const phoneStore = usePhoneStore();
 
 const dropdownRef = ref(null);
 const isDropdownOpen = ref(false);
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+
+const updateIsMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
+};
+
+// Khóa cuộn màn hình khi mở sheet trên điện thoại
+watch(isDropdownOpen, (val) => {
+  if (typeof document !== 'undefined' && isMobile.value) {
+    if (val) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+});
 
 // Kiểm tra có đang ở trang chủ không
 const isHomePage = computed(() => route.path === '/');
@@ -198,18 +313,25 @@ const handleScrollToDeposit = (e) => {
   }
 };
 
-// Đóng menu khi click ra ngoài màn hình
+// Đóng menu khi click ra ngoài màn hình (chỉ cho Desktop)
 const handleOutsideClick = (e) => {
+  if (isMobile.value) return; // Trên mobile backdrop và nút đóng X xử lý
   if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
     isDropdownOpen.value = false;
   }
 };
 
 onMounted(() => {
+  updateIsMobile();
+  window.addEventListener('resize', updateIsMobile);
   window.addEventListener('click', handleOutsideClick);
 });
 
 onUnmounted(() => {
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = '';
+  }
+  window.removeEventListener('resize', updateIsMobile);
   window.removeEventListener('click', handleOutsideClick);
 });
 </script>
@@ -371,18 +493,126 @@ onUnmounted(() => {
     overflow-x: auto;
     white-space: nowrap;
     width: 100%;
-    padding: 2px 0;
+    padding: 3px 4px;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
   .nav-left-group::-webkit-scrollbar {
     display: none;
   }
   .nav-link {
-    padding: 9px 12px;
-    font-size: 0.8rem;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+  .btn-dropdown-toggle {
+    padding: 8px 10px;
+    font-size: 0.78rem;
   }
   .category-dropdown-menu {
     width: 290px;
   }
+}
+
+/* ============================================================================================ */
+/* BẢNG CHỌN HÃNG MÁY TRƯỢT LÊN TỪ ĐÁY (MOBILE BOTTOM SHEET & BACKDROP)                         */
+/* ============================================================================================ */
+.mobile-brand-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 2100;
+}
+
+.mobile-brand-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 82vh;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  z-index: 2105;
+  box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.header-icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close-sheet {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-close-sheet:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.mobile-sheet-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-brand-item {
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.mobile-brand-item:active,
+.mobile-brand-item:hover {
+  background: #f1f5f9 !important;
+}
+
+.mobile-brand-item.item-active {
+  background: #e0f2fe !important;
+  border-left: 4px solid #0284c7 !important;
+}
+
+.mobile-brand-item.item-active strong {
+  color: #0284c7 !important;
+}
+
+/* Hiệu ứng chuyển động mượt mà (Vue Transitions) */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
 }
 </style>
