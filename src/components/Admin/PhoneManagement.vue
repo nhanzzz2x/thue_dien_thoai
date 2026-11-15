@@ -1449,15 +1449,18 @@ const savePhone = async () => {
     hangSanXuat: formData.value.hangSanXuat,
     category: formData.value.hangSanXuat,
     SoIMEI_Serial: formData.value.SoIMEI_Serial,
-    giaThueNgay: formData.value.giaThueNgay,
-    tienCocYeuCau: formData.value.tienCocYeuCau,
-    TinhTrangMay: formData.value.TinhTrangMay,
-    MacDinh: formData.value.MacDinh,
-    hinhAnh: [formData.value.MacDinh],
-    moTa: formData.value.moTa,
+    giaThueNgay: Number(formData.value.giaThueNgay) || 250000,
+    tienCocYeuCau: Number(formData.value.tienCocYeuCau) || 12000000,
+    TinhTrangMay: formData.value.TinhTrangMay || 'SAN_SANG',
+    SoLuong: 5,
+    isFeatured: true,
+    isHot: true,
+    MacDinh: formData.value.MacDinh || 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png',
+    hinhAnh: [formData.value.MacDinh || 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png'],
+    moTa: formData.value.moTa || 'Máy nguyên zin 100%, ngoại quan 99%, pin 100%.',
     cauHinh: {
-      Chipset: formData.value.Chipset,
-      RAM_ROM: formData.value.RAM_ROM,
+      Chipset: formData.value.Chipset || 'Apple A17 Pro',
+      RAM_ROM: formData.value.RAM_ROM || '8GB / 256GB',
       HeDieuHanh: formData.value.hangSanXuat === 'APPLE' ? 'iOS' : 'Android',
       KichThuocManHinh: '6.7 inch OLED',
       DungLuongPin: '5000 mAh'
@@ -1466,10 +1469,22 @@ const savePhone = async () => {
 
   if (isEditMode.value) {
     await phoneStore.updatePhone(currentEditId.value, payload);
-    Swal.fire('Thành công', 'Đã cập nhật thông tin thiết bị vào CSDL!', 'success');
+    Swal.fire({
+      icon: 'success',
+      title: 'Đã cập nhật thiết bị!',
+      text: 'Thông tin điện thoại đã được lưu và cập nhật đồng bộ toàn hệ thống.',
+      timer: 2000,
+      showConfirmButton: false
+    });
   } else {
     await phoneStore.addPhone(payload);
-    Swal.fire('Thành công', 'Đã thêm thiết bị mới vào kho CSDL MySQL!', 'success');
+    Swal.fire({
+      icon: 'success',
+      title: 'Thêm thiết bị thành công!',
+      text: 'Thiết bị mới đã được lưu vào kho và lập tức hiển thị ngoài trang chủ cho khách thuê!',
+      timer: 2200,
+      showConfirmButton: false
+    });
   }
 
   isModalOpen.value = false;

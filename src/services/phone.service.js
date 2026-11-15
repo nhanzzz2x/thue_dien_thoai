@@ -15,10 +15,10 @@ export const PhoneService = {
   async getAllPhones() {
     try {
       const response = await apiClient.get('/api/phones');
-      console.log('getAllPhones >>> ', response.data);
       return response.data;
     } catch (err) {
-      return [...mockPhones];
+      // Trả về null khi backend offline để store không bị ghi đè mất máy do người dùng tự thêm
+      return null;
     }
   },
 

@@ -2,16 +2,49 @@
 // VIETNAMESE: PINIA STORE QUẢN LÝ KHO ĐIỆN THOẠI, TÌM KIẾM, BỘ LỌC VÀ SO SÁNH THIẾT BỊ
 // ENGLISH: PINIA STORE FOR MANAGING PHONE INVENTORY, SEARCH, ADVANCED FILTERS & COMPARISON
 // ERD MAPPING: Ánh xạ 1-1 với 2 thực thể DienThoai và CauHinh_PhienBan trong CSDL
+// PERSISTENCE: Lưu trữ localStorage ('trongnhan_custom_phones') & Đồng bộ Real-time giữa các tab
 // ============================================================================================
 
 import { defineStore } from 'pinia';
 import { mockPhones, mockCategories } from '@/data/mockData';
 import { PhoneService } from '@/services/phone.service';
 
+const PHONES_STORAGE_KEY = 'trongnhan_custom_phones';
+const CATEGORIES_STORAGE_KEY = 'trongnhan_custom_categories';
+
+// Khởi tạo danh sách điện thoại ban đầu (nạp từ localStorage nếu đã từng thêm/sửa máy)
+function getInitialPhones() {
+  try {
+    const saved = localStorage.getItem(PHONES_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Lỗi đọc phones từ localStorage:', e);
+  }
+  // Nếu chưa có, ghi mockPhones mặc định vào localStorage
+  try {
+    localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(mockPhones));
+  } catch (e) {}
+  return [...mockPhones];
+}
+
+// Lưu danh sách điện thoại vào localStorage
+function persistPhones(phones) {
+  try {
+    localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(phones));
+  } catch (e) {
+    console.warn('Lỗi ghi phones vào localStorage:', e);
+  }
+}
+
 // Khởi tạo danh mục ban đầu (nạp từ localStorage nếu quản trị viên đã từng thêm hãng mới)
 function getInitialCategories() {
   try {
-    const saved = localStorage.getItem('trongnhan_custom_categories');
+    const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -23,31 +56,27 @@ function getInitialCategories() {
 }
 
 export const usePhoneStore = defineStore('phone', {
-  // ==========================================================================================
-  // VIETNAMESE: KHỞI TẠO STATE (TRẠNG THÁI TOÀN CỤC)
-  // ENGLISH: INITIAL GLOBAL STATE
-  // ==========================================================================================
   state: () => ({
-    // Danh sách toàn bộ điện thoại trong kho (ERD: Bảng DienThoai JOIN CauHinh_PhienBan)
-    phones: [...mockPhones],
+    // Danh sách toàn bộ điện thoại trong kho (Nạp từ localStorage bền vững)
+    phones: getInitialPhones(),
 
-    // Danh mục thương hiệu và phân khúc (ERD: Thuộc tính DienThoai.HangSanXuat)
+    // Danh mục thương hiệu và phân khúc
     categories: getInitialCategories(),
 
-    // Bộ lọc danh mục hiện hành (ALL | APPLE | SAMSUNG | XIAOMI | ASUS | FLAGSHIP...)
+    // Bộ lọc danh mục hiện hành
     selectedCategory: 'ALL',
 
-    // Từ khóa tìm kiếm (Tên thiết bị hoặc số IMEI/Serial)
+    // Từ khóa tìm kiếm
     searchKeyword: '',
 
     // Bộ lọc theo thông số phần cứng
     selectedChipset: '',
     selectedRamRom: '',
     selectedOs: '',
-    selectedPriceRange: 'ALL', // ALL | UNDER_200 | 200_TO_250 | ABOVE_250
-    onlyAvailable: false,      // Chỉ hiển thị máy có TinhTrangMay = 'SAN_SANG'
+    selectedPriceRange: 'ALL',
+    onlyAvailable: false,
 
-    // Dữ liệu phục vụ xem nhanh (Quick View modal)
+    // Dữ liệu phục vụ xem nhanh
     quickViewPhone: null,
 
     // Danh sách thiết bị đang đưa vào bảng so sánh cấu hình (Tối đa 3 máy)
@@ -55,13 +84,7 @@ export const usePhoneStore = defineStore('phone', {
     isCompareModalOpen: false
   }),
 
-  // ==========================================================================================
-  // VIETNAMESE: GETTERS - TÍNH TOÁN DỮ LIỆU TỰ ĐỘNG THEO BỘ LỌC VÀ CHỈ SỐ
-  // ENGLISH: GETTERS - REACTIVE DERIVED STATE & ADVANCED FILTER LOGIC
-  // ==========================================================================================
   getters: {
-    // VIETNAMESE: Trích xuất danh sách duy nhất các loại Chipset hiện có trong kho máy
-    // ENGLISH: Extract unique list of hardware Chipsets available in inventory
     availableChipsets: (state) => {
       const set = new Set();
       state.phones.forEach(p => {
@@ -70,8 +93,6 @@ export const usePhoneStore = defineStore('phone', {
       return Array.from(set);
     },
 
-    // VIETNAMESE: Trích xuất danh sách duy nhất các phiên bản RAM/ROM
-    // ENGLISH: Extract unique list of RAM / ROM storage configurations
     availableRamRom: (state) => {
       const set = new Set();
       state.phones.forEach(p => {
@@ -80,33 +101,23 @@ export const usePhoneStore = defineStore('phone', {
       return Array.from(set);
     },
 
-    // ========================================================================================
-    // VIETNAMESE: LỌC DANH SÁCH ĐIỆN THOẠI THEO ĐA TIÊU CHÍ (HÃNG, TỪ KHÓA, CẤU HÌNH, GIÁ)
-    // ENGLISH: MULTI-CRITERIA FILTERING ENGINE (BRAND, SEARCH KW, SPECS, PRICE, AVAILABILITY)
-    // SQL TƯƠNG ĐƯƠNG:
-    // SELECT * FROM DienThoai d JOIN CauHinh_PhienBan c ON d.MaDienThoai = c.MaDienThoai
-    // WHERE (:hangSanXuat = 'ALL' OR d.HangSanXuat = :hangSanXuat)
-    //   AND (LOWER(d.TenDienThoai) LIKE %:kw% OR LOWER(d.SoIMEI_Serial) LIKE %:kw%)
-    //   AND (:chipset = '' OR c.Chipset = :chipset)
-    //   AND (:tinhTrang = 'ALL' OR d.TinhTrangMay = :tinhTrang) ...
-    // ========================================================================================
     filteredPhones: (state) => {
       return state.phones.filter(phone => {
-        // 1. Lọc theo danh mục / thương hiệu (Category / Brand filter)
+        // 1. Lọc theo danh mục / thương hiệu
         if (state.selectedCategory !== 'ALL') {
           if (state.selectedCategory === 'FLAGSHIP') {
-            if (phone.category !== 'FLAGSHIP' && !phone.TenDienThoai.includes('Pro Max') && !phone.TenDienThoai.includes('Ultra')) {
+            if (phone.category !== 'FLAGSHIP' && !phone.TenDienThoai?.includes('Pro Max') && !phone.TenDienThoai?.includes('Ultra')) {
               return false;
             }
-          } else if (phone.category !== state.selectedCategory) {
+          } else if (phone.category !== state.selectedCategory && phone.hangSanXuat !== state.selectedCategory) {
             return false;
           }
         }
 
-        // 2. Lọc theo từ khóa tìm kiếm (Tên máy, Chip, RAM, hoặc mã IMEI)
+        // 2. Lọc theo từ khóa tìm kiếm
         if (state.searchKeyword && state.searchKeyword.trim() !== '') {
           const kw = state.searchKeyword.toLowerCase().trim();
-          const matchName = phone.TenDienThoai.toLowerCase().includes(kw);
+          const matchName = phone.TenDienThoai?.toLowerCase().includes(kw);
           const matchChip = phone.cauHinh?.Chipset?.toLowerCase().includes(kw);
           const matchRam = phone.cauHinh?.RAM_ROM?.toLowerCase().includes(kw);
           const matchImei = phone.SoIMEI_Serial?.toLowerCase().includes(kw);
@@ -123,19 +134,19 @@ export const usePhoneStore = defineStore('phone', {
           return false;
         }
 
-        // 5. Lọc theo hệ điều hành (iOS vs Android)
+        // 5. Lọc theo hệ điều hành
         if (state.selectedOs) {
-          if (state.selectedOs === 'iOS' && !phone.cauHinh?.HeDieuHanh.includes('iOS')) return false;
-          if (state.selectedOs === 'Android' && !phone.cauHinh?.HeDieuHanh.includes('Android') && !phone.cauHinh?.HeDieuHanh.includes('HyperOS')) return false;
+          if (state.selectedOs === 'iOS' && !phone.cauHinh?.HeDieuHanh?.includes('iOS')) return false;
+          if (state.selectedOs === 'Android' && !phone.cauHinh?.HeDieuHanh?.includes('Android') && !phone.cauHinh?.HeDieuHanh?.includes('HyperOS')) return false;
         }
 
-        // 6. Lọc theo mức giá thuê theo ngày (Price range filter)
+        // 6. Lọc theo mức giá thuê theo ngày
         const price = phone.giaKhuyenMai || phone.giaThueNgay;
         if (state.selectedPriceRange === 'UNDER_200' && price >= 200000) return false;
         if (state.selectedPriceRange === '200_TO_250' && (price < 200000 || price > 250000)) return false;
         if (state.selectedPriceRange === 'ABOVE_250' && price <= 250000) return false;
 
-        // 7. Lọc chỉ lấy máy đang sẵn sàng cho thuê (Availability filter)
+        // 7. Lọc chỉ lấy máy đang sẵn sàng cho thuê
         if (state.onlyAvailable && phone.TinhTrangMay !== 'SAN_SANG') {
           return false;
         }
@@ -144,44 +155,49 @@ export const usePhoneStore = defineStore('phone', {
       });
     },
 
-    // Danh sách điện thoại bán chạy / được thuê nhiều nhất
     hotPhones: (state) => state.phones.filter(p => p.isHot),
-
-    // Danh sách điện thoại nổi bật / đề xuất
     featuredPhones: (state) => state.phones.filter(p => p.isFeatured)
   },
 
-  // ==========================================================================================
-  // VIETNAMESE: ACTIONS - THAO TÁC CẬP NHẬT DỮ LIỆU & QUẢN TRỊ CRUD KHO THIẾT BỊ
-  // ENGLISH: ACTIONS - STATE MUTATION & ADMIN CRUD OPERATIONS FOR PHONES
-  // ==========================================================================================
   actions: {
-    // ========================================================================================
-    // VIETNAMESE: TỰ ĐỘNG TẢI DỮ LIỆU ĐIỆN THOẠI TỪ MYSQL QUA BACKEND API (GET /api/phones)
-    // ENGLISH: ASYNC FETCH PHONES FROM MYSQL BACKEND API
-    // ========================================================================================
+    // Đồng bộ lại danh sách máy từ localStorage
+    syncFromStorage() {
+      try {
+        const saved = localStorage.getItem(PHONES_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.phones = parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Lỗi syncFromStorage phones:', e);
+      }
+    },
+
+    // Tự động tải từ MySQL Backend API (nếu có server chạy)
     async fetchPhones() {
       try {
         const data = await PhoneService.getAllPhones();
         if (data && Array.isArray(data) && data.length > 0) {
           this.phones = data;
+          persistPhones(this.phones);
+        } else {
+          this.syncFromStorage();
         }
       } catch (err) {
-        console.warn('[PhoneStore] Lỗi tải từ backend API, sử dụng mockData:', err);
+        this.syncFromStorage();
       }
     },
 
-    // Cập nhật bộ lọc danh mục
     setCategory(catId) {
       this.selectedCategory = catId;
     },
 
-    // Cập nhật từ khóa tìm kiếm
     setSearch(kw) {
       this.searchKeyword = kw;
     },
 
-    // Đặt lại toàn bộ bộ lọc về trạng thái ban đầu
     resetFilters() {
       this.selectedCategory = 'ALL';
       this.searchKeyword = '';
@@ -192,128 +208,119 @@ export const usePhoneStore = defineStore('phone', {
       this.onlyAvailable = false;
     },
 
-    // Mở popup xem nhanh thông số điện thoại
     openQuickView(phone) {
       this.quickViewPhone = phone;
     },
 
-    // Đóng popup xem nhanh
     closeQuickView() {
       this.quickViewPhone = null;
     },
 
-    // ========================================================================================
-    // VIETNAMESE: THÊM / XÓA THIẾT BỊ KHỎI DANH SÁCH SO SÁNH (TỐI ĐA 3 MÁY)
-    // ENGLISH: TOGGLE PHONE IN COMPARISON TRAY (MAXIMUM 3 PHONES)
-    // ========================================================================================
     toggleCompare(phone) {
       const idx = this.compareList.findIndex(p => p.maDienThoai === phone.maDienThoai);
       if (idx >= 0) {
         this.compareList.splice(idx, 1);
       } else {
         if (this.compareList.length >= 3) {
-          this.compareList.shift(); // Xóa máy đầu tiên nếu đã đủ 3 máy
+          this.compareList.shift();
         }
         this.compareList.push(phone);
         this.isCompareModalOpen = true;
       }
     },
 
-    // Xóa một máy cụ thể khỏi bảng so sánh
     removeFromCompare(phoneId) {
       this.compareList = this.compareList.filter(p => p.maDienThoai !== phoneId);
     },
 
-    // Xóa toàn bộ danh sách so sánh
     clearCompare() {
       this.compareList = [];
       this.isCompareModalOpen = false;
     },
 
-    // Tìm kiếm điện thoại theo ID
     getPhoneById(id) {
       const numId = Number(id);
       return this.phones.find(p => p.maDienThoai === numId);
     },
 
-    // ========================================================================================
-    // VIETNAMESE: THAO TÁC QUẢN TRỊ ADMIN - THÊM THIẾT BỊ MỚI VÀO KHO (LƯU VÀO MYSQL)
-    // ENGLISH: ADMIN ACTION - ADD NEW PHONE TO INVENTORY (INSERT INTO MYSQL)
-    // ========================================================================================
+    // Thao tác Admin: Thêm thiết bị mới
     async addPhone(newPhone) {
+      const maxId = this.phones.reduce((max, p) => (p.maDienThoai > max ? p.maDienThoai : max), 0);
+      const phoneToAdd = {
+        ...newPhone,
+        maDienThoai: maxId + 1,
+        hangSanXuat: newPhone.hangSanXuat || 'APPLE',
+        category: newPhone.category || newPhone.hangSanXuat || 'APPLE',
+        isHot: newPhone.isHot ?? false,
+        isFeatured: newPhone.isFeatured ?? true,
+        SoLuong: newPhone.SoLuong ?? 5,
+        TinhTrangMay: newPhone.TinhTrangMay || 'SAN_SANG',
+        TinhTrangMayText: newPhone.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : (newPhone.TinhTrangMay === 'BAO_TRI' ? 'Bảo trì' : 'Đang thuê')
+      };
+
+      // Đưa máy mới lên đầu danh sách
+      this.phones.unshift(phoneToAdd);
+
+      // Lưu ngay vào localStorage
+      persistPhones(this.phones);
+
+      // Gửi đồng bộ tới backend MySQL (nếu có server chạy)
       try {
-        await PhoneService.createPhone(newPhone);
-        await this.fetchPhones();
-        return true;
+        await PhoneService.createPhone(phoneToAdd);
       } catch (err) {
-        console.warn('Lỗi thêm máy qua API, thêm vào local:', err);
-        const maxId = this.phones.reduce((max, p) => (p.maDienThoai > max ? p.maDienThoai : max), 0);
-        const phoneToAdd = {
-          ...newPhone,
-          maDienThoai: maxId + 1,
-          TinhTrangMay: newPhone.TinhTrangMay || 'SAN_SANG',
-          TinhTrangMayText: newPhone.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : 'Đang thuê'
-        };
-        this.phones.unshift(phoneToAdd);
-        return phoneToAdd;
+        console.warn('Backend offline, đã lưu máy mới vào localStorage:', err);
       }
+
+      return phoneToAdd;
     },
 
-    // ========================================================================================
-    // VIETNAMESE: THAO TÁC QUẢN TRỊ ADMIN - CẬP NHẬT THIẾT BỊ (CẬP NHẬT VÀO MYSQL)
-    // ENGLISH: ADMIN ACTION - UPDATE EXISTING PHONE RECORD
-    // ========================================================================================
+    // Thao tác Admin: Cập nhật thiết bị
     async updatePhone(id, updatedData) {
+      const numId = Number(id);
+      const index = this.phones.findIndex(p => p.maDienThoai === numId);
+      if (index !== -1) {
+        this.phones[index] = {
+          ...this.phones[index],
+          ...updatedData,
+          category: updatedData.hangSanXuat || this.phones[index].category,
+          TinhTrangMayText: updatedData.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : (updatedData.TinhTrangMay === 'BAO_TRI' ? 'Bảo trì' : 'Đang thuê')
+        };
+        persistPhones(this.phones);
+      }
+
       try {
         await PhoneService.updatePhone(id, updatedData);
-        await this.fetchPhones();
-        return true;
       } catch (err) {
-        console.warn('Lỗi cập nhật qua API:', err);
-        const index = this.phones.findIndex(p => p.maDienThoai === Number(id));
-        if (index !== -1) {
-          this.phones[index] = {
-            ...this.phones[index],
-            ...updatedData,
-            TinhTrangMayText: updatedData.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : (updatedData.TinhTrangMay === 'BAO_TRI' ? 'Bảo trì' : 'Đang thuê')
-          };
-          return true;
-        }
-        return false;
+        console.warn('Backend offline, đã cập nhật máy vào localStorage:', err);
       }
+
+      return true;
     },
 
-    // ========================================================================================
-    // VIETNAMESE: THAO TÁC QUẢN TRỊ ADMIN - XÓA THIẾT BỊ KHỎI HỆ THỐNG (XÓA KHỎI MYSQL)
-    // ENGLISH: ADMIN ACTION - DELETE PHONE FROM INVENTORY
-    // ========================================================================================
+    // Thao tác Admin: Xóa thiết bị
     async deletePhone(id) {
+      const numId = Number(id);
+      this.phones = this.phones.filter(p => p.maDienThoai !== numId);
+      persistPhones(this.phones);
+
       try {
         await PhoneService.deletePhone(id);
-        await this.fetchPhones();
       } catch (err) {
-        console.warn('Lỗi xóa qua API:', err);
-        this.phones = this.phones.filter(p => p.maDienThoai !== Number(id));
+        console.warn('Backend offline, đã xóa máy khỏi localStorage:', err);
       }
     },
 
-    // ========================================================================================
-    // VIETNAMESE: CẬP NHẬT NHANH TRẠNG THÁI THIẾT BỊ (SAN_SANG, DANG_THUE, BAO_TRI)
-    // ENGLISH: QUICK UPDATE DEVICE STATUS
-    // ERD: UPDATE DienThoai SET TinhTrangMay = ? WHERE MaDienThoai = ?
-    // ========================================================================================
+    // Cập nhật trạng thái máy
     setPhoneStatus(id, newStatus) {
       const phone = this.getPhoneById(id);
       if (phone) {
         phone.TinhTrangMay = newStatus;
         phone.TinhTrangMayText = newStatus === 'SAN_SANG' ? 'Sẵn sàng thuê' : (newStatus === 'BAO_TRI' ? 'Bảo trì' : 'Đang thuê');
+        persistPhones(this.phones);
       }
     },
 
-    // ========================================================================================
-    // VIETNAMESE: QUẢN TRỊ ADMIN - THÊM HÃNG ĐIỆN THOẠI MỚI (Category / TheLoai)
-    // ENGLISH: ADMIN ACTION - ADD NEW BRAND CATEGORY
-    // ========================================================================================
+    // Thao tác Admin: Thêm hãng điện thoại mới
     addCategory(cat) {
       if (!cat || !cat.name) {
         throw new Error('Vui lòng nhập tên hãng điện thoại!');
@@ -321,7 +328,6 @@ export const usePhoneStore = defineStore('phone', {
 
       const id = (cat.id || cat.name.replace(/\s+/g, '_')).toUpperCase().trim();
       
-      // Kiểm tra trùng mã hãng
       const existing = this.categories.find(c => c.id === id);
       if (existing) {
         throw new Error(`Hãng với mã "${id}" đã tồn tại trên hệ thống!`);
@@ -337,7 +343,7 @@ export const usePhoneStore = defineStore('phone', {
       this.categories.push(newCat);
 
       try {
-        localStorage.setItem('trongnhan_custom_categories', JSON.stringify(this.categories));
+        localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(this.categories));
       } catch (e) {
         console.warn('Lỗi lưu categories vào localStorage:', e);
       }
@@ -345,10 +351,7 @@ export const usePhoneStore = defineStore('phone', {
       return newCat;
     },
 
-    // ========================================================================================
-    // VIETNAMESE: QUẢN TRỊ ADMIN - XÓA HÃNG ĐIỆN THOẠI KHỎI HỆ THỐNG
-    // ENGLISH: ADMIN ACTION - DELETE BRAND CATEGORY
-    // ========================================================================================
+    // Thao tác Admin: Xóa hãng điện thoại
     deleteCategory(catId) {
       if (catId === 'ALL') {
         throw new Error('Không thể xóa danh mục mặc định "Tất cả điện thoại"!');
@@ -357,12 +360,30 @@ export const usePhoneStore = defineStore('phone', {
       this.categories = this.categories.filter(c => c.id !== catId);
 
       try {
-        localStorage.setItem('trongnhan_custom_categories', JSON.stringify(this.categories));
+        localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(this.categories));
       } catch (e) {
         console.warn('Lỗi lưu categories vào localStorage:', e);
       }
 
       return true;
+    },
+
+    // Khôi phục danh sách máy về mặc định
+    resetToDefaultPhones() {
+      this.phones = JSON.parse(JSON.stringify(mockPhones));
+      persistPhones(this.phones);
     }
   }
 });
+
+// Lắng nghe sự kiện storage giữa các tab để đồng bộ kho máy thời gian thực
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key === PHONES_STORAGE_KEY && event.newValue) {
+      try {
+        const store = usePhoneStore();
+        store.syncFromStorage();
+      } catch (err) {}
+    }
+  });
+}
