@@ -11,10 +11,6 @@
           <span class="d-none d-md-inline"><i class="fa fa-map-marker me-1 text-danger"></i> 180 Cao Lỗ, Phường 4, Quận 8, TP.HCM (Cổng trường STU)</span>
         </div>
         <div class="top-right d-flex align-items-center gap-3">
-          <router-link to="/admin" class="badge bg-warning text-dark text-decoration-none px-2.5 py-1.5 rounded-pill fw-bold">
-            <i class="fa fa-dashboard me-1"></i> Vào Trang Quản Trị (Admin)
-          </router-link>
-          <span class="divider">|</span>
           <router-link to="/lich-su-thue" class="text-white text-decoration-none small">
             <i class="fa fa-history me-1 text-info"></i> Lịch Sử Thuê
           </router-link>
