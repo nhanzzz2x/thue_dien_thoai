@@ -25,8 +25,8 @@
     </div>
 
     <!-- Main Header -->
-    <div class="main-header py-3">
-      <div class="container d-flex justify-content-between align-items-center gap-3">
+    <div class="main-header py-2 py-md-3">
+      <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2 gap-md-3">
         <!-- Logo -->
         <router-link to="/" class="logo-brand d-flex align-items-center gap-2">
           <div class="logo-icon-box">
@@ -34,12 +34,12 @@
           </div>
           <div class="logo-text">
             <span class="brand-name">TrongNhanMobile</span>
-            <span class="brand-tagline">Hệ Thống Thuê Điện Thoại Cao Cấp</span>
+            <span class="brand-tagline d-none d-sm-block">Hệ Thống Thuê Điện Thoại Cao Cấp</span>
           </div>
         </router-link>
 
         <!-- Search Bar -->
-        <div class="search-bar-container flex-grow-1 mx-lg-4">
+        <div class="search-bar-container flex-grow-1 mx-lg-4 order-3 order-md-2 w-100-mobile">
           <div class="search-box position-relative">
             <i class="fa fa-search search-icon"></i>
             <input
@@ -63,7 +63,7 @@
         </div>
 
         <!-- Header Actions -->
-        <div class="header-actions d-flex align-items-center gap-3">
+        <div class="header-actions d-flex align-items-center gap-2 gap-md-3 order-2 order-md-3">
           <!-- Compare Button -->
           <button
             class="action-item-btn compare-btn"
@@ -505,5 +505,45 @@ const scrollToProducts = () => {
   background: #fee2e2;
   color: #b91c1c;
   transform: translateY(-1px);
+}
+
+/* ============================================================================================ */
+/* RESPONSIVE HEADER CHO MÀN HÌNH TABLET & ĐIỆN THOẠI (< 768px & < 576px)                       */
+/* ============================================================================================ */
+@media (max-width: 768px) {
+  .w-100-mobile {
+    width: 100% !important;
+    margin: 8px 0 0 0 !important;
+  }
+  .search-input {
+    padding: 9px 88px 9px 36px;
+    font-size: 0.82rem;
+  }
+  .btn-search-submit {
+    padding: 0 14px;
+    font-size: 0.8rem;
+  }
+  .btn-clear-search {
+    right: 84px;
+  }
+  .logo-icon-box {
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+  .brand-name {
+    font-size: 1.15rem;
+  }
+  .action-item-btn {
+    padding: 5px 8px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 576px) {
+  .top-info-bar {
+    font-size: 0.72rem;
+    padding: 4px 0;
+  }
 }
 </style>

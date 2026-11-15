@@ -9,7 +9,7 @@
       <!-- ===================================================================================== -->
       <!-- KHỐI BÊN TRÁI: TRANG CHỦ, TẤT CẢ ĐIỆN THOẠI & NÚT ÚP XUỐNG DANH SÁCH THUÊ            -->
       <!-- ===================================================================================== -->
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center gap-1 gap-md-2 nav-left-group">
         <!-- 1. Nút Trang chủ -->
         <router-link
           to="/"
@@ -361,5 +361,28 @@ onUnmounted(() => {
 .shortcut-link:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================================================ */
+/* RESPONSIVE CHO MENU TRÊN TABLET & ĐIỆN THOẠI (< 768px)                                      */
+/* ============================================================================================ */
+@media (max-width: 768px) {
+  .nav-left-group {
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 100%;
+    padding: 2px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-left-group::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-link {
+    padding: 9px 12px;
+    font-size: 0.8rem;
+  }
+  .category-dropdown-menu {
+    width: 290px;
+  }
 }
 </style>

@@ -3,7 +3,7 @@
   <!-- THẺ ĐIỆN THOẠI TRONG DANH SÁCH (PHONE CARD ITEM COMPONENT)                                -->
   <!-- Ánh xạ ERD: Thực thể `DienThoai` & quan hệ `coCauHinh` với `CauHinh_PhienBan`             -->
   <!-- ========================================================================================= -->
-  <div class="col-xl-3 col-lg-4 col-md-6 col-12 mb-4">
+  <div class="col-xl-3 col-lg-4 col-md-6 col-6 mb-3 mb-md-4">
     <!-- Thẻ bao bọc card: Thêm class 'rented-card' làm mờ nếu máy đang có khách thuê -->
     <div class="phone-card h-100 d-flex flex-column" :class="{ 'rented-card': phone.TinhTrangMay !== 'SAN_SANG' }">
       
@@ -119,11 +119,11 @@
           </div>
 
           <!-- 3. Nút hành động: Xem chi tiết & Thuê ngay (Action Buttons) -->
-          <div class="d-flex gap-2">
+          <div class="d-flex gap-2 btn-action-group">
             <!-- Nút Xem chi tiết chuyển sang /dien-thoai/:id -->
             <router-link
               :to="'/dien-thoai/' + phone.maDienThoai"
-              class="btn btn-outline-secondary btn-sm flex-fill d-flex align-items-center justify-content-center"
+              class="btn btn-outline-secondary btn-sm flex-fill d-flex align-items-center justify-content-center btn-card-action"
               title="Xem thông số kỹ thuật chi tiết"
             >
               <i class="fa fa-info-circle me-1"></i> Chi tiết
@@ -132,7 +132,7 @@
             <!-- Nếu máy SẴN SÀNG -> Cho phép bấm Thuê ngay (Add to cart & Rent) -->
             <button
               v-if="phone.TinhTrangMay === 'SAN_SANG'"
-              class="btn btn-primary-smart flex-fill justify-content-center"
+              class="btn btn-primary-smart flex-fill justify-content-center btn-card-action"
               @click="handleRentClick"
             >
               <i class="fa fa-shopping-cart me-1"></i> Thuê ngay
@@ -140,7 +140,7 @@
             <!-- Nếu máy ĐANG THUÊ -> Nút bị vô hiệu hóa (Disabled button) -->
             <button
               v-else
-              class="btn btn-secondary flex-fill btn-sm"
+              class="btn btn-secondary flex-fill btn-sm btn-card-action"
               disabled
             >
               <i class="fa fa-clock-o me-1"></i> Đang thuê
@@ -317,5 +317,82 @@ const handleRentClick = () => {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* ============================================================================================ */
+/* RESPONSIVE CHO MÀN HÌNH ĐIỆN THOẠI (DƯỚI 576PX - 2 CỘT CHUẨN APP THƯƠNG MẠI ĐIỆN TỬ)        */
+/* ============================================================================================ */
+@media (max-width: 576px) {
+  .card-img-wrapper {
+    padding: 12px 6px;
+  }
+  .img-container {
+    height: 130px;
+  }
+  .product-img {
+    max-height: 115px;
+  }
+  .badge-status {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    top: 6px;
+    left: 6px;
+  }
+  .top-2 { top: 6px; }
+  .start-2 { left: 6px; }
+  .end-2 { right: 6px; }
+
+  .card-body-content {
+    padding: 0.65rem 0.5rem !important;
+  }
+  .phone-title {
+    font-size: 0.82rem;
+    line-height: 1.25;
+    height: 2.5em;
+    margin-bottom: 0.35rem !important;
+  }
+  .specs-tags {
+    gap: 3px !important;
+    margin-bottom: 0.35rem !important;
+  }
+  .badge-chip {
+    font-size: 0.62rem;
+    padding: 2px 5px;
+  }
+  .specs-desc {
+    display: none; /* Ẩn mô tả dài để các card 2 cột luôn bằng phẳng, thẳng hàng */
+  }
+  .pricing-box {
+    padding-top: 0.35rem !important;
+  }
+  .price-original {
+    font-size: 0.7rem;
+  }
+  .price-current {
+    font-size: 0.95rem;
+  }
+  .price-unit {
+    font-size: 0.7rem;
+  }
+  .deposit-amount {
+    font-size: 0.75rem;
+  }
+  .btn-action-group {
+    gap: 4px !important;
+  }
+  .btn-card-action {
+    font-size: 0.72rem !important;
+    padding: 5px 3px !important;
+    white-space: nowrap;
+  }
+  .quick-hover-actions {
+    bottom: 6px;
+    opacity: 0.9;
+  }
+  .btn-hover-action {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
 }
 </style>

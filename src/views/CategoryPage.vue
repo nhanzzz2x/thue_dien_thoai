@@ -66,7 +66,7 @@
       <PhoneFilter />
 
       <!-- Lưới sản phẩm (Grid) -->
-      <div v-if="filteredCategoryPhones.length > 0" class="row g-4 mt-1">
+      <div v-if="filteredCategoryPhones.length > 0" class="row g-2 g-md-3 g-xl-4 mt-1">
         <PhoneCard
           v-for="phone in filteredCategoryPhones"
           :key="phone.maDienThoai"

@@ -36,7 +36,7 @@
       <PhoneFilter />
 
       <!-- Phone Cards Grid -->
-      <div v-if="phoneStore.filteredPhones.length > 0" class="row">
+      <div v-if="phoneStore.filteredPhones.length > 0" class="row g-2 g-md-3 g-xl-4">
         <PhoneCard
           v-for="phone in phoneStore.filteredPhones"
           :key="phone.maDienThoai"
