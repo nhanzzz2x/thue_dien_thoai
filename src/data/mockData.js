@@ -116,9 +116,10 @@ export const mockPhones = [
     TinhTrangMay: "SAN_SANG",
     TinhTrangMayText: "Sẵn sàng thuê",
     SoLuong: 3,
-    MacDinh: "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-fold-6-xam_1.png",
+    MacDinh: "https://cdn.tgdd.vn/Products/Images/42/320721/samsung-galaxy-z-fold6-xam-1-1.jpg",
     hinhAnh: [
-      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-fold-6-xam_1.png"
+      "https://cdn.tgdd.vn/Products/Images/42/320721/samsung-galaxy-z-fold6-xam-1-1.jpg",
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-fold-6_2.jpg"
     ],
     giaThueNgay: 320000,
     giaKhuyenMai: 280000,

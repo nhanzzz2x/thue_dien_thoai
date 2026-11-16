@@ -315,6 +315,306 @@
             </table>
           </div>
         </div>
+
+        <!-- ===================================================================================== -->
+        <!-- VIETNAMESE: MỤC NHẬN XÉT & ĐÁNH GIÁ SẢN PHẨM (CUSTOMER REVIEWS & STAR RATINGS)        -->
+        <!-- ENGLISH: PRODUCT REVIEWS & STAR RATINGS SECTION WITH SUBMISSION & FILTERING          -->
+        <!-- ERD: Ánh xạ thực thể DanhGia_NhanXet (MaDanhGia, MaDienThoai, SoSao, NoiDung, ...)    -->
+        <!-- ===================================================================================== -->
+        <div class="card border-0 shadow-sm rounded-4 mt-4 overflow-hidden product-reviews-section">
+          <!-- TIÊU ĐỀ SECTION & NÚT MỞ FORM VIẾT ĐÁNH GIÁ -->
+          <div class="card-header bg-white border-bottom py-3 px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="review-header-icon bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center">
+                <i class="fa fa-star fs-5"></i>
+              </div>
+              <div>
+                <h5 class="fw-bold mb-0 text-dark">Đánh Giá & Nhận Xét Từ Khách Thuê</h5>
+                <small class="text-muted">Phản hồi thực tế từ những khách hàng đã thuê {{ phone.TenDienThoai }}</small>
+              </div>
+            </div>
+            <button
+              @click="showReviewForm = !showReviewForm"
+              class="btn btn-warning text-dark fw-bold px-3 py-2 rounded-pill shadow-sm d-flex align-items-center gap-2 hover-scale"
+            >
+              <i :class="showReviewForm ? 'fa fa-times' : 'fa fa-pencil'"></i>
+              <span>{{ showReviewForm ? 'Đóng biểu mẫu' : 'Viết Đánh Giá' }}</span>
+            </button>
+          </div>
+
+          <div class="card-body p-3 p-md-4">
+            <!-- TỔNG QUAN ĐIỂM SỐ & THANH PHÂN BỐ SAO (OVERVIEW RATING STATS) -->
+            <div class="row g-4 align-items-center pb-4 mb-4 border-bottom">
+              <!-- Cột 1: Điểm số trung bình to đẹp -->
+              <div class="col-12 col-md-4 text-center border-end-md">
+                <div class="display-3 fw-bold text-warning mb-0 lh-1">{{ averageRating }}</div>
+                <div class="rating-stars text-warning fs-5 my-2">
+                  <i
+                    v-for="star in 5"
+                    :key="star"
+                    class="fa"
+                    :class="star <= Math.round(Number(averageRating)) ? 'fa-star' : 'fa-star-o'"
+                  ></i>
+                </div>
+                <p class="text-muted small mb-0 fw-semibold">
+                  <i class="fa fa-check-circle text-success me-1"></i>{{ totalReviews }} lượt đánh giá & trải nghiệm thực tế
+                </p>
+              </div>
+
+              <!-- Cột 2: Thanh tiến trình phân bổ sao 5★ đến 1★ -->
+              <div class="col-12 col-md-5">
+                <div class="d-flex flex-column gap-2">
+                  <div
+                    v-for="item in starBreakdown"
+                    :key="item.star"
+                    class="d-flex align-items-center gap-2 small cursor-pointer star-bar-row p-1 rounded"
+                    :class="{ 'bg-light-primary fw-bold text-primary': selectedStarFilter === item.star }"
+                    @click="selectedStarFilter = selectedStarFilter === item.star ? 0 : item.star"
+                    :title="'Lọc các nhận xét ' + item.star + ' sao'"
+                  >
+                    <span class="text-nowrap" style="min-width: 48px;">{{ item.star }} <i class="fa fa-star text-warning"></i></span>
+                    <div class="progress flex-grow-1" style="height: 8px;">
+                      <div
+                        class="progress-bar bg-warning rounded-pill"
+                        role="progressbar"
+                        :style="{ width: item.percent + '%' }"
+                      ></div>
+                    </div>
+                    <span class="text-muted small text-end" style="min-width: 60px;">{{ item.count }} ({{ item.percent }}%)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cột 3: Cam kết kiểm duyệt & Kêu gọi chia sẻ -->
+              <div class="col-12 col-md-3">
+                <div class="bg-light rounded-4 p-3 border">
+                  <div class="fw-bold text-dark small mb-1">
+                    <i class="fa fa-shield text-success me-1"></i> 100% Đánh giá thực tế
+                  </div>
+                  <p class="text-muted small mb-3">
+                    Được đóng góp bởi khách thuê đã hoàn tất hợp đồng và bàn giao máy an toàn tại Trọng Nhân Mobile.
+                  </p>
+                  <button
+                    v-if="!showReviewForm"
+                    @click="showReviewForm = true"
+                    class="btn btn-outline-primary btn-sm w-100 fw-semibold rounded-pill"
+                  >
+                    <i class="fa fa-commenting me-1"></i> Viết nhận xét của bạn
+                  </button>
+                  <div v-else class="text-success small fw-semibold text-center">
+                    <i class="fa fa-edit me-1"></i> Đang mở khung viết đánh giá
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- BIỂU MẪU VIẾT ĐÁNH GIÁ (FORM SUBMISSION WITH INTERACTIVE STARS) -->
+            <transition name="fade">
+              <div v-if="showReviewForm" class="review-form-box p-3 p-md-4 rounded-4 bg-light mb-4 border border-warning">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    <i class="fa fa-pencil-square-o text-warning fs-5"></i>
+                    Gửi Nhận Xét & Trải Nghiệm Của Bạn
+                  </h6>
+                  <button @click="showReviewForm = false" class="btn btn-sm btn-outline-secondary rounded-circle">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </div>
+
+                <!-- Chọn số sao (1 đến 5 sao) -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small mb-1 text-dark">
+                    Mức độ hài lòng của bạn về thiết bị và dịch vụ:
+                  </label>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="star-rating-select d-flex gap-1">
+                      <span
+                        v-for="s in 5"
+                        :key="s"
+                        class="star-click-item fs-3 cursor-pointer select-none"
+                        :class="s <= newReview.rating ? 'text-warning' : 'text-secondary opacity-25'"
+                        @click="newReview.rating = s"
+                        :title="s + ' sao'"
+                      >
+                        ★
+                      </span>
+                    </div>
+                    <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill ms-2">
+                      {{ getRatingLabel(newReview.rating) }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold small mb-1 text-dark">Họ và tên của bạn:</label>
+                    <input
+                      v-model="newReview.reviewerName"
+                      type="text"
+                      class="form-control rounded-3"
+                      :placeholder="userStore.user?.hoTen || 'Ví dụ: Trần Trọng Nhân'"
+                    />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold small mb-1 text-dark">Thời gian đã thuê máy:</label>
+                    <select v-model="newReview.rentalDuration" class="form-select rounded-3">
+                      <option value="1 ngày">1 ngày</option>
+                      <option value="2-3 ngày">2 - 3 ngày</option>
+                      <option value="5-7 ngày (1 tuần)">5 - 7 ngày (1 tuần)</option>
+                      <option value="Trên 1 tuần">Trên 1 tuần (Thuê dài hạn)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Mục đích thuê máy chính -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small mb-1 text-dark">Mục đích thuê máy chính của bạn:</label>
+                  <div class="d-flex flex-wrap gap-2">
+                    <button
+                      v-for="purpose in purposeOptions"
+                      :key="purpose"
+                      type="button"
+                      class="btn btn-sm rounded-pill transition-all"
+                      :class="newReview.rentalPurpose === purpose ? 'btn-primary fw-bold shadow-sm' : 'btn-outline-secondary bg-white'"
+                      @click="newReview.rentalPurpose = purpose"
+                    >
+                      <i v-if="newReview.rentalPurpose === purpose" class="fa fa-check me-1"></i>
+                      {{ purpose }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Nội dung cảm nhận -->
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small mb-1 text-dark">
+                    Nội dung nhận xét chi tiết <span class="text-danger">*</span>:
+                  </label>
+                  <textarea
+                    v-model="newReview.comment"
+                    rows="3"
+                    class="form-control rounded-3"
+                    placeholder="Chia sẻ trải nghiệm thực tế về độ mượt, camera, thời lượng pin, phụ kiện kèm theo hoặc tốc độ giao nhận máy..."
+                  ></textarea>
+                </div>
+
+                <!-- Nút thao tác -->
+                <div class="d-flex justify-content-end gap-2">
+                  <button @click="showReviewForm = false" type="button" class="btn btn-light px-3 rounded-pill border">
+                    Hủy bỏ
+                  </button>
+                  <button @click="submitReview" type="button" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm hover-scale">
+                    <i class="fa fa-paper-plane me-1"></i> Gửi Đánh Giá Ngay
+                  </button>
+                </div>
+              </div>
+            </transition>
+
+            <!-- BỘ LỌC ĐÁNH GIÁ THEO SAO (STAR FILTER BUTTONS) -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pt-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="text-muted small fw-semibold"><i class="fa fa-filter me-1"></i>Lọc đánh giá:</span>
+                <button
+                  @click="selectedStarFilter = 0"
+                  class="btn btn-sm rounded-pill"
+                  :class="selectedStarFilter === 0 ? 'btn-dark fw-bold shadow-sm' : 'btn-outline-secondary bg-white'"
+                >
+                  Tất cả ({{ totalReviews }})
+                </button>
+                <button
+                  v-for="s in [5, 4, 3, 2, 1]"
+                  :key="s"
+                  @click="selectedStarFilter = selectedStarFilter === s ? 0 : s"
+                  class="btn btn-sm rounded-pill"
+                  :class="selectedStarFilter === s ? 'btn-warning text-dark fw-bold shadow-sm' : 'btn-outline-secondary bg-white'"
+                >
+                  {{ s }} ★ ({{ getStarCount(s) }})
+                </button>
+              </div>
+              <span class="text-muted small">
+                Hiển thị <strong class="text-dark">{{ filteredReviews.length }}</strong> nhận xét
+              </span>
+            </div>
+
+            <!-- DANH SÁCH CÁC NHẬN XÉT CỦA KHÁCH HÀNG (CUSTOMER REVIEW CARDS) -->
+            <div v-if="filteredReviews.length" class="review-list d-flex flex-column gap-3">
+              <div
+                v-for="rev in filteredReviews"
+                :key="rev.id"
+                class="review-item p-3 p-md-3 rounded-4 border bg-white shadow-2xs hover-border-primary transition-all"
+              >
+                <!-- Thông tin khách hàng & số sao -->
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-2 flex-wrap">
+                  <div class="d-flex align-items-center gap-2">
+                    <img
+                      :src="rev.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User'"
+                      :alt="rev.reviewerName"
+                      class="rounded-circle border"
+                      style="width: 44px; height: 44px; object-fit: cover; background: #e9ecef;"
+                    />
+                    <div>
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="fw-bold text-dark fs-6">{{ rev.reviewerName }}</span>
+                        <span v-if="rev.isVerified" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">
+                          <i class="fa fa-check-circle me-1"></i>Đã thuê máy tại Trọng Nhân Mobile
+                        </span>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 text-muted small mt-1 flex-wrap">
+                        <!-- Ngôi sao đánh giá -->
+                        <div class="text-warning">
+                          <i
+                            v-for="star in 5"
+                            :key="star"
+                            class="fa"
+                            :class="star <= rev.rating ? 'fa-star' : 'fa-star-o'"
+                          ></i>
+                        </div>
+                        <span>•</span>
+                        <span><i class="fa fa-clock-o me-1"></i>{{ rev.date }}</span>
+                        <span v-if="rev.rentalDuration">• Thuê {{ rev.rentalDuration }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tag mục đích thuê -->
+                <div v-if="rev.rentalPurpose" class="mb-2">
+                  <span class="badge bg-light text-secondary border px-2 py-1">
+                    <i class="fa fa-tag me-1 text-primary"></i> {{ rev.rentalPurpose }}
+                  </span>
+                </div>
+
+                <!-- Nội dung nhận xét -->
+                <p class="text-secondary mb-2 review-comment-text lh-base">
+                  {{ rev.comment }}
+                </p>
+
+                <!-- Footer của nhận xét: Nút thích hữu ích & huy hiệu xác minh -->
+                <div class="d-flex align-items-center justify-content-between pt-2 border-top small text-muted flex-wrap gap-2">
+                  <button
+                    @click="toggleLike(rev)"
+                    class="btn btn-sm btn-light rounded-pill px-3 py-1 d-flex align-items-center gap-1 border"
+                    :class="likedReviews.has(rev.id) ? 'btn-primary-subtle text-primary border-primary fw-bold' : 'text-muted'"
+                  >
+                    <i :class="likedReviews.has(rev.id) ? 'fa fa-thumbs-up text-primary' : 'fa fa-thumbs-o-up'"></i>
+                    <span>Hữu ích ({{ rev.likes || 0 }})</span>
+                  </button>
+                  <span class="text-muted small">
+                    <i class="fa fa-shield text-success me-1"></i>Hợp đồng thuê đã bàn giao thành công
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TRƯỜNG HỢP KHÔNG CÓ REVIEW NÀO KHỚP BỘ LỌC -->
+            <div v-else class="text-center py-5 bg-light rounded-4 border">
+              <i class="fa fa-commenting-o text-muted fs-1 mb-2"></i>
+              <p class="text-muted fw-semibold mb-2">Chưa có đánh giá nào cho mức {{ selectedStarFilter }} sao này.</p>
+              <button @click="selectedStarFilter = 0" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                <i class="fa fa-refresh me-1"></i> Xem tất cả nhận xét
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- VIETNAMESE: Trạng thái không tìm thấy sản phẩm khi URL truyền sai ID -->
@@ -340,12 +640,14 @@
 // VIETNAMESE: IMPORT CÁC MODULE VUE & STORE QUẢN LÝ DỮ LIỆU
 // ENGLISH: IMPORT VUE CORE LIBS & DATA STORES
 // ============================================================================================
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { usePhoneStore } from '@/stores/phone.store';
 import { useCartStore } from '@/stores/cart.store';
+import { useUserStore } from '@/stores/user.store';
 import { convertToVND, onImgError } from '@/utils/formatters';
+import { getProductReviews, saveProductReview } from '@/data/mockReviews';
 import Header from '@/components/Header.vue';
 import NavigationBar from '@/components/NavigationBar.vue';
 import Footer from '@/components/Footer.vue';
@@ -358,11 +660,141 @@ const route = useRoute();
 const router = useRouter();
 const phoneStore = usePhoneStore();
 const cartStore = useCartStore();
+const userStore = useUserStore();
 
 // Quản lý ảnh xem trước và mốc thời gian tối thiểu (hôm nay)
 // Active preview image and minimum selectable date
 const activeImage = ref('');
 const todayStr = new Date().toISOString().split('T')[0];
+
+// ============================================================================================
+// VIETNAMESE: QUẢN LÝ ĐÁNH GIÁ & NHẬN XÉT SẢN PHẨM (REVIEWS & RATINGS STATE)
+// ============================================================================================
+const reviews = ref([]);
+const selectedStarFilter = ref(0); // 0: Tất cả, 1-5: Lọc theo số sao
+const showReviewForm = ref(false);
+const likedReviews = ref(new Set());
+
+// Form dữ liệu đánh giá mới
+const newReview = ref({
+  rating: 5,
+  reviewerName: '',
+  rentalDuration: '2-3 ngày',
+  rentalPurpose: 'Đi du lịch / Chụp ảnh sự kiện',
+  comment: ''
+});
+
+// Danh sách gợi ý mục đích thuê máy
+const purposeOptions = [
+  'Đi du lịch / Chụp ảnh sự kiện',
+  'Đu concert / Quay show ca nhạc',
+  'Test game / Đua rank',
+  'Công tác / Họp hành ngắn ngày',
+  'Trải nghiệm trước khi mua'
+];
+
+// Tải danh sách đánh giá theo ID điện thoại
+const loadReviews = () => {
+  if (route.params.id) {
+    reviews.value = getProductReviews(route.params.id);
+  }
+};
+loadReviews();
+watch(() => route.params.id, () => {
+  loadReviews();
+});
+
+// Lọc đánh giá theo số sao đã chọn
+const filteredReviews = computed(() => {
+  if (!selectedStarFilter.value) return reviews.value;
+  return reviews.value.filter(r => Number(r.rating) === selectedStarFilter.value);
+});
+
+// Tổng số lượt đánh giá
+const totalReviews = computed(() => {
+  return reviews.value.length;
+});
+
+// Điểm đánh giá trung bình (VD: 4.9 hoặc 5.0)
+const averageRating = computed(() => {
+  if (!reviews.value.length) return '5.0';
+  const sum = reviews.value.reduce((acc, r) => acc + (Number(r.rating) || 5), 0);
+  return (sum / reviews.value.length).toFixed(1);
+});
+
+// Phân bổ tỷ lệ % các mức sao 5★ đến 1★
+const starBreakdown = computed(() => {
+  const total = reviews.value.length || 1;
+  return [5, 4, 3, 2, 1].map(star => {
+    const count = reviews.value.filter(r => Number(r.rating) === star).length;
+    const percent = Math.round((count / total) * 100);
+    return { star, count, percent };
+  });
+});
+
+// Lấy số lượng review theo từng mức sao
+const getStarCount = (star) => {
+  return reviews.value.filter(r => Number(r.rating) === star).length;
+};
+
+// Nhãn mô tả mức độ hài lòng theo số sao
+const getRatingLabel = (rating) => {
+  switch (rating) {
+    case 5: return 'Tuyệt vời (5★)';
+    case 4: return 'Rất tốt (4★)';
+    case 3: return 'Bình thường (3★)';
+    case 2: return 'Tạm được (2★)';
+    case 1: return 'Chưa hài lòng (1★)';
+    default: return `${rating} sao`;
+  }
+};
+
+// Thả tim / Thích đánh giá hữu ích
+const toggleLike = (rev) => {
+  if (likedReviews.value.has(rev.id)) {
+    likedReviews.value.delete(rev.id);
+    rev.likes = Math.max(0, (rev.likes || 1) - 1);
+  } else {
+    likedReviews.value.add(rev.id);
+    rev.likes = (rev.likes || 0) + 1;
+  }
+};
+
+// Gửi đánh giá mới lên hệ thống và lưu trữ vào localStorage
+const submitReview = () => {
+  if (!newReview.value.comment || !newReview.value.comment.trim()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Vui lòng nhập nhận xét',
+      text: 'Hãy chia sẻ trải nghiệm thực tế của bạn khi thuê chiếc máy này nhé!',
+      confirmButtonColor: '#0d6efd'
+    });
+    return;
+  }
+
+  const author = newReview.value.reviewerName.trim() || (userStore.user?.hoTen || 'Khách Thuê');
+  const saved = saveProductReview({
+    maDienThoai: route.params.id,
+    reviewerName: author,
+    rating: newReview.value.rating,
+    rentalPurpose: newReview.value.rentalPurpose,
+    rentalDuration: newReview.value.rentalDuration,
+    comment: newReview.value.comment.trim()
+  });
+
+  if (saved) {
+    reviews.value.unshift(saved);
+    newReview.value.comment = '';
+    showReviewForm.value = false;
+    Swal.fire({
+      icon: 'success',
+      title: 'Đã gửi đánh giá thành công!',
+      text: 'Cảm ơn bạn đã đóng góp nhận xét thực tế cho sản phẩm này.',
+      timer: 2200,
+      showConfirmButton: false
+    });
+  }
+};
 
 // ============================================================================================
 // VIETNAMESE: LẤY THÔNG TIN ĐIỆN THOẠI HIỆN TẠI TỪ PHONE STORE THEO ROUTE ID
@@ -560,6 +992,80 @@ const handleRentNow = () => {
 
   .rental-calculator-card {
     padding: 12px !important;
+  }
+
+  .review-item {
+    padding: 12px !important;
+  }
+
+  .review-form-box {
+    padding: 14px !important;
+  }
+}
+
+/* ============================================================================================ */
+/* VIETNAMESE: STYLES CHO KHU VỰC NHẬN XÉT & ĐÁNH GIÁ SẢN PHẨM (REVIEWS & RATINGS)              */
+/* ============================================================================================ */
+.review-header-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.star-click-item {
+  line-height: 1;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.star-click-item:hover {
+  transform: scale(1.25);
+}
+
+.star-bar-row {
+  transition: all 0.2s ease;
+}
+
+.star-bar-row:hover {
+  background-color: #f1f5f9;
+}
+
+.bg-light-primary {
+  background-color: rgba(13, 110, 253, 0.08) !important;
+}
+
+.hover-border-primary {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-border-primary:hover {
+  border-color: #0d6efd !important;
+  box-shadow: 0 4px 14px rgba(13, 110, 253, 0.08);
+}
+
+.hover-scale {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: translateY(-2px);
+}
+
+.select-none {
+  user-select: none;
+}
+
+.review-comment-text {
+  font-size: 0.94rem;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.btn-primary-subtle {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+@media (min-width: 768px) {
+  .border-end-md {
+    border-right: 1px solid #e2e8f0 !important;
   }
 }
 </style>

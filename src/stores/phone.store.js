@@ -30,6 +30,7 @@ function getInitialPhones() {
               !p.MacDinh ||
               p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
               p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
+              p.MacDinh.includes('samsung-galaxy-z-fold-6-xam_1.png') ||
               p.MacDinh.includes('cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-6')
             ) {
               p.MacDinh = mock.MacDinh;
@@ -206,6 +207,7 @@ export const usePhoneStore = defineStore('phone', {
                 (!p.MacDinh ||
                   p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
                   p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
+                  p.MacDinh.includes('samsung-galaxy-z-fold-6-xam_1.png') ||
                   p.MacDinh.includes('cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-6'))
               ) {
                 p.MacDinh = mock.MacDinh;

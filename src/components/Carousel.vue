@@ -59,6 +59,7 @@
                       src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png"
                       alt="iPhone 16 Pro Max"
                       class="hero-img floating-anim"
+                      @error="onImgError"
                     />
                   </div>
                 </div>
@@ -97,6 +98,7 @@
                       src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/s/s/ss-s24-ultra-xam-222.png"
                       alt="Samsung S24 Ultra"
                       class="hero-img floating-anim"
+                      @error="onImgError"
                     />
                   </div>
                 </div>
@@ -129,9 +131,10 @@
                 <div class="col-lg-5 text-center d-none d-lg-block">
                   <div class="hero-image-wrapper">
                     <img
-                      src="https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-fold-6-xam_1.png"
+                      src="https://cdn.tgdd.vn/Products/Images/42/320721/samsung-galaxy-z-fold6-xam-1-1.jpg"
                       alt="Galaxy Z Fold 6"
                       class="hero-img floating-anim"
+                      @error="onImgError"
                     />
                   </div>
                 </div>
@@ -155,6 +158,7 @@
 </template>
 
 <script setup>
+import { onImgError } from '@/utils/formatters';
 </script>
 
 <style scoped>
@@ -201,6 +205,8 @@
 
 .hero-img {
   max-height: 320px;
+  max-width: 100%;
+  object-fit: contain;
   filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.45));
 }
 

@@ -86,9 +86,16 @@
         </div>
 
         <!-- Thông số Camera & Pin (Camera & Battery Specs - ERD: CauHinh.ThongSoCamera_Pin) -->
-        <p class="specs-desc text-muted mb-3" style="font-size: 0.78rem;">
+        <p class="specs-desc text-muted mb-2" style="font-size: 0.78rem;">
           {{ phone.cauHinh?.ThongSoCamera_Pin }}
         </p>
+
+        <!-- Đánh giá sao và số lượt nhận xét từ khách thuê -->
+        <div class="d-flex align-items-center gap-1 mb-2 small">
+          <span class="text-warning small"><i class="fa fa-star"></i></span>
+          <span class="fw-bold text-dark small" style="font-size: 0.78rem;">{{ ratingSummary.score }}</span>
+          <span class="text-muted small" style="font-size: 0.72rem;">({{ ratingSummary.count }} đánh giá)</span>
+        </div>
 
         <!-- Khối giá thuê và cọc định mức (Pricing block - mt-auto đẩy xuống sát đáy card) -->
         <div class="pricing-box mt-auto pt-2 border-top">
@@ -161,6 +168,7 @@ import { computed } from 'vue';
 import { usePhoneStore } from '@/stores/phone.store';    // Pinia Phone Store
 import { useCartStore } from '@/stores/cart.store';      // Pinia Cart Store
 import { convertToVND, onImgError } from '@/utils/formatters';       // Hàm chuyển đổi số sang tiền VNĐ & xử lý ảnh lỗi
+import { getProductRatingSummary } from '@/data/mockReviews';
 import Swal from 'sweetalert2';                          // Popup thông báo
 
 // Khai báo Props nhận vào đối tượng điện thoại từ component cha (Home.vue)
@@ -173,6 +181,11 @@ const props = defineProps({
 
 const phoneStore = usePhoneStore();
 const cartStore = useCartStore();
+
+// Lấy điểm số đánh giá & số lượng nhận xét cho điện thoại này
+const ratingSummary = computed(() => {
+  return getProductRatingSummary(props.phone.maDienThoai);
+});
 
 // Kiểm tra xem thiết bị này có đang nằm trong danh sách so sánh cấu hình hay không
 const isComparing = computed(() => {
