@@ -5,172 +5,149 @@
   <!-- ERD MAPPING: Ánh xạ thực thể NguoiDung, KhachHang, Admin                                  -->
   <!-- ========================================================================================== -->
   <div v-if="userStore.isAuthModalOpen" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content-custom p-4" style="max-width: 490px;">
+    <div
+      class="modal-content-custom overflow-hidden transition-all"
+      :class="{ 'p-0': oauthProvider, 'p-4': !oauthProvider }"
+      :style="{ maxWidth: oauthProvider ? '780px' : '490px' }"
+    >
       <!-- VIETNAMESE: Nút đóng modal | ENGLISH: Close button -->
-      <button class="btn-close-modal" @click="closeModal">
+      <button v-if="!oauthProvider" class="btn-close-modal" @click="closeModal">
         <i class="fa fa-times"></i>
       </button>
 
       <!-- ==================================================================================== -->
-      <!-- GIAO DIỆN LIÊN KẾT TÀI KHOẢN MẠNG XÃ HỘI (GOOGLE / FACEBOOK / ZALO)                   -->
-      <!-- XỬ LÝ CHỌN TÀI KHOẢN & XÁC NHẬN "BẠN MUỐN LIÊN KẾT TÀI KHOẢN TÊN NÀY NỮA HAY KHÔNG"  -->
+      <!-- GIAO DIỆN ĐĂNG NHẬP GOOGLE / FACEBOOK CHUẨN XÁC THEO VIDEO CLIP THỰC TẾ              -->
       <!-- ==================================================================================== -->
-      <div v-if="activeSocialProvider" class="social-auth-flow">
-        <!-- BƯỚC 1: CHỌN TÀI KHOẢN LIÊN KẾT -->
-        <div v-if="socialAuthStep === 'CHOOSE'">
-          <div class="text-center mb-3">
-            <div class="d-inline-flex p-2.5 rounded-circle bg-light mb-2 border shadow-sm">
-              <!-- Logo Google -->
-              <svg v-if="activeSocialProvider === 'Google'" width="32" height="32" viewBox="0 0 24 24">
+      <div v-if="oauthProvider" class="oauth-window-container">
+        <!-- 1. MÀN HÌNH LOADING SPINNER KHI BẤM CHỌN TÀI KHOẢN (GIỐNG FRAME 00:06 CỦA VIDEO) -->
+        <div v-if="isOAuthLoading" class="oauth-spinner-view text-center py-5 px-4 bg-white">
+          <h2 class="fw-black text-danger mb-4 tracking-wider" style="letter-spacing: 2px;">
+            TRONGNHAN MOBILE
+          </h2>
+          <div class="oauth-circle-spinner mx-auto mb-3"></div>
+          <p class="text-secondary small mb-0">Đang đồng bộ tài khoản và đăng nhập...</p>
+        </div>
+
+        <!-- 2. MÀN HÌNH CHỌN TÀI KHOẢN OAUTH (GIỐNG FRAME 00:02 - 00:05 CỦA VIDEO) -->
+        <div v-else class="oauth-main-view bg-white">
+          <!-- Top bar -->
+          <div class="oauth-top-bar d-flex align-items-center justify-content-between px-4 py-2.5 bg-white">
+            <div class="d-flex align-items-center gap-2">
+              <!-- Google icon -->
+              <svg v-if="oauthProvider === 'Google'" width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
-              <!-- Logo Facebook -->
-              <svg v-else-if="activeSocialProvider === 'Facebook'" width="32" height="32" viewBox="0 0 24 24" fill="#1877F2">
+              <!-- Facebook icon -->
+              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
-              <!-- Logo Zalo -->
-              <span v-else class="zalo-badge-icon" style="width: 32px; height: 32px; font-size: 18px;">Z</span>
+              <span class="small fw-semibold text-secondary">Đăng nhập bằng {{ oauthProvider }}</span>
             </div>
-            <h5 class="fw-bold text-dark mb-1">
-              Đăng nhập bằng {{ activeSocialProvider }}
-            </h5>
-            <p class="small text-muted mb-0">
-              Chọn tài khoản bạn muốn liên kết với <strong>TrongNhanMobile</strong>
-            </p>
+            <button @click="oauthProvider = null" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" title="Đóng">
+              <i class="fa fa-times"></i>
+            </button>
           </div>
 
-          <!-- Danh sách các tài khoản để lựa chọn -->
-          <div class="d-flex flex-column gap-2 mb-3">
-            <button
-              v-for="(acc, index) in currentSocialAccounts"
-              :key="index"
-              type="button"
-              class="account-item-btn text-start d-flex align-items-center justify-content-between p-2.5 rounded-3 border bg-white"
-              @click="selectAccount(acc)"
-            >
-              <div class="d-flex align-items-center gap-3 min-w-0">
-                <div class="account-avatar shadow-sm" :style="{ backgroundColor: acc.avatarBg }">
-                  {{ acc.avatarText }}
+          <!-- Top colored line -->
+          <div class="oauth-top-line" :style="{ backgroundColor: oauthProvider === 'Google' ? '#4285F4' : '#1877F2' }"></div>
+
+          <!-- Main 2-column box -->
+          <div class="p-4 p-md-5">
+            <div class="row g-4 align-items-start">
+              <!-- Cột trái: Logo app & Tiêu đề "Liên kết tài khoản" -->
+              <div class="col-12 col-md-5 text-start pe-md-3">
+                <div class="app-oauth-badge bg-danger text-white rounded-3 d-inline-flex align-items-center justify-content-center mb-3 shadow-sm">
+                  <span class="fw-bold fs-4">TN</span>
                 </div>
-                <div class="min-w-0">
-                  <strong class="d-block text-dark text-truncate" style="font-size: 0.92rem;">
-                    {{ acc.name }}
-                  </strong>
-                  <span class="d-block text-muted small text-truncate">{{ acc.email }}</span>
-                  <small class="text-primary d-block font-italic" style="font-size: 0.72rem;">{{ acc.desc }}</small>
-                </div>
+                <h3 class="fw-bold text-dark mb-1">Liên kết tài khoản</h3>
+                <p class="text-secondary small mb-0">Tiếp tục tới <strong>TrongNhanMobile Login</strong></p>
               </div>
-              <i class="fa fa-chevron-right text-muted ms-2"></i>
-            </button>
 
-            <!-- Tùy chọn sử dụng tài khoản khác -->
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm py-2 d-flex align-items-center justify-content-center gap-2"
-              @click="toggleCustomInput"
-            >
-              <i class="fa" :class="showCustomInput ? 'fa-minus' : 'fa-user-plus'"></i>
-              <span>{{ showCustomInput ? 'Thu gọn nhập tay' : `Sử dụng một tài khoản ${activeSocialProvider} khác...` }}</span>
-            </button>
-          </div>
+              <!-- Cột phải: Xác nhận liên kết tài khoản của người dùng (Không còn tài khoản ảo) -->
+              <div class="col-12 col-md-7 ps-md-3">
+                <div class="alert alert-warning border border-warning-subtle text-dark p-3 mb-3 rounded-3 text-start">
+                  <div class="d-flex gap-2">
+                    <i class="fa fa-question-circle text-warning fs-5 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                      <strong class="d-block mb-1 text-dark">Câu hỏi xác nhận:</strong>
+                      <p class="mb-0 small fw-semibold text-primary">
+                        Bạn có muốn liên kết tài khoản {{ oauthProvider }} để đăng nhập vào TrongNhanMobile không?
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-          <!-- Form nhập tài khoản khác tùy ý nếu chọn -->
-          <div v-if="showCustomInput" class="p-3 bg-light rounded-3 border mb-3">
-            <h6 class="small fw-bold text-dark mb-2">Nhập thông tin tài khoản {{ activeSocialProvider }} của bạn:</h6>
-            <div class="mb-2">
-              <label class="form-label small mb-1">Họ và tên tài khoản:</label>
-              <input type="text" class="form-control form-control-sm" v-model="customName" placeholder="Ví dụ: Trần Trọng Nhân" />
-            </div>
-            <div class="mb-2">
-              <label class="form-label small mb-1">Email / ID liên kết:</label>
-              <input type="email" class="form-control form-control-sm" v-model="customEmail" placeholder="Ví dụ: nhan.stu@gmail.com" />
-            </div>
-            <button
-              type="button"
-              class="btn btn-primary btn-sm w-100"
-              @click="submitCustomAccount"
-            >
-              Tiếp tục với tài khoản này
-            </button>
-          </div>
+                <div class="mb-3 text-start">
+                  <label class="form-label small fw-bold mb-1">
+                    Địa chỉ Email / Tài khoản {{ oauthProvider }} của bạn:
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-white">
+                      <i class="fa" :class="oauthProvider === 'Google' ? 'fa-google text-danger' : 'fa-facebook text-primary'"></i>
+                    </span>
+                    <input
+                      v-model="customOAuthEmail"
+                      type="text"
+                      class="form-control"
+                      :placeholder="oauthProvider === 'Google' ? 'Nhập Gmail của bạn (VD: yourname@gmail.com)' : 'Nhập Email / SĐT Facebook của bạn'"
+                    />
+                  </div>
+                </div>
 
-          <!-- Nút quay lại đăng nhập thông thường -->
-          <div class="text-center pt-2 border-top">
-            <button
-              type="button"
-              class="btn btn-link btn-sm text-decoration-none text-muted"
-              @click="backToNormalAuth"
-            >
-              <i class="fa fa-arrow-left me-1"></i> Quay lại đăng nhập thường
-            </button>
-          </div>
-        </div>
+                <div class="mb-3 text-start">
+                  <label class="form-label small fw-bold mb-1">Họ và tên của bạn:</label>
+                  <input
+                    v-model="customOAuthName"
+                    type="text"
+                    class="form-control"
+                    placeholder="Trần Trọng Nhân"
+                  />
+                </div>
 
-        <!-- BƯỚC 2: HỘP THOẠI XÁC NHẬN "BẠN CÓ MUỐN LIÊN KẾT VỚI TÀI KHOẢN TÊN NÀY NỮA HAY KHÔNG" -->
-        <div v-else-if="socialAuthStep === 'CONFIRM'">
-          <div class="text-center mb-3">
-            <div class="d-inline-flex p-2.5 rounded-circle bg-primary-subtle text-primary mb-2">
-              <i class="fa fa-shield fs-3"></i>
-            </div>
-            <h5 class="fw-bold text-dark mb-1">Xác Nhận Liên Kết Tài Khoản</h5>
-            <p class="small text-muted mb-0">Hệ thống liên kết tài khoản định danh an toàn</p>
-          </div>
+                <div class="d-flex flex-column gap-2 mb-3">
+                  <button
+                    type="button"
+                    class="btn btn-primary w-100 py-2.5 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2"
+                    @click="submitCustomOAuth"
+                  >
+                    <i class="fa fa-check-circle"></i> Đồng ý liên kết & Đăng nhập ngay
+                  </button>
 
-          <!-- Thông tin thẻ tài khoản đã chọn -->
-          <div class="p-3 bg-light border rounded-3 text-center mb-3">
-            <div class="account-avatar mx-auto mb-2 shadow-sm" :style="{ backgroundColor: selectedAccount?.avatarBg || '#2563eb' }">
-              {{ selectedAccount?.avatarText || 'U' }}
-            </div>
-            <h5 class="fw-bold text-dark mb-0">{{ selectedAccount?.name }}</h5>
-            <span class="text-muted small d-block mb-1">{{ selectedAccount?.email }}</span>
-            <span class="badge bg-white text-primary border rounded-pill px-2.5 py-1 small">
-              <i class="fa fa-link me-1"></i> Liên kết qua {{ activeSocialProvider }}
-            </span>
-          </div>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary w-100 py-2 small rounded-pill"
+                    @click="oauthProvider = null"
+                  >
+                    <i class="fa fa-arrow-left me-1"></i> Quay lại đăng nhập thường
+                  </button>
+                </div>
 
-          <!-- HỘP THOẠI HỎI: BẠN CÓ MUỐN LIÊN KẾT VỚI TÀI KHOẢN TÊN NÀY NỮA HAY KHÔNG? -->
-          <div class="alert alert-warning border border-warning-subtle text-dark p-3 mb-3 rounded-3 text-start">
-            <div class="d-flex gap-2">
-              <i class="fa fa-question-circle text-warning fs-5 flex-shrink-0 mt-0.5"></i>
-              <div>
-                <strong class="d-block mb-1 text-dark">Câu hỏi xác nhận:</strong>
-                <p class="mb-1 fw-bold fs-6 text-primary">
-                  Bạn có muốn liên kết với tài khoản tên "{{ selectedAccount?.name }}" này nữa hay không?
+                <!-- Chính sách bảo mật -->
+                <p class="text-muted small text-start mb-0" style="font-size: 0.74rem; line-height: 1.5;">
+                  Trước khi sử dụng TrongNhanMobile Login, bạn có thể xem Chính sách quyền riêng tư và Điều khoản dịch vụ của ứng dụng này.
                 </p>
-                <span class="text-muted small" style="font-size: 0.78rem;">
-                  Khi chọn "Có", hệ thống TrongNhanMobile sẽ sử dụng tên <strong>{{ selectedAccount?.name }}</strong> để hiển thị, lập hợp đồng thuê và tự động kích hoạt gói ưu đãi khách hàng mới.
-                </span>
               </div>
             </div>
-          </div>
 
-          <!-- 2 NÚT THAO TÁC RÕ RÀNG -->
-          <div class="d-flex flex-column gap-2">
-            <button
-              type="button"
-              class="btn btn-primary w-100 py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2"
-              @click="confirmAndLogin"
-            >
-              <i class="fa fa-check-circle"></i> Có, đồng ý liên kết tài khoản này
-            </button>
-
-            <button
-              type="button"
-              class="btn btn-outline-secondary w-100 py-2 small d-flex align-items-center justify-content-center gap-1"
-              @click="socialAuthStep = 'CHOOSE'"
-            >
-              <i class="fa fa-arrow-left"></i> Không, chọn tài khoản khác
-            </button>
+            <!-- Footer Google: Ngôn ngữ & các liên kết -->
+            <div class="d-flex justify-content-between align-items-center pt-3 mt-4 border-top text-muted small flex-wrap gap-2" style="font-size: 0.76rem;">
+              <div>
+                <span class="cursor-pointer text-secondary">Tiếng Việt ▾</span>
+              </div>
+              <div class="d-flex gap-3">
+                <a href="#" class="text-muted text-decoration-none">Trợ giúp</a>
+                <a href="#" class="text-muted text-decoration-none">Quyền riêng tư</a>
+                <a href="#" class="text-muted text-decoration-none">Điều khoản</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- GIAO DIỆN ĐĂNG NHẬP / ĐĂNG KÝ MẶC ĐỊNH (KHI CHƯA MỞ LIÊN KẾT MẠNG XÃ HỘI)             -->
-      <!-- ==================================================================================== -->
+      <!-- FORM ĐĂNG NHẬP / ĐĂNG KÝ MẶC ĐỊNH (KHI CHƯA MỞ LIÊN KẾT MẠNG XÃ HỘI) -->
       <div v-else>
         <!-- THANH TAB CHUYỂN ĐỔI ĐĂNG NHẬP / ĐĂNG KÝ -->
         <div class="d-flex border-bottom mb-4">
@@ -190,7 +167,7 @@
           </button>
         </div>
 
-        <!-- FORM ĐĂNG NHẬP (DÀNH CHO CẢ ADMIN VÀ KHÁCH HÀNG) -->
+      <!-- FORM ĐĂNG NHẬP (DÀNH CHO CẢ ADMIN VÀ KHÁCH HÀNG) -->
         <form v-if="userStore.authMode === 'LOGIN'" @submit.prevent="handleLogin">
           <!-- Nhập Email hoặc Số điện thoại -->
           <div class="mb-3">
@@ -380,7 +357,7 @@
 // VIETNAMESE: IMPORT CÁC MODULE VUE & STORE USER
 // ENGLISH: IMPORT VUE CORE LIBS, ROUTER & USER STORE
 // ============================================================================================
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user.store';
 import Swal from 'sweetalert2';
@@ -403,147 +380,73 @@ const regAddress = ref('');
 const regPassword = ref('');
 
 // ============================================================================================
-// TRẠNG THÁI LIÊN KẾT MẠNG XÃ HỘI (GOOGLE / FACEBOOK) & HỘP THOẠI XÁC NHẬN TÊN TÀI KHOẢN
+// VIETNAMESE: QUẢN LÝ ĐĂNG NHẬP GOOGLE / FACEBOOK CHUẨN XÁC THEO CLIP VIDEO THỰC TẾ
+// ENGLISH: OAUTH FLOW & SIMULATED AUTHENTICATION ACCORDING TO VIDEO
 // ============================================================================================
-const activeSocialProvider = ref(null); // null | 'Google' | 'Facebook' | 'Zalo'
-const socialAuthStep = ref('CHOOSE');    // 'CHOOSE' (Chọn tài khoản) | 'CONFIRM' (Hỏi xác nhận liên kết)
-const selectedAccount = ref(null);
-const showCustomInput = ref(false);
-const customName = ref('');
-const customEmail = ref('');
+const oauthProvider = ref(null); // null | 'Google' | 'Facebook'
+const isOAuthLoading = ref(false);
+const showCustomOAuth = ref(false);
+const customOAuthName = ref('');
+const customOAuthEmail = ref('');
 
-// Danh sách tài khoản mẫu mô phỏng chọn tài khoản Google
-const googleAccounts = [
-  {
-    name: 'Trần Trọng Nhân',
-    email: 'trongnhan.stu@gmail.com',
-    desc: 'Tài khoản Sinh viên STU (L23_TH01 - CNTT)',
-    avatarBg: '#ea4335',
-    avatarText: 'N'
-  },
-  {
-    name: 'Trần Trọng Nhân (Cá nhân)',
-    email: 'nhan.personal2026@gmail.com',
-    desc: 'Tài khoản Google cá nhân chính chủ',
-    avatarBg: '#4285f4',
-    avatarText: 'T'
-  }
-];
-
-// Danh sách tài khoản mẫu mô phỏng chọn tài khoản Facebook
-const facebookAccounts = [
-  {
-    name: 'Trần Trọng Nhân',
-    email: 'nhan.tran.stu@facebook.com',
-    desc: 'Tài khoản Facebook chính (Liên kết số 0987654321)',
-    avatarBg: '#1877f2',
-    avatarText: 'N'
-  },
-  {
-    name: 'Trần Trọng Nhân (Trần Nhân)',
-    email: 'nhan.tran.profile@facebook.com',
-    desc: 'Tài khoản Facebook phụ cá nhân',
-    avatarBg: '#0866ff',
-    avatarText: 'T'
-  }
-];
-
-// Danh sách tài khoản theo nền tảng đang kích hoạt
-const currentSocialAccounts = computed(() => {
-  if (activeSocialProvider.value === 'Google') return googleAccounts;
-  if (activeSocialProvider.value === 'Facebook') return facebookAccounts;
-  return [];
-});
-
-// Đóng modal và reset trạng thái
 const closeModal = () => {
-  activeSocialProvider.value = null;
-  socialAuthStep.value = 'CHOOSE';
-  showCustomInput.value = false;
+  oauthProvider.value = null;
+  isOAuthLoading.value = false;
+  showCustomOAuth.value = false;
   userStore.closeAuthModal();
 };
 
-// ============================================================================================
-// VIETNAMESE: KHI NGƯỜI DÙNG BẤM NÚT ĐĂNG NHẬP / ĐĂNG KÝ BẰNG GMAIL HOẶC FACEBOOK
-// ============================================================================================
+// Khi người dùng bấm vào nút liên kết Google hoặc Facebook
 const handleSocialAuth = (provider) => {
-  let cleanedProvider = 'Google';
-  if (provider.includes('Facebook')) cleanedProvider = 'Facebook';
-  else if (provider.includes('Zalo')) cleanedProvider = 'Zalo';
-
-  activeSocialProvider.value = cleanedProvider;
-  socialAuthStep.value = 'CHOOSE';
-  showCustomInput.value = false;
-  customName.value = '';
-  customEmail.value = '';
+  const isFacebook = provider.includes('Facebook');
+  oauthProvider.value = isFacebook ? 'Facebook' : 'Google';
+  isOAuthLoading.value = false;
+  showCustomOAuth.value = false;
 };
 
-// Chọn một tài khoản từ danh sách -> Chuyển sang bước hỏi: "Bạn có muốn liên kết với tài khoản tên này nữa hay không?"
-const selectAccount = (acc) => {
-  selectedAccount.value = { ...acc };
-  socialAuthStep.value = 'CONFIRM';
-};
+// Khi bấm chọn tài khoản từ danh sách (Hiện màn hình loading giống frame 00:06 của video)
+const selectOAuthAccount = (account) => {
+  isOAuthLoading.value = true;
 
-// Bật/tắt ô nhập tài khoản tùy chỉnh
-const toggleCustomInput = () => {
-  showCustomInput.value = !showCustomInput.value;
-};
-
-// Xác nhận tài khoản nhập tay
-const submitCustomAccount = () => {
-  if (!customName.value.trim() || !customEmail.value.trim()) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Thiếu thông tin!',
-      text: 'Vui lòng nhập họ và tên cùng email tài khoản của bạn.'
+  setTimeout(() => {
+    userStore.register({
+      hoTen: account.name,
+      email: account.email,
+      sdt: '0987654321',
+      cccd: '079201008899',
+      diaChi: '195/9 Nguyễn Văn Thương, P.25, Bình Thạnh, TP.HCM'
     });
-    return;
-  }
-  selectedAccount.value = {
-    name: customName.value.trim(),
-    email: customEmail.value.trim(),
-    desc: `Tài khoản ${activeSocialProvider.value} tùy chọn`,
-    avatarBg: '#2563eb',
-    avatarText: customName.value.trim().charAt(0).toUpperCase()
-  };
-  socialAuthStep.value = 'CONFIRM';
+
+    isOAuthLoading.value = false;
+    oauthProvider.value = null;
+    closeModal();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Đăng nhập thành công!',
+      html: `
+        <div class="text-start small">
+          <p class="mb-1">Khách hàng: <strong>${account.name}</strong></p>
+          <p class="mb-1">Email liên kết: <code>${account.email}</code></p>
+          <p class="mb-0 text-success"><i class="fa fa-gift me-1"></i> Tặng Voucher <strong>KHACHMOI50K</strong> (50.000₫) cho đơn thuê đầu tiên!</p>
+        </div>
+      `,
+      timer: 2300,
+      showConfirmButton: false
+    });
+  }, 1200);
 };
 
-// Quay lại giao diện đăng nhập thường
-const backToNormalAuth = () => {
-  activeSocialProvider.value = null;
-  socialAuthStep.value = 'CHOOSE';
-  showCustomInput.value = false;
-};
+// Xác nhận tài khoản liên kết (tự động nhận diện tài khoản người dùng)
+const submitCustomOAuth = () => {
+  const name = customOAuthName.value.trim() || 'Trần Trọng Nhân';
+  const defaultEmail = oauthProvider.value === 'Google' ? 'trongnhan@gmail.com' : 'nhan.tran@facebook.com';
+  const email = customOAuthEmail.value.trim() || defaultEmail;
 
-// Người dùng bấm "Có, đồng ý liên kết tài khoản này" -> Đăng nhập & lưu vào store
-const confirmAndLogin = () => {
-  if (!selectedAccount.value) return;
-
-  userStore.register({
-    hoTen: selectedAccount.value.name,
-    email: selectedAccount.value.email,
-    sdt: '0987654321',
-    cccd: '079201008899',
-    diaChi: '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM'
+  selectOAuthAccount({
+    name,
+    email
   });
-
-  Swal.fire({
-    icon: 'success',
-    title: 'Liên Kết & Đăng Nhập Thành Công!',
-    html: `
-      <div class="text-start small">
-        <p class="mb-1">Khách hàng: <strong>${selectedAccount.value.name}</strong></p>
-        <p class="mb-1">Tài khoản liên kết: <strong>${activeSocialProvider.value}</strong></p>
-        <p class="mb-1">Email / ID: <code>${selectedAccount.value.email}</code></p>
-        <p class="mb-0 text-success"><i class="fa fa-gift me-1"></i> Đã tặng Voucher <strong>KHACHMOI50K</strong> (50.000₫) cho bạn!</p>
-      </div>
-    `,
-    timer: 2500,
-    showConfirmButton: false
-  });
-
-  closeModal();
 };
 
 // ============================================================================================
@@ -692,5 +595,77 @@ const handleRegister = () => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+.account-avatar-device {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ============================================================================================ */
+/* CSS GIAO DIỆN OAUTH CHỌN TÀI KHOẢN GOOGLE / FACEBOOK & SPINNER GIỐNG VIDEO CLIP              */
+/* ============================================================================================ */
+.oauth-window-container {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.oauth-top-bar {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.oauth-top-line {
+  height: 3px;
+  width: 100%;
+}
+
+.app-oauth-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+
+.oauth-account-item {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.oauth-account-item:hover {
+  background-color: #f8fafc !important;
+  border-color: #0d6efd !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.oauth-avatar-circle {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.oauth-circle-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f1f5f9;
+  border-top: 4px solid #dc3545;
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.transition-all {
+  transition: all 0.3s ease;
 }
 </style>
