@@ -1561,7 +1561,7 @@ const openAddModal = () => {
   closeAllPriceDropdowns();
   isEditMode.value = false;
   currentEditId.value = null;
-  const defaultImg = 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-16-pro-max.jpg';
+  const defaultImg = 'https://cdn.tgdd.vn/Products/Images/42/305658/iphone-15-pro-max-blue-thumbnew-600x600.jpg';
   formData.value = {
     TenDienThoai: '',
     hangSanXuat: 'APPLE',
@@ -1632,7 +1632,7 @@ const savePhone = async () => {
     return;
   }
 
-  const primaryCover = formData.value.MacDinh || images[0] || 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-16-pro-max.jpg';
+  const primaryCover = formData.value.MacDinh || images[0] || 'https://cdn.tgdd.vn/Products/Images/42/305658/iphone-15-pro-max-blue-thumbnew-600x600.jpg';
 
   const payload = {
     TenDienThoai: formData.value.TenDienThoai,

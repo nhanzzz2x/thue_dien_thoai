@@ -241,10 +241,9 @@ export const mockPhones = [
     TinhTrangMay: "SAN_SANG",
     TinhTrangMayText: "Sẵn sàng thuê",
     SoLuong: 4,
-    MacDinh: "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-z-flip6-1.jpg",
+    MacDinh: "https://cdn.tgdd.vn/Products/Images/42/320722/samsung-galaxy-z-flip6-xanh-1-1.jpg",
     hinhAnh: [
-      "https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-z-flip6-1.jpg",
-      "https://upload.wikimedia.org/wikipedia/commons/e/e3/%E4%B8%89%E6%98%9FGalaxy_Z_Flip6.png",
+      "https://cdn.tgdd.vn/Products/Images/42/320722/samsung-galaxy-z-flip6-xanh-1-1.jpg",
       "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/f/r/frame_166_3.png"
     ],
     giaThueNgay: 210000,
@@ -274,9 +273,8 @@ export const mockPhones = [
     TinhTrangMay: "SAN_SANG",
     TinhTrangMayText: "Sẵn sàng thuê",
     SoLuong: 3,
-    MacDinh: "https://fdn2.gsmarena.com/vv/pics/zte/zte-nubia-red-magic-9-pro-1.jpg",
+    MacDinh: "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-nubia-red-magic-9-pro_1.png",
     hinhAnh: [
-      "https://fdn2.gsmarena.com/vv/pics/zte/zte-nubia-red-magic-9-pro-1.jpg",
       "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/d/i/dien-thoai-nubia-red-magic-9-pro_1.png"
     ],
     giaThueNgay: 240000,
@@ -306,9 +304,10 @@ export const mockPhones = [
     TinhTrangMay: "SAN_SANG",
     TinhTrangMayText: "Sẵn sàng thuê",
     SoLuong: 5,
-    MacDinh: "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-16-plus-1.jpg",
+    MacDinh: "https://cdn.tgdd.vn/Products/Images/42/329143/iphone-16-plus-xanh-mong-ket-1-1.jpg",
     hinhAnh: [
-      "https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-16-plus-1.jpg"
+      "https://cdn.tgdd.vn/Products/Images/42/329143/iphone-16-plus-xanh-mong-ket-1-1.jpg",
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-plus-1.png"
     ],
     giaThueNgay: 200000,
     giaKhuyenMai: 169000,
@@ -337,9 +336,10 @@ export const mockPhones = [
     TinhTrangMay: "SAN_SANG",
     TinhTrangMayText: "Sẵn sàng thuê",
     SoLuong: 4,
-    MacDinh: "https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14t-pro-1.jpg",
+    MacDinh: "https://cdn.tgdd.vn/Products/Images/42/329149/xiaomi-14t-pro-xam-1-1.jpg",
     hinhAnh: [
-      "https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14t-pro-1.jpg"
+      "https://cdn.tgdd.vn/Products/Images/42/329149/xiaomi-14t-pro-xam-1-1.jpg",
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/x/i/xiaomi-14t-pro_1.png"
     ],
     giaThueNgay: 210000,
     giaKhuyenMai: 175000,

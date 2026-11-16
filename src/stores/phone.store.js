@@ -28,6 +28,7 @@ function getInitialPhones() {
             // Kiểm tra các link ảnh bị lỗi hoặc thiếu
             if (
               !p.MacDinh ||
+              p.MacDinh.includes('gsmarena.com') ||
               p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
               p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
               p.MacDinh.includes('samsung-galaxy-z-fold-6-xam_1.png') ||
@@ -205,6 +206,7 @@ export const usePhoneStore = defineStore('phone', {
               if (
                 mock &&
                 (!p.MacDinh ||
+                  p.MacDinh.includes('gsmarena.com') ||
                   p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
                   p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
                   p.MacDinh.includes('samsung-galaxy-z-fold-6-xam_1.png') ||
