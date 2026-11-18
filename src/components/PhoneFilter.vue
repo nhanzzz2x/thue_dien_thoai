@@ -1,15 +1,11 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- BỘ LỌC ĐIỆN THOẠI ĐA TIÊU CHÍ (MULTI-CRITERIA PHONE FILTER COMPONENT)                      -->
   <!-- Ánh xạ ERD: Lọc dữ liệu theo thực thể `DienThoai` & `CauHinh_PhienBan`                    -->
   <!-- Hỗ trợ lọc theo: Hãng máy, Chipset, RAM/ROM, Hệ điều hành, Mức giá và Tình trạng máy kho   -->
-  <!-- ========================================================================================= -->
   <div id="filter-config-section" class="filter-card my-4">
     <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
       
-      <!-- ===================================================================================== -->
       <!-- TIÊU ĐỀ BỘ LỌC & NÚT XÓA BỘ LỌC (FILTER HEADER & RESET BUTTON)                        -->
-      <!-- ===================================================================================== -->
       <div class="filter-header d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex align-items-center gap-2">
           <div class="filter-icon-badge">
@@ -31,9 +27,7 @@
         </button>
       </div>
 
-      <!-- ===================================================================================== -->
       <!-- LƯỚI 5 TIÊU CHÍ LỌC CHI TIẾT (5 FILTER CONTROLS GRID)                                 -->
-      <!-- ===================================================================================== -->
       <div class="row g-2 g-md-3">
         <!-- 1. TIÊU CHÍ 1: LỌC THEO HÃNG MÁY / DANH MỤC (ERD: TheLoai.ten_loai / DienThoai.category) -->
         <div class="col-6 col-md-4 col-lg-2">
@@ -92,10 +86,8 @@
         </div>
       </div>
 
-      <!-- ===================================================================================== -->
       <!-- THANH CHUYỂN NHANH: CHỈ HIỆN MÁY SẴN SÀNG & ĐẾM KẾT QUẢ                               -->
       <!-- Ánh xạ trường: `DienThoai.TinhTrangMay` = 'SAN_SANG'                                  -->
-      <!-- ===================================================================================== -->
       <div class="mt-3 pt-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
         <!-- Nút gạt Switch: Chỉ lọc máy có thể thuê ngay (Availability toggle switch) -->
         <div class="form-check form-switch d-inline-flex align-items-center gap-2">
@@ -122,9 +114,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC SCRIPT VUE 3: LOGIC BỘ LỌC ĐIỆN THOẠI
-// =========================================================================================
 
 import { computed } from 'vue';
 import { usePhoneStore } from '@/stores/phone.store';    // Store quản lý kho điện thoại và các state của bộ lọc

@@ -1,8 +1,6 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- QUẢN LÝ & DUYỆT ĐƠN THUÊ MÁY (RENTAL ORDER APPROVAL & HANDOVER WORKFLOW)                   -->
   <!-- Ánh xạ ERD: Thực thể `DonThue` (Hợp đồng thuê), `TrangThai` (Tiến trình), `ChiTietDonThue` -->
-  <!-- ========================================================================================= -->
   <div class="order-management">
     <!-- Header: Tiêu đề trang & Tóm tắt tổng đơn chờ duyệt (Total orders & Pending orders count) -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
@@ -11,8 +9,7 @@
           <i class="fa fa-file-text-o text-primary me-2"></i> Duyệt Đơn Thuê & Xử Lý Bàn Giao Thiết Bị
         </h4>
         <p class="text-muted small mb-0">
-          <!-- VI: Vòng đời: Khách đặt đơn -> Nhận cọc/CCCD -> Bàn giao máy -> Kiểm tra máy trả -> Hoàn trả cọc -->
-          <!-- EN: Lifecycle: Customer places order -> Receive deposit/ID -> Hand over device -> Inspect returned phone -> Refund deposit -->
+          <!-- Vòng đời: Khách đặt đơn -> Nhận cọc/CCCD -> Bàn giao máy -> Kiểm tra máy trả -> Hoàn trả cọc -->
           Quy trình: Khách đặt đơn &rarr; Nhận cọc/CCCD &rarr; Bàn giao máy &rarr; Kiểm tra máy trả &rarr; Hoàn trả cọc.
         </p>
       </div>
@@ -24,10 +21,8 @@
       </div>
     </div>
 
-    <!-- ======================================================================================= -->
     <!-- BỘ LỌC TÌM KIẾM ĐƠN HÀNG (SEARCH AND FILTER BAR)                                        -->
     <!-- Lọc theo: Từ khóa (Mã đơn / Tên khách / SĐT / Số IMEI) và Trạng thái tiến trình        -->
-    <!-- ======================================================================================= -->
     <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
       <div class="row g-2 align-items-center">
         <!-- Ô nhập từ khóa tìm kiếm (Search keyword input: Order code / Customer name / Phone / IMEI) -->
@@ -65,10 +60,8 @@
       </div>
     </div>
 
-    <!-- ======================================================================================= -->
     <!-- BẢNG DANH SÁCH ĐƠN THUÊ THIẾT BỊ (ORDERS TABLE)                                         -->
     <!-- Hiển thị các trường trong ERD: `DonThue`, `NguoiDung`, `ChiTietDonThue`, `TrangThai`     -->
-    <!-- ======================================================================================= -->
     <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
       <div class="table-responsive">
         <table class="table table-hover align-middle small mb-0">
@@ -204,10 +197,8 @@
       </div>
     </div>
 
-    <!-- ======================================================================================= -->
     <!-- MODAL XEM CHI TIẾT ĐƠN & BIÊN BẢN NGHIỆM THU (ORDER DETAIL & INSPECTION MODAL)          -->
     <!-- Ánh xạ ERD: Thực thể `HopDong_GiaoNhan`, `PhieuHoanTra`, `ChiTietDonThue`                -->
-    <!-- ======================================================================================= -->
     <div v-if="selectedOrder" class="modal-backdrop-custom d-flex align-items-center justify-content-center p-3">
       <div class="modal-dialog-custom bg-white rounded-4 p-4 shadow-lg border" style="max-width: 650px; width: 100%; max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-content-between align-items-center pb-2 border-bottom mb-3">
@@ -274,9 +265,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC SCRIPT COMPOSITION API CHO QUẢN TRỊ DUYỆT ĐƠN
-// =========================================================================================
 
 import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';                          // Thư viện hộp thoại thông báo
@@ -329,10 +318,8 @@ const viewOrderDetails = (order) => {
   selectedOrder.value = order;
 };
 
-// =========================================================================================
 // QUY TRÌNH 1: DUYỆT CỌC (CONFIRM DEPOSIT)
 // Chuyển trạng thái đơn từ `CHO_DUYET` -> `DA_XAC_NHAN_COC`
-// =========================================================================================
 const confirmDeposit = (order) => {
   Swal.fire({
     title: 'Xác nhận nhận cọc?',
@@ -349,10 +336,8 @@ const confirmDeposit = (order) => {
   });
 };
 
-// =========================================================================================
 // QUY TRÌNH 2: BÀN GIAO THIẾT BỊ (HANDOVER PHONE)
 // Chuyển đơn sang `DANG_THUE` & Tự động đổi trạng thái máy trong kho sang `DANG_THUE`
-// =========================================================================================
 const handoverPhone = (order) => {
   Swal.fire({
     title: 'Bàn giao thiết bị cho khách?',
@@ -373,10 +358,8 @@ const handoverPhone = (order) => {
   });
 };
 
-// =========================================================================================
 // QUY TRÌNH 3: TIẾP NHẬN TRẢ MÁY & KIỂM TRA NGOẠI QUAN (RECEIVE RETURNED PHONE)
 // Chuyển đơn sang `DA_TRA_MAY` & Giải phóng máy trong kho về lại `SAN_SANG` (Sẵn sàng)
-// =========================================================================================
 const receiveReturnedPhone = (order) => {
   Swal.fire({
     title: 'Tiếp nhận trả máy & Kiểm tra',
@@ -398,10 +381,8 @@ const receiveReturnedPhone = (order) => {
   });
 };
 
-// =========================================================================================
 // QUY TRÌNH 4: HOÀN TRẢ CỌC & HOÀN TẤT ĐƠN (REFUND DEPOSIT & COMPLETE)
 // Chuyển đơn sang `HOAN_TAT_TRA_COC` -> Đóng hợp đồng thành công
-// =========================================================================================
 const completeAndRefund = (order) => {
   Swal.fire({
     title: 'Hoàn trả cọc & Hoàn tất đơn?',

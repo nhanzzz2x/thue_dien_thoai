@@ -1,12 +1,9 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: KHU VỰC THIẾT BỊ NỔI BẬT & ĐƯỢC THUÊ NHIỀU NHẤT (HOT PHONES SPOTLIGHT)          -->
-  <!-- ENGLISH: FEATURED & MOST RENTED FLAGSHIP PHONES SPOTLIGHT SECTION                          -->
+  <!-- KHU VỰC THIẾT BỊ NỔI BẬT & ĐƯỢC THUÊ NHIỀU NHẤT (HOT PHONES SPOTLIGHT)          -->
   <!-- ERD MAPPING: Lọc các dòng DienThoai có thuộc tính isHot = true                             -->
-  <!-- ========================================================================================== -->
   <section class="phone-spotlight-section my-5">
     <div class="container">
-      <!-- VIETNAMESE: Tiêu đề khu vực nổi bật | ENGLISH: Section Header -->
+      <!-- Tiêu đề khu vực nổi bật | ENGLISH: Section Header -->
       <div class="spotlight-header text-center mb-4">
         <span class="spotlight-badge badge bg-primary-subtle text-primary fw-bold px-3 py-1.5 rounded-pill mb-2">
           <i class="fa fa-star me-1"></i> THIẾT BỊ ĐƯỢC THUÊ NHIỀU NHẤT
@@ -17,10 +14,7 @@
         </p>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: DANH SÁCH THẺ ĐIỆN THOẠI NỔI BẬT (PhoneCard.vue)                         -->
-      <!-- ENGLISH: SPOTLIGHT PHONE CARDS ROW (PhoneCard.vue)                                   -->
-      <!-- ==================================================================================== -->
+      <!-- DANH SÁCH THẺ ĐIỆN THOẠI NỔI BẬT (PhoneCard.vue)                         -->
       <div class="row g-2 g-md-3 g-xl-4">
         <PhoneCard
           v-for="phone in hotPhones"
@@ -33,10 +27,7 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT STORE ĐIỆN THOẠI & COMPONENT THẺ ĐIỆN THOẠI
-// ENGLISH: IMPORT PHONE STORE & PHONE CARD COMPONENT
-// ============================================================================================
+// IMPORT STORE ĐIỆN THOẠI & COMPONENT THẺ ĐIỆN THOẠI
 import { computed } from 'vue';
 import { usePhoneStore } from '@/stores/phone.store';
 import PhoneCard from './PhoneCard.vue';
@@ -51,10 +42,7 @@ const hotPhones = computed(() => {
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS CHO PHẦN THIẾT BỊ NỔI BẬT                                                   */
-/* ENGLISH: SCOPED STYLES FOR SPOTLIGHT SECTION                                                 */
-/* ============================================================================================ */
+/* CSS CHO PHẦN THIẾT BỊ NỔI BẬT                                                   */
 .spotlight-header {
   position: relative;
 }

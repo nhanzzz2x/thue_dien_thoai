@@ -1,50 +1,42 @@
-// ============================================================================================
-// VIETNAMESE: CẤU HÌNH AXIOS KẾT NỐI BACKEND SPRING BOOT (GIAI ĐOẠN 3)
-// ENGLISH: AXIOS HTTP CLIENT CONFIGURATION FOR SPRING BOOT BACKEND (PHASE 3)
-// ARCHITECTURE: Chế độ lai thông minh (Hybrid Mode) - Tự động gọi API Spring Boot, nếu backend
-//               chưa bật hoặc lỗi kết nối thì tự động dùng Mock Data để giao diện không bị sập.
-// ============================================================================================
-
 import axios from 'axios';
 
-// Địa chỉ cổng API backend Spring Boot (Cổng mặc định: 8080)
-// Spring Boot Backend Base URL (Default port: 8080)
-export const API_BASE_URL = 'http://localhost:8080';
+// Kết nối trực tiếp tới Backend Express + MySQL WampServer tại cổng 8080
+export const API_BASE_URL = 'http://127.0.0.1:8080';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000,
+  timeout: 15000,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    Pragma: 'no-cache'
   }
 });
 
-// ============================================================================================
-// VIETNAMESE: BỘ CHẶN YÊU CẦU (REQUEST INTERCEPTOR) - TỰ ĐỘNG GẮN TOKEN JWT VÀO HEADER
-// ENGLISH: REQUEST INTERCEPTOR - AUTOMATICALLY ATTACH JWT BEARER TOKEN
-// ============================================================================================
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Chống trình duyệt lưu cache cũ khi vừa sửa dữ liệu trực tiếp trên phpMyAdmin WampServer
+    if (config.method === 'get') {
+      config.params = { ...(config.params || {}), _t: Date.now() };
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ============================================================================================
-// VIETNAMESE: BỘ CHẶN PHẢN HỒI (RESPONSE INTERCEPTOR) - BẮT LỖI KẾT NỐI & TỰ ĐỘNG FALLBACK
-// ENGLISH: RESPONSE INTERCEPTOR - CATCH CONNECTION ERRORS & SAFELY DEGRADE TO MOCK
-// ============================================================================================
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    console.warn(
-      '[API Warning] Không thể kết nối Backend Spring Boot, hệ thống tự động chạy chế độ Mock Data:',
-      error.message
-    );
+  async (error) => {
+    const config = error.config;
+    if (config && !config.__retried && (!error.response || error.response.status >= 502)) {
+      config.__retried = true;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return apiClient(config);
+    }
     return Promise.reject(error);
   }
 );

@@ -1,15 +1,11 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- MODAL BẢNG SO SÁNH CẤU HÌNH ĐIỆN THOẠI (DEVICE COMPARISON MODAL)                           -->
   <!-- Ánh xạ ERD: So sánh trực tiếp giữa các thực thể `DienThoai` & `CauHinh_PhienBan`           -->
   <!-- Người dùng có thể chọn tối đa 3 máy để đối chiếu thông số, giá thuê và tiền cọc             -->
-  <!-- ========================================================================================= -->
   <div v-if="phoneStore.isCompareModalOpen" class="modal-overlay" @click.self="phoneStore.isCompareModalOpen = false">
     <div class="modal-content-custom p-4" style="max-width: 950px;">
       
-      <!-- ===================================================================================== -->
       <!-- PHẦN 1: TIÊU ĐỀ BẢNG SO SÁNH & CÁC NÚT ĐIỀU KHIỂN (HEADER & CONTROLS)                   -->
-      <!-- ===================================================================================== -->
       <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
         <div class="d-flex align-items-center gap-2">
           <i class="fa fa-balance-scale text-primary fs-4"></i>
@@ -31,17 +27,13 @@
         </div>
       </div>
 
-      <!-- ===================================================================================== -->
       <!-- PHẦN 2: TRƯỜNG HỢP CHƯA CHỌN MÁY NÀO (EMPTY STATE)                                      -->
-      <!-- ===================================================================================== -->
       <div v-if="phoneStore.compareList.length === 0" class="text-center py-5">
         <i class="fa fa-info-circle text-muted fs-1 mb-2"></i>
         <p class="text-muted">Chưa có thiết bị nào trong danh sách so sánh. Vui lòng bấm biểu tượng cái cân trên thẻ điện thoại để thêm!</p>
       </div>
 
-      <!-- ===================================================================================== -->
       <!-- PHẦN 3: BẢNG ĐỐI CHIẾU CẤU HÌNH THEO HÀNG (COMPARISON TABLE)                            -->
-      <!-- ===================================================================================== -->
       <div v-else class="table-responsive">
         <table class="table table-bordered align-middle text-center compare-table">
           <!-- Hàng tiêu đề: Ảnh và Tên các điện thoại đang so sánh (Product Image & Name) -->
@@ -176,9 +168,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC SCRIPT VUE 3: XỬ LÝ LOGIC BẢNG SO SÁNH
-// =========================================================================================
 
 import { usePhoneStore } from '@/stores/phone.store';    // Store quản lý kho điện thoại và danh sách so sánh
 import { useCartStore } from '@/stores/cart.store';      // Store quản lý giỏ thuê

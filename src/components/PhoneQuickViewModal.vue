@@ -1,9 +1,7 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- MODAL XEM NHANH THÔNG SỐ ĐIỆN THOẠI (QUICK VIEW PHONE MODAL)                              -->
   <!-- Ánh xạ ERD: Thực thể `DienThoai` & `CauHinh_PhienBan`                                     -->
   <!-- Cho phép khách xem nhanh camera, pin, chipset, tính nhanh tiền thuê và thêm giỏ hàng       -->
-  <!-- ========================================================================================= -->
   <div v-if="phone" class="modal-overlay" @click.self="close">
     <div class="modal-content-custom p-4">
       
@@ -13,10 +11,8 @@
       </button>
 
       <div class="row g-4">
-        <!-- =================================================================================== -->
         <!-- CỘT BÊN TRÁI: HÌNH ẢNH SẢN PHẨM & CÁC GÓC CHỤP (IMAGE & GALLERY)                    -->
         <!-- ERD: DienThoai.MacDinh, DienThoai.hinhAnh                                           -->
-        <!-- =================================================================================== -->
         <div class="col-md-5 text-center">
           <!-- Ảnh lớn chính đang được chọn hiển thị -->
           <div class="main-img-box p-3 bg-light rounded-4 mb-3">
@@ -37,9 +33,7 @@
           </div>
         </div>
 
-        <!-- =================================================================================== -->
         <!-- CỘT BÊN PHẢI: THÔNG SỐ KỸ THUẬT, GIÁ THUÊ & NÚT THUÊ (SPECS & ACTIONS)              -->
-        <!-- =================================================================================== -->
         <div class="col-md-7">
           <!-- Trạng thái máy & Số IMEI (ERD: DienThoai.TinhTrangMay, DienThoai.SoIMEI_Serial) -->
           <div class="d-flex align-items-center gap-2 mb-2">
@@ -59,9 +53,7 @@
           <h4 class="fw-bold mb-2">{{ phone.TenDienThoai }}</h4>
           <p class="text-muted small mb-3">{{ phone.moTa }}</p>
 
-          <!-- ================================================================================= -->
           <!-- BẢNG CẤU HÌNH PHIÊN BẢN (ERD: CauHinh_PhienBan)                                   -->
-          <!-- ================================================================================= -->
           <div class="specs-table-box bg-light p-3 rounded-3 mb-3">
             <h6 class="fw-bold mb-2 text-primary" style="font-size: 0.85rem;">
               <i class="fa fa-cogs me-1"></i> BẢNG CẤU HÌNH PHIÊN BẢN (CauHinh_PhienBan)
@@ -90,9 +82,7 @@
             </div>
           </div>
 
-          <!-- ================================================================================= -->
           <!-- GIÁ THUÊ & TIỀN CỌC ĐỊNH MỨC (ERD: giaThueNgay & tienCocYeuCau)                   -->
-          <!-- ================================================================================= -->
           <div class="row align-items-center p-3 bg-primary-subtle rounded-3 mb-3">
             <!-- Giá thuê ngày -->
             <div class="col-6 border-end">
@@ -114,10 +104,8 @@
             </div>
           </div>
 
-          <!-- ================================================================================= -->
           <!-- BỘ TÍNH NHANH TIỀN THUÊ THEO SỐ NGÀY (QUICK DAY CALCULATOR)                       -->
           <!-- Tự động tính ưu đãi: 3 ngày giảm 15%, 7 ngày giảm 25% (ERD: KhuyenMai)            -->
-          <!-- ================================================================================= -->
           <div class="day-calculator mb-3">
             <label class="form-label small fw-bold">Chọn thử số ngày thuê:</label>
             <div class="btn-group w-100" role="group">
@@ -151,9 +139,7 @@
             </div>
           </div>
 
-          <!-- ================================================================================= -->
           <!-- CÁC NÚT THAO TÁC: THUÊ NGAY & THÊM VÀO SO SÁNH (ACTION BUTTONS)                   -->
-          <!-- ================================================================================= -->
           <div class="d-flex gap-2">
             <!-- Nút thuê máy nếu trạng thái là SẴN SÀNG -->
             <button
@@ -183,9 +169,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC SCRIPT VUE 3: LOGIC MODAL XEM NHANH ĐIỆN THOẠI
-// =========================================================================================
 
 import { ref, computed } from 'vue';
 import { usePhoneStore } from '@/stores/phone.store';    // Store quản lý kho máy

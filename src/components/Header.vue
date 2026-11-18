@@ -503,9 +503,7 @@ const scrollToProducts = () => {
   transform: translateY(-1px);
 }
 
-/* ============================================================================================ */
 /* RESPONSIVE HEADER CHO MÀN HÌNH TABLET & ĐIỆN THOẠI (< 768px & < 576px)                       */
-/* ============================================================================================ */
 @media (max-width: 768px) {
   .w-100-mobile {
     width: 100% !important;

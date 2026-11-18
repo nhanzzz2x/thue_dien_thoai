@@ -148,9 +148,9 @@ export const mockPhones = [
     TinhTrangMay: "SAN_SANG",
     TinhTrangMayText: "Sẵn sàng thuê",
     SoLuong: 5,
-    MacDinh: "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/r/o/rog-phone-8-pro_1.png",
+    MacDinh: "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/a/s/asus-rog-phone-8_1.png",
     hinhAnh: [
-      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/r/o/rog-phone-8-pro_1.png"
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/a/s/asus-rog-phone-8_1.png"
     ],
     giaThueNgay: 250000,
     giaKhuyenMai: 210000,

@@ -1,27 +1,18 @@
-import mysql from 'mysql2/promise';
+import pool, { initDatabase } from './db.js';
 
 async function testConnection() {
+  const ok = await initDatabase();
+  if (!ok) process.exit(1);
   try {
-    const conn = await mysql.createConnection({
-      host: 'localhost',
-      user: 'root',
-      password: '',
-      database: 'db_thue_dien_thoai',
-      port: 3306
-    });
-    console.log(' KẾT NỐI MYSQL THÀNH CÔNG RỰC RỠ!');
-    const [rows] = await conn.query('SELECT COUNT(*) as count FROM dienthoai');
-    console.log(' Số lượng điện thoại trong bảng dienthoai:', rows[0].count);
-    
-    const [users] = await conn.query('SELECT MaNguoiDung, tenNguoiDung, email FROM nguoidung');
-    console.log(' Danh sách người dùng trong bảng nguoidung:');
-    users.forEach(u => console.log(`   - [${u.MaNguoiDung}] ${u.tenNguoiDung} (${u.email})`));
-    
-    await conn.end();
-  } catch (err) {
-    console.error(' LỖI KẾT NỐI MYSQL:', err.message);
+    const [tables] = await pool.query('SHOW TABLES');
+    console.log(`Tổng số bảng trong db_thue_dien_thoai: ${tables.length}`);
+    const [phones] = await pool.query('SELECT COUNT(*) AS count FROM dienthoai');
+    console.log('Số lượng điện thoại:', phones[0].count);
+    const [orders] = await pool.query('SELECT COUNT(*) AS count FROM donthue');
+    console.log('Số lượng đơn thuê:', orders[0].count);
+  } finally {
+    await pool.end();
   }
 }
 
 testConnection();
-

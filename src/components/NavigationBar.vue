@@ -1,14 +1,10 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- THANH ĐIỀU HƯỚNG DANH MỤC & LỐI TẮT CHÍNH SÁCH (NAVIGATION BAR)                           -->
   <!-- THIẾT KẾ: TRANG CHỦ & TẤT CẢ ĐIỆN THOẠI CỐ ĐỊNH + NÚT ÚP XUỐNG DANH SÁCH THUÊ ĐIỆN THOẠI   -->
-  <!-- ========================================================================================= -->
   <nav class="nav-bar-container">
     <div class="container d-flex align-items-center justify-content-between">
       
-      <!-- ===================================================================================== -->
       <!-- KHỐI BÊN TRÁI: TRANG CHỦ, TẤT CẢ ĐIỆN THOẠI & NÚT ÚP XUỐNG DANH SÁCH THUÊ            -->
-      <!-- ===================================================================================== -->
       <div class="d-flex align-items-center gap-1 gap-md-2 nav-left-group">
         <!-- 1. Nút Trang chủ -->
         <router-link
@@ -84,10 +80,7 @@
         </div>
       </div>
       
-
-      <!-- ===================================================================================== -->
       <!-- KHỐI BÊN PHẢI: LỐI TẮT CHÍNH SÁCH THẾ CHÂN & MẪU HỢP ĐỒNG THUÊ                         -->
-      <!-- ===================================================================================== -->
       <div class="nav-shortcuts d-none d-lg-flex align-items-center gap-3">
         <!-- Lối tắt 1: Quy định thế chân -->
         <a href="#deposit-policy-section" class="shortcut-link" @click="handleScrollToDeposit">
@@ -110,9 +103,7 @@
 
     </div>
 
-    <!-- ===================================================================================== -->
     <!-- BẢNG CHỌN DANH SÁCH ĐIỆN THOẠI TRÊN MOBILE (TELEPORT TRÁNH BỊ CHE KHUẤT)              -->
-    <!-- ===================================================================================== -->
     <Teleport to="body">
       <!-- Lớp phủ mờ nền khi mở danh sách trên di động -->
       <transition name="fade">
@@ -210,9 +201,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC SCRIPT VUE 3: LOGIC THANH MENU & NÚT ÚP XUỐNG DANH SÁCH THUÊ ĐIỆN THOẠI
-// =========================================================================================
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { usePhoneStore } from '@/stores/phone.store';
@@ -485,9 +474,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* ============================================================================================ */
 /* RESPONSIVE CHO MENU TRÊN TABLET & ĐIỆN THOẠI (< 768px)                                      */
-/* ============================================================================================ */
 @media (max-width: 768px) {
   .nav-left-group {
     overflow-x: auto;
@@ -513,9 +500,7 @@ onUnmounted(() => {
   }
 }
 
-/* ============================================================================================ */
 /* BẢNG CHỌN HÃNG MÁY TRƯỢT LÊN TỪ ĐÁY (MOBILE BOTTOM SHEET & BACKDROP)                         */
-/* ============================================================================================ */
 .mobile-brand-backdrop {
   position: fixed;
   top: 0;

@@ -1,23 +1,18 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: MODAL ĐĂNG NHẬP / ĐĂNG KÝ TÀI KHOẢN (NGƯỜI DÙNG & QUẢN TRỊ ADMIN)              -->
-  <!-- ENGLISH: USER & ADMIN AUTHENTICATION MODAL (LOGIN / REGISTER)                             -->
+  <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ TÀI KHOẢN (NGƯỜI DÙNG & QUẢN TRỊ ADMIN)              -->
   <!-- ERD MAPPING: Ánh xạ thực thể NguoiDung, KhachHang, Admin                                  -->
-  <!-- ========================================================================================== -->
   <div v-if="userStore.isAuthModalOpen" class="modal-overlay" @click.self="closeModal">
     <div
       class="modal-content-custom overflow-hidden transition-all"
       :class="{ 'p-0': oauthProvider, 'p-4': !oauthProvider }"
       :style="{ maxWidth: oauthProvider ? '780px' : '490px' }"
     >
-      <!-- VIETNAMESE: Nút đóng modal | ENGLISH: Close button -->
+      <!-- Nút đóng modal | ENGLISH: Close button -->
       <button v-if="!oauthProvider" class="btn-close-modal" @click="closeModal">
         <i class="fa fa-times"></i>
       </button>
 
-      <!-- ==================================================================================== -->
       <!-- GIAO DIỆN ĐĂNG NHẬP GOOGLE / FACEBOOK CHUẨN XÁC THEO VIDEO CLIP THỰC TẾ              -->
-      <!-- ==================================================================================== -->
       <div v-if="oauthProvider" class="oauth-window-container">
         <!-- 1. MÀN HÌNH LOADING SPINNER KHI BẤM CHỌN TÀI KHOẢN (GIỐNG FRAME 00:06 CỦA VIDEO) -->
         <div v-if="isOAuthLoading" class="oauth-spinner-view text-center py-5 px-4 bg-white">
@@ -66,54 +61,65 @@
                 <p class="text-secondary small mb-0">Tiếp tục tới <strong>TrongNhanMobile Login</strong></p>
               </div>
 
-              <!-- Cột phải: Xác nhận liên kết tài khoản của người dùng (Không còn tài khoản ảo) -->
+              <!-- Cột phải: Xác nhận liên kết tài khoản Google / Facebook của người dùng -->
               <div class="col-12 col-md-7 ps-md-3">
                 <div class="alert alert-warning border border-warning-subtle text-dark p-3 mb-3 rounded-3 text-start">
                   <div class="d-flex gap-2">
                     <i class="fa fa-question-circle text-warning fs-5 flex-shrink-0 mt-0.5"></i>
                     <div>
-                      <strong class="d-block mb-1 text-dark">Câu hỏi xác nhận:</strong>
+                      <strong class="d-block mb-1 text-dark">Xác nhận liên kết tài khoản:</strong>
                       <p class="mb-0 small fw-semibold text-primary">
-                        Bạn có muốn liên kết tài khoản {{ oauthProvider }} để đăng nhập vào TrongNhanMobile không?
+                        <template v-if="providerSavedAccounts.length > 0 && !showCustomOAuth">
+                          Bạn có muốn liên kết tài khoản <strong>{{ providerSavedAccounts[0].name }}</strong> ({{ providerSavedAccounts[0].email }}) trên thiết bị này nữa hay không?
+                        </template>
+                        <template v-else>
+                          Bạn có muốn liên kết tài khoản {{ oauthProvider }} đang dùng trên thiết bị để đăng nhập vào TrongNhanMobile không?
+                        </template>
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div class="mb-3 text-start">
-                  <label class="form-label small fw-bold mb-1">
-                    Địa chỉ Email / Tài khoản {{ oauthProvider }} của bạn:
-                  </label>
-                  <div class="input-group">
-                    <span class="input-group-text bg-white">
-                      <i class="fa" :class="oauthProvider === 'Google' ? 'fa-google text-danger' : 'fa-facebook text-primary'"></i>
-                    </span>
-                    <input
-                      v-model="customOAuthEmail"
-                      type="text"
-                      class="form-control"
-                      :placeholder="oauthProvider === 'Google' ? 'Nhập Gmail của bạn (VD: yourname@gmail.com)' : 'Nhập Email / SĐT Facebook của bạn'"
-                    />
+                <!-- Danh sách tài khoản thật mà chính người dùng đã từng liên kết trên máy này (Mặc định rỗng, không có tài khoản ảo) -->
+                <div v-if="providerSavedAccounts.length > 0 && !showCustomOAuth" class="mb-3">
+                  <div
+                    v-for="acc in providerSavedAccounts"
+                    :key="acc.email"
+                    class="d-flex align-items-center justify-content-between p-2.5 mb-2 border rounded-3 bg-light oauth-saved-item"
+                    style="cursor: pointer;"
+                    @click="selectOAuthAccount(acc)"
+                  >
+                    <div class="d-flex align-items-center gap-2 text-start overflow-hidden">
+                      <div
+                        class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                        :style="{ width: '36px', height: '36px', backgroundColor: oauthProvider === 'Google' ? '#EA4335' : '#1877F2' }"
+                      >
+                        {{ (acc.name || acc.email || 'U').charAt(0).toUpperCase() }}
+                      </div>
+                      <div class="text-truncate">
+                        <div class="fw-bold small text-dark text-truncate">{{ acc.name }}</div>
+                        <div class="text-muted text-truncate" style="font-size: 0.78rem;">{{ acc.email }}</div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 ms-2">
+                      <span class="badge bg-primary-subtle text-primary">Liên kết</span>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-link text-danger p-0 px-1 text-decoration-none"
+                        title="Xóa tài khoản này khỏi máy"
+                        @click.stop="removeSavedOAuthAccount(acc.email)"
+                      >
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div class="mb-3 text-start">
-                  <label class="form-label small fw-bold mb-1">Họ và tên của bạn:</label>
-                  <input
-                    v-model="customOAuthName"
-                    type="text"
-                    class="form-control"
-                    placeholder="Trần Trọng Nhân"
-                  />
-                </div>
-
-                <div class="d-flex flex-column gap-2 mb-3">
                   <button
                     type="button"
-                    class="btn btn-primary w-100 py-2.5 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2"
-                    @click="submitCustomOAuth"
+                    class="btn btn-outline-primary w-100 py-2 small rounded-pill mt-1 mb-2"
+                    @click="showCustomOAuth = true"
                   >
-                    <i class="fa fa-check-circle"></i> Đồng ý liên kết & Đăng nhập ngay
+                    <i class="fa fa-user-plus me-1"></i> Sử dụng một tài khoản {{ oauthProvider }} khác
                   </button>
 
                   <button
@@ -124,6 +130,71 @@
                     <i class="fa fa-arrow-left me-1"></i> Quay lại đăng nhập thường
                   </button>
                 </div>
+
+                <!-- Form nhập tài khoản Google / Facebook trên thiết bị (Hỗ trợ trình duyệt tự điền tài khoản đang đăng nhập) -->
+                <form v-else @submit.prevent="submitCustomOAuth" class="text-start">
+                  <div v-if="oauthErrorMsg" class="alert alert-danger py-2 px-3 small mb-3">
+                    <i class="fa fa-exclamation-circle me-1"></i> {{ oauthErrorMsg }}
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label small fw-bold mb-1">
+                      Tài khoản {{ oauthProvider }} của bạn:
+                    </label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-white">
+                        <i class="fa" :class="oauthProvider === 'Google' ? 'fa-google text-danger' : 'fa-facebook text-primary'"></i>
+                      </span>
+                      <input
+                        v-model="customOAuthEmail"
+                        :type="oauthProvider === 'Google' ? 'email' : 'text'"
+                        name="email"
+                        autocomplete="username email"
+                        class="form-control"
+                        :placeholder="oauthProvider === 'Google' ? 'Nhập Gmail trên máy (VD: tenban@gmail.com)' : 'Nhập Email hoặc SĐT Facebook của bạn'"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label small fw-bold mb-1">Tên hiển thị tài khoản (tùy chọn):</label>
+                    <input
+                      v-model="customOAuthName"
+                      type="text"
+                      name="name"
+                      autocomplete="name"
+                      class="form-control"
+                      placeholder="Để trống sẽ tự lấy theo tên tài khoản"
+                    />
+                  </div>
+
+                  <div class="d-flex flex-column gap-2 mb-3">
+                    <button
+                      type="submit"
+                      class="btn btn-primary w-100 py-2.5 fw-bold rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2"
+                    >
+                      <i class="fa fa-check-circle"></i> Đồng ý liên kết & Đăng nhập ngay
+                    </button>
+
+                    <button
+                      v-if="providerSavedAccounts.length > 0"
+                      type="button"
+                      class="btn btn-light border w-100 py-2 small rounded-pill"
+                      @click="showCustomOAuth = false"
+                    >
+                      Chọn lại tài khoản đã lưu trên máy
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary w-100 py-2 small rounded-pill"
+                      @click="oauthProvider = null"
+                    >
+                      <i class="fa fa-arrow-left me-1"></i> Quay lại đăng nhập thường
+                    </button>
+                  </div>
+                </form>
 
                 <!-- Chính sách bảo mật -->
                 <p class="text-muted small text-start mb-0" style="font-size: 0.74rem; line-height: 1.5;">
@@ -353,11 +424,8 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT CÁC MODULE VUE & STORE USER
-// ENGLISH: IMPORT VUE CORE LIBS, ROUTER & USER STORE
-// ============================================================================================
-import { ref } from 'vue';
+// IMPORT CÁC MODULE VUE & STORE USER
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user.store';
 import Swal from 'sweetalert2';
@@ -379,20 +447,49 @@ const regCccd = ref('');
 const regAddress = ref('');
 const regPassword = ref('');
 
-// ============================================================================================
-// VIETNAMESE: QUẢN LÝ ĐĂNG NHẬP GOOGLE / FACEBOOK CHUẨN XÁC THEO CLIP VIDEO THỰC TẾ
-// ENGLISH: OAUTH FLOW & SIMULATED AUTHENTICATION ACCORDING TO VIDEO
-// ============================================================================================
+// QUẢN LÝ ĐĂNG NHẬP GOOGLE / FACEBOOK CHUẨN XÁC THEO CLIP VIDEO THỰC TẾ
+const SAVED_OAUTH_KEY = 'trongnhan_linked_oauth_accounts';
+
+function loadSavedOAuthAccounts() {
+  try {
+    const raw = localStorage.getItem(SAVED_OAUTH_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 const oauthProvider = ref(null); // null | 'Google' | 'Facebook'
 const isOAuthLoading = ref(false);
 const showCustomOAuth = ref(false);
 const customOAuthName = ref('');
 const customOAuthEmail = ref('');
+const oauthErrorMsg = ref('');
+const savedOAuthAccounts = ref(loadSavedOAuthAccounts());
+
+const providerSavedAccounts = computed(() =>
+  savedOAuthAccounts.value.filter((a) => a.provider === oauthProvider.value)
+);
+
+const persistSavedOAuthAccounts = () => {
+  try {
+    localStorage.setItem(SAVED_OAUTH_KEY, JSON.stringify(savedOAuthAccounts.value));
+  } catch (e) {}
+};
+
+const removeSavedOAuthAccount = (email) => {
+  savedOAuthAccounts.value = savedOAuthAccounts.value.filter(
+    (a) => !(a.email === email && a.provider === oauthProvider.value)
+  );
+  persistSavedOAuthAccounts();
+};
 
 const closeModal = () => {
   oauthProvider.value = null;
   isOAuthLoading.value = false;
   showCustomOAuth.value = false;
+  oauthErrorMsg.value = '';
   userStore.closeAuthModal();
 };
 
@@ -401,47 +498,88 @@ const handleSocialAuth = (provider) => {
   const isFacebook = provider.includes('Facebook');
   oauthProvider.value = isFacebook ? 'Facebook' : 'Google';
   isOAuthLoading.value = false;
-  showCustomOAuth.value = false;
+  oauthErrorMsg.value = '';
+  savedOAuthAccounts.value = loadSavedOAuthAccounts();
+  showCustomOAuth.value = providerSavedAccounts.value.length === 0;
 };
 
-// Khi bấm chọn tài khoản từ danh sách (Hiện màn hình loading giống frame 00:06 của video)
-const selectOAuthAccount = (account) => {
+// Thực thi liên kết & lưu trực tiếp vào bảng nguoidung + taikhoanlienket trên MySQL
+const selectOAuthAccount = async (account) => {
+  const currentProvider = oauthProvider.value === 'Facebook' ? 'FACEBOOK' : 'GOOGLE';
+  const providerLabel = oauthProvider.value || 'Google';
   isOAuthLoading.value = true;
+  oauthErrorMsg.value = '';
 
-  setTimeout(() => {
-    userStore.register({
-      hoTen: account.name,
-      email: account.email,
-      sdt: '0987654321',
-      cccd: '079201008899',
-      diaChi: '195/9 Nguyễn Văn Thương, P.25, Bình Thạnh, TP.HCM'
-    });
+  try {
+    const minSpinnerDelay = new Promise((resolve) => setTimeout(resolve, 900));
+    const [loggedUser] = await Promise.all([
+      userStore.register({
+        hoTen: account.name,
+        email: account.email,
+        sdt: '0987654321',
+        cccd: '079201008899',
+        diaChi: 'TP. Hồ Chí Minh',
+        provider: currentProvider
+      }),
+      minSpinnerDelay
+    ]);
 
+    // Ghi nhớ tài khoản thật người dùng vừa liên kết trên máy này để lần sau hỏi xác nhận nhanh
+    const cleanEmail = loggedUser?.email || account.email;
+    const cleanName = loggedUser?.hoTen || account.name;
+    savedOAuthAccounts.value = [
+      { name: cleanName, email: cleanEmail, provider: providerLabel },
+      ...savedOAuthAccounts.value.filter((a) => !(a.email === cleanEmail && a.provider === providerLabel))
+    ];
+    persistSavedOAuthAccounts();
+
+    customOAuthEmail.value = '';
+    customOAuthName.value = '';
     isOAuthLoading.value = false;
     oauthProvider.value = null;
     closeModal();
 
+    if (loggedUser?.vaiTro === 'ADMIN') {
+      router.push('/admin');
+    }
+
     Swal.fire({
       icon: 'success',
-      title: 'Đăng nhập thành công!',
+      title: `Liên kết ${providerLabel} thành công!`,
       html: `
         <div class="text-start small">
-          <p class="mb-1">Khách hàng: <strong>${account.name}</strong></p>
-          <p class="mb-1">Email liên kết: <code>${account.email}</code></p>
-          <p class="mb-0 text-success"><i class="fa fa-gift me-1"></i> Tặng Voucher <strong>KHACHMOI50K</strong> (50.000₫) cho đơn thuê đầu tiên!</p>
+          <p class="mb-1">Tài khoản: <strong>${cleanName}</strong></p>
+          <p class="mb-1">Email liên kết: <code>${cleanEmail}</code></p>
+          <p class="mb-0 text-success"><i class="fa fa-check-circle me-1"></i> Đã đồng bộ tài khoản ${providerLabel} & kích hoạt phiên đăng nhập!</p>
         </div>
       `,
       timer: 2300,
       showConfirmButton: false
     });
-  }, 1200);
+  } catch (err) {
+    isOAuthLoading.value = false;
+    oauthErrorMsg.value = err?.response?.data?.error || err.message || 'Không thể liên kết tài khoản, vui lòng thử lại!';
+  }
 };
 
-// Xác nhận tài khoản liên kết (tự động nhận diện tài khoản người dùng)
+// Xác nhận tài khoản liên kết do người dùng nhập / trình duyệt tự điền
 const submitCustomOAuth = () => {
-  const name = customOAuthName.value.trim() || 'Trần Trọng Nhân';
-  const defaultEmail = oauthProvider.value === 'Google' ? 'trongnhan@gmail.com' : 'nhan.tran@facebook.com';
-  const email = customOAuthEmail.value.trim() || defaultEmail;
+  oauthErrorMsg.value = '';
+  const rawInput = customOAuthEmail.value.trim();
+
+  if (!rawInput) {
+    oauthErrorMsg.value = `Vui lòng nhập tài khoản ${oauthProvider.value} của bạn để liên kết!`;
+    return;
+  }
+
+  if (oauthProvider.value === 'Google' && !rawInput.includes('@')) {
+    oauthErrorMsg.value = 'Vui lòng nhập đúng định dạng địa chỉ Gmail (ví dụ: tenban@gmail.com)!';
+    return;
+  }
+
+  const email = rawInput.toLowerCase();
+  const autoName = email.includes('@') ? email.split('@')[0] : `Facebook ${email}`;
+  const name = customOAuthName.value.trim() || autoName;
 
   selectOAuthAccount({
     name,
@@ -449,58 +587,74 @@ const submitCustomOAuth = () => {
   });
 };
 
-// ============================================================================================
-// VIETNAMESE: XỬ LÝ ĐĂNG NHẬP & TỰ ĐỘNG ĐIỀU HƯỚNG SANG TRANG ADMIN NẾU LÀ ADMIN
-// ENGLISH: HANDLE LOGIN & REDIRECT TO ADMIN PORTAL IF ROLE IS ADMIN
-// ============================================================================================
-const handleLogin = () => {
-  const isAdmin = userStore.login(loginEmail.value, loginPassword.value);
-  if (isAdmin) {
+// XỬ LÝ ĐĂNG NHẬP TỪ BẢNG nguoidung TRONG MYSQL & ĐIỀU HƯỚNG ADMIN
+const handleLogin = async () => {
+  try {
+    const isAdmin = await userStore.login(loginEmail.value, loginPassword.value);
+    if (isAdmin) {
+      Swal.fire({
+        title: 'Đăng nhập Admin thành công!',
+        text: 'Chào mừng Quản trị viên! Hệ thống đang chuyển bạn đến Cổng quản trị...',
+        icon: 'success',
+        timer: 1800,
+        showConfirmButton: false
+      });
+      router.push('/admin');
+    } else {
+      Swal.fire({
+        title: 'Đăng nhập thành công!',
+        text: `Chào mừng ${userStore.user.hoTen} đã trở lại TrongNhanMobile!`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
+  } catch (err) {
     Swal.fire({
-      title: 'Đăng nhập Admin thành công!',
-      text: 'Chào mừng Quản trị viên! Hệ thống đang chuyển bạn đến Cổng quản trị...',
-      icon: 'success',
-      timer: 1800,
-      showConfirmButton: false
-    });
-    router.push('/admin');
-  } else {
-    Swal.fire({
-      title: 'Đăng nhập thành công!',
-      text: `Chào mừng ${userStore.user.hoTen} đã trở lại TrongNhanMobile!`,
-      icon: 'success',
-      timer: 2000,
-      showConfirmButton: false
+      icon: 'error',
+      title: 'Đăng nhập thất bại!',
+      text: err?.response?.data?.error || 'Sai thông tin tài khoản/mật khẩu hoặc Backend chưa khởi động!'
     });
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: XỬ LÝ ĐĂNG KÝ KHÁCH HÀNG MỚI (LƯU VÀO KhachHang)
-// ENGLISH: HANDLE NEW CUSTOMER REGISTRATION
-// ============================================================================================
-const handleRegister = () => {
-  userStore.user.hoTen = regName.value || 'Khách Mới';
-  userStore.user.email = regEmail.value;
-  userStore.user.sdt = regPhone.value;
-  userStore.user.cccd = regCccd.value;
-  userStore.user.diaChi = regAddress.value;
-  userStore.user.khachMoi = true;
-  userStore.login(regEmail.value, regPassword.value);
+// XỬ LÝ ĐĂNG KÝ KHÁCH HÀNG MỚI (INSERT TRỰC TIẾP VÀO BẢNG nguoidung MYSQL)
+const handleRegister = async () => {
+  try {
+    const createdUser = await userStore.register({
+      hoTen: regName.value.trim() || 'Khách Mới',
+      email: regEmail.value.trim(),
+      password: regPassword.value,
+      sdt: regPhone.value.trim(),
+      cccd: regCccd.value.trim(),
+      diaChi: regAddress.value.trim(),
+      provider: 'LOCAL'
+    });
 
-  Swal.fire({
-    title: 'Đăng ký thành công!',
-    text: 'Đã tạo tài khoản và kích hoạt phiên đăng nhập. Bạn được tặng mã KHACHMOI50K!',
-    icon: 'success'
-  });
+    regName.value = '';
+    regEmail.value = '';
+    regPhone.value = '';
+    regCccd.value = '';
+    regAddress.value = '';
+    regPassword.value = '';
+
+    Swal.fire({
+      title: 'Đăng ký tài khoản thành công!',
+      html: `Tài khoản <strong>${createdUser.email}</strong> (Mã: <code>${createdUser.maNguoiDung}</code>) đã được lưu vào MySQL WampServer!<br/>Bạn được tặng mã <strong>KHACHMOI50K</strong>.`,
+      icon: 'success'
+    });
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Không thể đăng ký tài khoản!',
+      text: err?.response?.data?.error || 'Email đã tồn tại hoặc chưa bật server kết nối MySQL!'
+    });
+  }
 };
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS CHO MODAL XÁC THỰC NGƯỜI DÙNG & TABS                                        */
-/* ENGLISH: SCOPED STYLES FOR AUTH MODAL & TABS                                                 */
-/* ============================================================================================ */
+/* CSS CHO MODAL XÁC THỰC NGƯỜI DÙNG & TABS                                        */
 .social-btn {
   border-radius: 8px;
   background: #ffffff;
@@ -514,21 +668,6 @@ const handleRegister = () => {
   border-color: #cbd5e1;
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-}
-
-.zalo-badge-icon {
-  width: 20px;
-  height: 20px;
-  background: #0068FF;
-  color: #ffffff;
-  font-weight: 900;
-  font-size: 12px;
-  border-radius: 5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: Arial, sans-serif;
-  letter-spacing: -0.5px;
 }
 
 .auth-tab {
@@ -568,9 +707,7 @@ const handleRegister = () => {
   border-color: #ef4444;
 }
 
-/* ============================================================================================ */
 /* CSS CHO GIAO DIỆN CHỌN TÀI KHOẢN MẠNG XÃ HỘI (GOOGLE / FACEBOOK ACCOUNT SELECTOR)            */
-/* ============================================================================================ */
 .account-item-btn {
   width: 100%;
   transition: all 0.2s ease;
@@ -609,9 +746,7 @@ const handleRegister = () => {
   flex-shrink: 0;
 }
 
-/* ============================================================================================ */
 /* CSS GIAO DIỆN OAUTH CHỌN TÀI KHOẢN GOOGLE / FACEBOOK & SPINNER GIỐNG VIDEO CLIP              */
-/* ============================================================================================ */
 .oauth-window-container {
   width: 100%;
   background: #ffffff;

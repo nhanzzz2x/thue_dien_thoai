@@ -1,18 +1,12 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: TRANG CHI TIẾT ĐIỆN THOẠI & TÍNH PHÍ THUÊ / CỌC TRỰC QUAN                      -->
-  <!-- ENGLISH: PHONE DETAIL PAGE & LIVE RENTAL / DEPOSIT COST CALCULATOR                         -->
+  <!-- TRANG CHI TIẾT ĐIỆN THOẠI & TÍNH PHÍ THUÊ / CỌC TRỰC QUAN                      -->
   <!-- ERD MAPPING: Ánh xạ thực thể DienThoai, CauHinh_PhienBan, DatCoc, ChiTietDonThue           -->
-  <!-- ========================================================================================== -->
   <div class="phone-detail-page">
     <Header />
     <NavigationBar />
 
     <main class="container my-4">
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: THANH ĐIỀU HƯỚNG BREADCRUMB                                              -->
-      <!-- ENGLISH: BREADCRUMB NAVIGATION BAR                                                   -->
-      <!-- ==================================================================================== -->
+      <!-- THANH ĐIỀU HƯỚNG BREADCRUMB                                              -->
       <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb py-2 px-3 bg-light rounded-3 small">
           <li class="breadcrumb-item">
@@ -27,21 +21,14 @@
         </ol>
       </nav>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: KHUNG HIỂN THỊ CHI TIẾT SẢN PHẨM & TÍNH TOÁN                             -->
-      <!-- ENGLISH: MAIN PRODUCT DISPLAY & RENTAL CALCULATION CONTAINER                         -->
+      <!-- KHUNG HIỂN THỊ CHI TIẾT SẢN PHẨM & TÍNH TOÁN                             -->
       <!-- ERD: Bảng DienThoai (MaDienThoai, TenDienThoai, TinhTrangMay, TienCocYeuCau)        -->
-      <!-- ==================================================================================== -->
       <div v-if="phone" class="bg-white rounded-4 shadow-sm border p-4 mb-4">
         <div class="row g-4">
-          <!-- ================================================================================ -->
-          <!-- VIETNAMESE: CỘT TRÁI - ALBUM ẢNH & CHÍNH SÁCH BẢO ĐẢM HOÀN CỌC                    -->
-          <!-- ENGLISH: LEFT COLUMN - PHOTO GALLERY & COLLATERAL / DEPOSIT GUARANTEE POLICY     -->
-          <!-- ================================================================================ -->
+          <!-- CỘT TRÁI - ALBUM ẢNH & CHÍNH SÁCH BẢO ĐẢM HOÀN CỌC                    -->
           <div class="col-lg-5">
             <div class="product-gallery">
-              <!-- VIETNAMESE: Khung ảnh chính kèm huy hiệu trạng thái sẵn sàng hay đang cho thuê -->
-              <!-- ENGLISH: Main image viewport with real-time availability badge                -->
+              <!-- Khung ảnh chính kèm huy hiệu trạng thái sẵn sàng hay đang cho thuê -->
               <div class="main-image-box border rounded-4 p-3 text-center position-relative mb-3 bg-light">
                 <span
                   class="badge-status position-absolute top-3 start-3"
@@ -59,8 +46,7 @@
                 />
               </div>
 
-              <!-- VIETNAMESE: Danh sách ảnh thu nhỏ để người dùng chọn xem góc chụp khác -->
-              <!-- ENGLISH: Thumbnails carousel to view multi-angle device photos       -->
+              <!-- Danh sách ảnh thu nhỏ để người dùng chọn xem góc chụp khác -->
               <div class="thumbnail-list d-flex gap-2 justify-content-center">
                 <div
                   v-for="(img, idx) in phoneImages"
@@ -73,8 +59,7 @@
                 </div>
               </div>
 
-              <!-- VIETNAMESE: Hộp cam kết bảo đảm hoàn cọc minh bạch cho khách thuê       -->
-              <!-- ENGLISH: Collateral Commitment & 100% Refund Guarantee Box              -->
+              <!-- Hộp cam kết bảo đảm hoàn cọc minh bạch cho khách thuê       -->
               <!-- ERD: Minh chứng cho quy trình quản lý thực thể DatCoc (Deposit Entity)  -->
               <div class="collateral-alert mt-4 p-3 rounded-3 bg-primary-subtle border border-primary-subtle">
                 <h6 class="fw-bold text-primary mb-2">
@@ -89,15 +74,11 @@
             </div>
           </div>
 
-          <!-- ================================================================================ -->
-          <!-- VIETNAMESE: CỘT PHẢI - THÔNG SỐ KỸ THUẬT & BỘ TÍNH TIỀN THUÊ TỰ ĐỘNG             -->
-          <!-- ENGLISH: RIGHT COLUMN - HARDWARE SPECS & DYNAMIC RENTAL FEE CALCULATOR           -->
+          <!-- CỘT PHẢI - THÔNG SỐ KỸ THUẬT & BỘ TÍNH TIỀN THUÊ TỰ ĐỘNG             -->
           <!-- ERD: Ánh xạ CauHinh_PhienBan & DonThue (TongTien, NgayBatDauThue, NgayKetThuc)   -->
-          <!-- ================================================================================ -->
           <div class="col-lg-7">
             <div class="ps-lg-3">
-              <!-- VIETNAMESE: Hãng sản xuất, Mã thiết bị & Số IMEI/Serial thực tế                -->
-              <!-- ENGLISH: Brand badge, Device ID & Unique IMEI/Serial identification            -->
+              <!-- Hãng sản xuất, Mã thiết bị & Số IMEI/Serial thực tế                -->
               <!-- ERD: DienThoai.HangSanXuat, DienThoai.MaDienThoai, DienThoai.SoIMEI_Serial     -->
               <div class="d-flex align-items-center gap-2 mb-2">
                 <span class="badge bg-primary text-uppercase px-2 py-1">{{ phone.hangSanXuat }}</span>
@@ -109,8 +90,7 @@
 
               <h3 class="fw-bold text-dark mb-2">{{ phone.TenDienThoai }}</h3>
 
-              <!-- VIETNAMESE: Thẻ tóm tắt cấu hình phần cứng (Chip, RAM/ROM, Màn hình, Pin)     -->
-              <!-- ENGLISH: Hardware summary badges (Chipset, RAM/ROM, Display, Battery)          -->
+              <!-- Thẻ tóm tắt cấu hình phần cứng (Chip, RAM/ROM, Màn hình, Pin)     -->
               <!-- ERD: Thuộc tính từ bảng CauHinh_PhienBan                                       -->
               <div class="specs-tags d-flex flex-wrap gap-2 mb-3">
                 <span class="badge bg-light text-dark border px-2.5 py-1.5" title="Chipset vi xử lý">
@@ -127,11 +107,8 @@
                 </span>
               </div>
 
-              <!-- ============================================================================ -->
-              <!-- VIETNAMESE: BẢNG GIÁ THUÊ & ĐỊNH MỨC CỌC TIÊU CHUẨN                          -->
-              <!-- ENGLISH: DAILY RENTAL RATE & STANDARD COLLATERAL BENCHMARK                   -->
+              <!-- BẢNG GIÁ THUÊ & ĐỊNH MỨC CỌC TIÊU CHUẨN                          -->
               <!-- ERD: DienThoai.GiaThueNgay & DienThoai.TienCocYeuCau                         -->
-              <!-- ============================================================================ -->
               <div class="price-banner p-3 rounded-3 bg-light border mb-4">
                 <div class="row align-items-center">
                   <div class="col-sm-6 border-end-sm">
@@ -158,18 +135,14 @@
                 </div>
               </div>
 
-              <!-- ============================================================================ -->
-              <!-- VIETNAMESE: BỘ CÔNG CỤ TÍNH TIỀN THUÊ & THẾ CHÂN TƯƠNG TÁC TRỰC QUAN         -->
-              <!-- ENGLISH: INTERACTIVE RENTAL & COLLATERAL FEE CALCULATOR                      -->
+              <!-- BỘ CÔNG CỤ TÍNH TIỀN THUÊ & THẾ CHÂN TƯƠNG TÁC TRỰC QUAN         -->
               <!-- ERD: DonThue.NgayBatDauThue, DonThue.NgayKetThucThue, DatCoc.PhuongThuc      -->
-              <!-- ============================================================================ -->
               <div class="rental-calculator-card border rounded-3 p-3 mb-4 bg-white">
                 <h6 class="fw-bold text-dark mb-3">
                   <i class="fa fa-calendar text-primary me-1"></i> Chọn thời gian thuê máy:
                 </h6>
 
-                <!-- VIETNAMESE: Chọn ngày nhận và ngày trả máy -->
-                <!-- ENGLISH: Date picker for rental period    -->
+                <!-- Chọn ngày nhận và ngày trả máy -->
                 <div class="row g-2 mb-3">
                   <div class="col-sm-6">
                     <label class="form-label small text-muted mb-1">Ngày nhận máy:</label>
@@ -191,8 +164,7 @@
                   </div>
                 </div>
 
-                <!-- VIETNAMESE: Chọn hình thức thế chân (CCCD, Tiền mặt, Thiết bị công nghệ) -->
-                <!-- ENGLISH: Collateral Method Picker (ID Card, 100% Cash, Tech Assets)                -->
+                <!-- Chọn hình thức thế chân (CCCD, Tiền mặt, Thiết bị công nghệ) -->
                 <!-- ERD: DatCoc.PhuongThuc & ChiTietPhieuThue                                        -->
                 <div class="mb-3">
                   <label class="form-label small text-muted mb-1">Hình thức đặt cọc / thế chân:</label>
@@ -203,8 +175,7 @@
                   </select>
                 </div>
 
-                <!-- VIETNAMESE: Bảng chiết tính chi phí minh bạch theo ngày và mức ưu đãi tự động -->
-                <!-- ENGLISH: Live breakdown of rental duration, discounts and cash collateral    -->
+                <!-- Bảng chiết tính chi phí minh bạch theo ngày và mức ưu đãi tự động -->
                 <!-- LOGIC: Thuê >= 3 ngày giảm 15%, thuê >= 7 ngày giảm 25% (KhuyenMai)          -->
                 <div class="p-3 bg-light rounded-3 border">
                   <div class="d-flex justify-content-between small mb-1">
@@ -237,10 +208,7 @@
                 </div>
               </div>
 
-              <!-- ============================================================================ -->
-              <!-- VIETNAMESE: NÚT THAO TÁC - THÊM VÀO GIỎ THUÊ HOẶC THUÊ NGAY LẬP TỨC           -->
-              <!-- ENGLISH: ACTION BUTTONS - ADD TO RENTAL CART OR RENT NOW                     -->
-              <!-- ============================================================================ -->
+              <!-- NÚT THAO TÁC - THÊM VÀO GIỎ THUÊ HOẶC THUÊ NGAY LẬP TỨC           -->
               <div class="d-flex gap-3">
                 <button
                   class="btn btn-outline-primary btn-lg flex-fill d-flex align-items-center justify-content-center gap-2"
@@ -258,8 +226,7 @@
                 </button>
               </div>
 
-              <!-- VIETNAMESE: Cảnh báo khi thiết bị đang được khách khác thuê                 -->
-              <!-- ENGLISH: Warning notice when device is currently rented out                -->
+              <!-- Cảnh báo khi thiết bị đang được khách khác thuê                 -->
               <div v-if="phone.TinhTrangMay !== 'SAN_SANG'" class="alert alert-warning mt-3 mb-0 small text-center">
                 <i class="fa fa-info-circle me-1"></i> Thiết bị này hiện đang được khách hàng khác thuê. Quý khách vui lòng chọn máy khác hoặc liên hệ hotline để đặt lịch trước.
               </div>
@@ -267,11 +234,8 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
-        <!-- VIETNAMESE: BẢNG CHI TIẾT THÔNG SỐ KỸ THUẬT PHẦN CỨNG                              -->
-        <!-- ENGLISH: COMPREHENSIVE HARDWARE SPECIFICATIONS TABLE                             -->
+        <!-- BẢNG CHI TIẾT THÔNG SỐ KỸ THUẬT PHẦN CỨNG                              -->
         <!-- ERD: Ánh xạ 100% cấu trúc thực thể CauHinh_PhienBan                              -->
-        <!-- ================================================================================ -->
         <div class="mt-4 pt-4 border-top">
           <h5 class="fw-bold text-dark mb-3">Mô tả chi tiết & Thông số kỹ thuật</h5>
           <p class="text-muted leading-relaxed mb-4">{{ phone.moTa }}</p>
@@ -316,11 +280,8 @@
           </div>
         </div>
 
-        <!-- ===================================================================================== -->
-        <!-- VIETNAMESE: MỤC NHẬN XÉT & ĐÁNH GIÁ SẢN PHẨM (CUSTOMER REVIEWS & STAR RATINGS)        -->
-        <!-- ENGLISH: PRODUCT REVIEWS & STAR RATINGS SECTION WITH SUBMISSION & FILTERING          -->
+        <!-- MỤC NHẬN XÉT & ĐÁNH GIÁ SẢN PHẨM (CUSTOMER REVIEWS & STAR RATINGS)        -->
         <!-- ERD: Ánh xạ thực thể DanhGia_NhanXet (MaDanhGia, MaDienThoai, SoSao, NoiDung, ...)    -->
-        <!-- ===================================================================================== -->
         <div class="card border-0 shadow-sm rounded-4 mt-4 overflow-hidden product-reviews-section">
           <!-- TIÊU ĐỀ SECTION & NÚT MỞ FORM VIẾT ĐÁNH GIÁ -->
           <div class="card-header bg-white border-bottom py-3 px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -617,8 +578,7 @@
         </div>
       </div>
 
-      <!-- VIETNAMESE: Trạng thái không tìm thấy sản phẩm khi URL truyền sai ID -->
-      <!-- ENGLISH: Empty fallback state when product ID is invalid or deleted -->
+      <!-- Trạng thái không tìm thấy sản phẩm khi URL truyền sai ID -->
       <div v-else class="text-center py-5 bg-white rounded-4 border p-5">
         <i class="fa fa-exclamation-triangle text-warning fs-1 mb-3"></i>
         <h4 class="fw-bold">Không tìm thấy thiết bị</h4>
@@ -636,10 +596,7 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT CÁC MODULE VUE & STORE QUẢN LÝ DỮ LIỆU
-// ENGLISH: IMPORT VUE CORE LIBS & DATA STORES
-// ============================================================================================
+// IMPORT CÁC MODULE VUE & STORE QUẢN LÝ DỮ LIỆU
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
@@ -667,9 +624,7 @@ const userStore = useUserStore();
 const activeImage = ref('');
 const todayStr = new Date().toISOString().split('T')[0];
 
-// ============================================================================================
-// VIETNAMESE: QUẢN LÝ ĐÁNH GIÁ & NHẬN XÉT SẢN PHẨM (REVIEWS & RATINGS STATE)
-// ============================================================================================
+// QUẢN LÝ ĐÁNH GIÁ & NHẬN XÉT SẢN PHẨM (REVIEWS & RATINGS STATE)
 const reviews = ref([]);
 const selectedStarFilter = ref(0); // 0: Tất cả, 1-5: Lọc theo số sao
 const showReviewForm = ref(false);
@@ -796,11 +751,8 @@ const submitReview = () => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: LẤY THÔNG TIN ĐIỆN THOẠI HIỆN TẠI TỪ PHONE STORE THEO ROUTE ID
-// ENGLISH: RETRIEVE TARGET PHONE OBJECT FROM PHONE STORE VIA URL PARAM ID
+// LẤY THÔNG TIN ĐIỆN THOẠI HIỆN TẠI TỪ PHONE STORE THEO ROUTE ID
 // ERD: SELECT * FROM DienThoai JOIN CauHinh_PhienBan WHERE MaDienThoai = ?
-// ============================================================================================
 const phone = computed(() => {
   return phoneStore.getPhoneById(route.params.id);
 });
@@ -822,11 +774,8 @@ const currentDailyPrice = computed(() => {
   return phone.value.giaKhuyenMai || phone.value.giaThueNgay;
 });
 
-// ============================================================================================
-// VIETNAMESE: TÍNH % CHIẾT KHẤU THUÊ DÀI HẠN THEO SỐ NGÀY THUÊ
-// ENGLISH: DYNAMIC DISCOUNT PERCENTAGE BASED ON RENTAL DURATION
+// TÍNH % CHIẾT KHẤU THUÊ DÀI HẠN THEO SỐ NGÀY THUÊ
 // LOGIC: Thuê từ 3 ngày trở lên giảm 15%, thuê từ 7 ngày trở lên giảm 25% (Bảng KhuyenMai)
-// ============================================================================================
 const discountPercent = computed(() => {
   const days = cartStore.rentalDays;
   if (days >= 7) return 25;
@@ -848,14 +797,11 @@ const itemRentalTotal = computed(() => {
   return total - discountAmount.value;
 });
 
-// ============================================================================================
-// VIETNAMESE: TÍNH TOÁN TIỀN CỌC MẶT THEO HÌNH THỨC THẾ CHÂN ĐÃ CHỌN
-// ENGLISH: CALCULATE CASH COLLATERAL BASED ON SELECTED COLLATERAL METHOD
+// TÍNH TOÁN TIỀN CỌC MẶT THEO HÌNH THỨC THẾ CHÂN ĐÃ CHỌN
 // ERD: Ánh xạ quy tắc bảo đảm thực thể DatCoc (Deposit Entity)
 // - GIAY_TO_TUY_THAN: Giữ CCCD gắn chip -> chỉ thu 15% tiền mặt
 // - CHUYEN_KHOAN: Thu đủ 100% định mức cọc
 // - MAY_ANH_MAY_TINH: Thế chấp tài sản giá trị tương đương -> Miễn 100% tiền cọc
-// ============================================================================================
 const calculatedDeposit = computed(() => {
   if (!phone.value) return 0;
   const base = phone.value.tienCocYeuCau;
@@ -889,10 +835,7 @@ const handleRentNow = () => {
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS TÙY CHỈNH CHO TRANG CHI TIẾT SẢN PHẨM & ALBUM ẢNH                           */
-/* ENGLISH: CUSTOM SCOPED STYLES FOR PRODUCT DETAIL & GALLERY                                   */
-/* ============================================================================================ */
+/* CSS TÙY CHỈNH CHO TRANG CHI TIẾT SẢN PHẨM & ALBUM ẢNH                           */
 .phone-detail-page {
   min-height: 100vh;
   background-color: #f8fafc;
@@ -958,9 +901,7 @@ const handleRentNow = () => {
   cursor: pointer;
 }
 
-/* ============================================================================================ */
-/* VIETNAMESE: TỐI ƯU GIAO DIỆN TRANG CHI TIẾT KHI XEM TRÊN ĐIỆN THOẠI DI ĐỘNG                */
-/* ============================================================================================ */
+/* TỐI ƯU GIAO DIỆN TRANG CHI TIẾT KHI XEM TRÊN ĐIỆN THOẠI DI ĐỘNG                */
 @media (max-width: 768px) {
   .phone-detail-page main.container {
     padding-left: 10px;
@@ -1003,9 +944,7 @@ const handleRentNow = () => {
   }
 }
 
-/* ============================================================================================ */
-/* VIETNAMESE: STYLES CHO KHU VỰC NHẬN XÉT & ĐÁNH GIÁ SẢN PHẨM (REVIEWS & RATINGS)              */
-/* ============================================================================================ */
+/* STYLES CHO KHU VỰC NHẬN XÉT & ĐÁNH GIÁ SẢN PHẨM (REVIEWS & RATINGS)              */
 .review-header-icon {
   width: 42px;
   height: 42px;

@@ -1,8 +1,6 @@
-// =========================================================================================
 // PINIA STORE QUẢN LÝ ĐƠN THUÊ THIẾT BỊ (RENTAL ORDER STORE)
 // Ánh xạ ERD: Thực thể `DonThue`, `ChiTietDonThue`, `DatCoc`, `TrangThai`
 // Tích hợp: localStorage ('trongnhan_orders') & OrderService API (MySQL)
-// =========================================================================================
 
 import { defineStore } from 'pinia';
 import { mockPhones } from '@/data/mockData';
@@ -104,7 +102,7 @@ const defaultMockOrders = [
       {
         maDienThoai: 5,
         TenDienThoai: 'ASUS ROG Phone 8 Pro 16GB/512GB',
-        MacDinh: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/a/s/asus-rog-phone-8-pro.png',
+        MacDinh: 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/a/s/asus-rog-phone-8_1.png',
         SoIMEI_Serial: '357891234567890',
         RAM_ROM: '16GB / 512GB',
         giaThueNgay: 230000,
@@ -226,9 +224,7 @@ export const useOrderStore = defineStore('order', {
 
   // ACTIONS: Các hàm nghiệp vụ thay đổi trạng thái (Business actions)
   actions: {
-    // =====================================================================================
     // HÀM: ĐỒNG BỘ DỮ LIỆU TỪ LOCALSTORAGE (SYNC FROM STORAGE)
-    // =====================================================================================
     syncFromStorage() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -243,10 +239,25 @@ export const useOrderStore = defineStore('order', {
       }
     },
 
-    // =====================================================================================
+    // HÀM: TẢI & ĐỒNG BỘ ĐƠN THUÊ TRỰC TIẾP TỪ MYSQL WAMPSERVER (GET /api/rentals)
+    async fetchOrders() {
+      try {
+        const data = await OrderService.getAllOrders();
+        if (Array.isArray(data) && data.length > 0) {
+          if (JSON.stringify(this.orders) !== JSON.stringify(data)) {
+            this.orders = data;
+            persistOrders(this.orders);
+          }
+        } else {
+          this.syncFromStorage();
+        }
+      } catch (err) {
+        this.syncFromStorage();
+      }
+    },
+
     // HÀM: TẠO ĐƠN THUÊ MỚI TỪ GIỎ HÀNG (CREATE RENTAL ORDER)
     // Tham số: payload từ CartDrawer / ContractConfirmModal
-    // =====================================================================================
     taoDonThue(payload) {
       // 1. Tự sinh mã đơn duy nhất định dạng: DT-YYYYMMDD-RandomID
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -317,10 +328,8 @@ export const useOrderStore = defineStore('order', {
       return newOrder;
     },
 
-    // =====================================================================================
     // HÀM: QUẢN TRỊ VIÊN CẬP NHẬT TRẠNG THÁI ĐƠN (ADMIN UPDATE ORDER STATUS)
     // Điều hướng vòng đời State Machine từ Chờ duyệt -> Xác nhận cọc -> Đang thuê -> Hoàn tất
-    // =====================================================================================
     capNhatTrangThai(maDonThue, trangThaiMoi, ghiChuMoi = '') {
       const order = this.orders.find(o => o.maDonThue === maDonThue);
       if (!order) return false;
@@ -375,16 +384,12 @@ export const useOrderStore = defineStore('order', {
       return true;
     },
 
-    // =====================================================================================
     // HÀM: TÌM ĐƠN THUÊ THEO MÃ ĐƠN (GET ORDER BY ID)
-    // =====================================================================================
     getOrderById(maDonThue) {
       return this.orders.find(o => o.maDonThue === maDonThue);
     },
 
-    // =====================================================================================
     // HÀM: KHÔI PHỤC DANH SÁCH ĐƠN MẶC ĐỊNH (RESET TO DEFAULT ORDERS)
-    // =====================================================================================
     resetToDefaultOrders() {
       this.orders = JSON.parse(JSON.stringify(defaultMockOrders));
       persistOrders(this.orders);

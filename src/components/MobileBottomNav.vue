@@ -1,8 +1,6 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: THANH ĐIỀU HƯỚNG DƯỚI ĐÁY DÀNH RIÊNG CHO ĐIỆN THOẠI DI ĐỘNG (MOBILE BOTTOM NAV) -->
+  <!-- THANH ĐIỀU HƯỚNG DƯỚI ĐÁY DÀNH RIÊNG CHO ĐIỆN THOẠI DI ĐỘNG (MOBILE BOTTOM NAV) -->
   <!-- THIẾT KẾ: CHUẨN APP THƯƠNG MẠI ĐIỆN TỬ (SHOPEE, TIKI, CELLPHONES) - CHỈ HIỆN TRÊN MOBILE    -->
-  <!-- ========================================================================================== -->
   <nav class="mobile-bottom-nav d-block d-md-none">
     <div class="d-flex justify-content-around align-items-center h-100 px-1">
       <!-- 1. Trang chủ -->

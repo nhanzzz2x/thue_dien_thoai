@@ -226,9 +226,7 @@ import { onImgError } from '@/utils/formatters';
   border-radius: 4px;
 }
 
-/* ============================================================================================ */
 /* RESPONSIVE BANNER CHO ĐIỆN THOẠI & TABLET (< 768px)                                         */
-/* ============================================================================================ */
 @media (max-width: 768px) {
   .slide-content {
     min-height: 270px;

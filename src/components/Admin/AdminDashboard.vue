@@ -1,14 +1,8 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: TRANG TỔNG QUAN QUẢN TRỊ ADMIN (KPIs & BÁO CÁO NHANH - GIAI ĐOẠN 2)             -->
-  <!-- ENGLISH: ADMIN DASHBOARD (KPI SUMMARY & QUICK METRICS - PHASE 2)                           -->
+  <!-- TRANG TỔNG QUAN QUẢN TRỊ ADMIN (KPIs & BÁO CÁO NHANH - GIAI ĐOẠN 2)             -->
   <!-- ERD MAPPING: Thống kê tổng hợp từ DienThoai, DonThue, DatCoc                               -->
-  <!-- ========================================================================================== -->
   <div class="admin-dashboard">
-    <!-- ==================================================================================== -->
-    <!-- VIETNAMESE: HÀNG 4 THẺ CHỈ SỐ HOẠT ĐỘNG CHÍNH (TOP 4 KPI CARDS)                      -->
-    <!-- ENGLISH: TOP 4 OPERATIONAL KPI METRICS CARDS                                         -->
-    <!-- ==================================================================================== -->
+    <!-- HÀNG 4 THẺ CHỈ SỐ HOẠT ĐỘNG CHÍNH (TOP 4 KPI CARDS)                      -->
     <div class="row g-3 mb-4">
       <!-- KPI 1: Tổng số thiết bị trong kho (ERD: COUNT(*) FROM DienThoai) -->
       <!-- KPI 1: Total Devices in Fleet Inventory                          -->
@@ -85,10 +79,7 @@
       </div>
     </div>
 
-    <!-- ==================================================================================== -->
-    <!-- VIETNAMESE: HÀNG THỨ HAI - BẢNG ĐƠN THUÊ CẦN XỬ LÝ GẤP & TỶ LỆ THEO HÃNG              -->
-    <!-- ENGLISH: ROW 2 - URGENT ACTION ORDERS TABLE & BRAND DISTRIBUTION BREAKDOWN           -->
-    <!-- ==================================================================================== -->
+    <!-- HÀNG THỨ HAI - BẢNG ĐƠN THUÊ CẦN XỬ LÝ GẤP & TỶ LỆ THEO HÃNG              -->
     <div class="row g-4 mb-4">
       <!-- Cột trái: Đơn thuê cần xử lý nhanh -->
       <!-- Left Column: Fast Processing Orders -->
@@ -187,10 +178,7 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT CÁC STORE & HÀM FORMAT TIỀN TỆ
-// ENGLISH: IMPORT DATA STORES & FORMATTING UTILITY
-// ============================================================================================
+// IMPORT CÁC STORE & HÀM FORMAT TIỀN TỆ
 import { computed, onMounted } from 'vue';
 import { useOrderStore } from '@/stores/order.store';
 import { usePhoneStore } from '@/stores/phone.store';
@@ -205,26 +193,17 @@ onMounted(() => {
   orderStore.syncFromStorage();
 });
 
-// ============================================================================================
-// VIETNAMESE: TÍNH SỐ LƯỢNG MÁY SẴN SÀNG THUÊ (TinhTrangMay = 'SAN_SANG')
-// ENGLISH: COUNT DEVICES READY FOR RENT
-// ============================================================================================
+// TÍNH SỐ LƯỢNG MÁY SẴN SÀNG THUÊ (TinhTrangMay = 'SAN_SANG')
 const readyPhoneCount = computed(() => {
   return phoneStore.phones.filter(p => p.TinhTrangMay === 'SAN_SANG').length;
 });
 
-// ============================================================================================
-// VIETNAMESE: TÍNH SỐ LƯỢNG MÁY ĐANG CHO THUÊ (TinhTrangMay = 'DANG_THUE')
-// ENGLISH: COUNT DEVICES CURRENTLY RENTED OUT
-// ============================================================================================
+// TÍNH SỐ LƯỢNG MÁY ĐANG CHO THUÊ (TinhTrangMay = 'DANG_THUE')
 const rentedPhoneCount = computed(() => {
   return phoneStore.phones.filter(p => p.TinhTrangMay === 'DANG_THUE').length;
 });
 
-// ============================================================================================
-// VIETNAMESE: TÍNH TỶ TRỌNG CÁC THƯƠNG HIỆU ĐIỆN THOẠI TRONG KHO HÀNG
-// ENGLISH: COMPUTE PERCENTAGE DISTRIBUTION BY PHONE BRAND IN INVENTORY
-// ============================================================================================
+// TÍNH TỶ TRỌNG CÁC THƯƠNG HIỆU ĐIỆN THOẠI TRONG KHO HÀNG
 const brandStats = computed(() => {
   const total = phoneStore.phones.length || 1;
   const apple = phoneStore.phones.filter(p => p.hangSanXuat === 'APPLE').length;
@@ -240,10 +219,7 @@ const brandStats = computed(() => {
   ];
 });
 
-// ============================================================================================
-// VIETNAMESE: XÁC ĐỊNH MÀU SẮC HUY HIỆU THEO TRẠNG THÁI ĐƠN HÀNG
-// ENGLISH: RESOLVE BADGE COLOR CLASS BY ORDER STATUS
-// ============================================================================================
+// XÁC ĐỊNH MÀU SẮC HUY HIỆU THEO TRẠNG THÁI ĐƠN HÀNG
 const getStatusBadgeClass = (status) => {
   switch (status) {
     case 'CHO_DUYET': return 'bg-warning text-dark';
@@ -256,10 +232,7 @@ const getStatusBadgeClass = (status) => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: DỊCH MÃ TRẠNG THÁI RA TÊN GỌI RÚT GỌN HIỂN THỊ TRÊN BẢNG DASHBOARD
-// ENGLISH: TRANSLATE ORDER STATUS CODE TO COMPACT VIETNAMESE LABEL
-// ============================================================================================
+// DỊCH MÃ TRẠNG THÁI RA TÊN GỌI RÚT GỌN HIỂN THỊ TRÊN BẢNG DASHBOARD
 const getStatusText = (status) => {
   switch (status) {
     case 'CHO_DUYET': return 'Chờ duyệt';
@@ -274,10 +247,7 @@ const getStatusText = (status) => {
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS CHO CÁC KHỐI BIỂU TƯỢNG KPI DASHBOARD                                       */
-/* ENGLISH: SCOPED STYLES FOR KPI ICON CONTAINERS                                               */
-/* ============================================================================================ */
+/* CSS CHO CÁC KHỐI BIỂU TƯỢNG KPI DASHBOARD                                       */
 .kpi-icon-box {
   width: 54px;
   height: 54px;

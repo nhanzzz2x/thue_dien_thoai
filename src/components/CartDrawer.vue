@@ -1,15 +1,9 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: THANH TRƯỢT GIỎ THUÊ & TẠO ĐƠN HÀNG HỢP ĐỒNG (GIAO DIỆN KHÁCH HÀNG - GIAI ĐOẠN 1) -->
-  <!-- ENGLISH: RENTAL CART SIDE DRAWER & ORDER CONTRACT CREATION (CLIENT UI - PHASE 1)          -->
+  <!-- THANH TRƯỢT GIỎ THUÊ & TẠO ĐƠN HÀNG HỢP ĐỒNG (GIAO DIỆN KHÁCH HÀNG - GIAI ĐOẠN 1) -->
   <!-- ERD MAPPING: Ánh xạ GioHang, DonThue, ChiTietDonThue, DatCoc, PhieuKhuyenMai               -->
-  <!-- ========================================================================================== -->
   <div v-if="cartStore.isDrawerOpen" class="cart-drawer-overlay" @click.self="cartStore.closeDrawer">
     <div class="cart-drawer-panel p-4 d-flex flex-column">
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: TIÊU ĐỀ GIỎ THUÊ & NÚT ĐÓNG                                              -->
-      <!-- ENGLISH: DRAWER HEADER & CLOSE BUTTON                                                -->
-      <!-- ==================================================================================== -->
+      <!-- TIÊU ĐỀ GIỎ THUÊ & NÚT ĐÓNG                                              -->
       <div class="d-flex justify-content-between align-items-center pb-3 border-bottom mb-3">
         <div class="d-flex align-items-center gap-2">
           <i class="fa fa-shopping-bag text-primary fs-4"></i>
@@ -23,10 +17,7 @@
         </button>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: HIỂN THỊ KHI GIỎ HÀNG TRỐNG                                              -->
-      <!-- ENGLISH: EMPTY CART STATE VIEW                                                       -->
-      <!-- ==================================================================================== -->
+      <!-- HIỂN THỊ KHI GIỎ HÀNG TRỐNG                                              -->
       <div v-if="cartStore.items.length === 0" class="flex-grow-1 text-center py-5">
         <div class="empty-cart-icon mb-3">
           <i class="fa fa-shopping-basket text-muted"></i>
@@ -38,16 +29,10 @@
         </button>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: NỘI DUNG GIỎ THUÊ (CHỌN NGÀY, DANH SÁCH MÁY, CỌC, VOUCHER)                -->
-      <!-- ENGLISH: DRAWER BODY (DATES, DEVICES LIST, COLLATERAL PICKER, VOUCHER)               -->
-      <!-- ==================================================================================== -->
+      <!-- NỘI DUNG GIỎ THUÊ (CHỌN NGÀY, DANH SÁCH MÁY, CỌC, VOUCHER)                -->
       <div v-else class="drawer-body flex-grow-1 overflow-y-auto pe-2">
-        <!-- ================================================================================ -->
-        <!-- VIETNAMESE: CHỌN KHOẢNG THỜI GIAN THUÊ THIẾT BỊ                                  -->
-        <!-- ENGLISH: RENTAL DURATION DATE SELECTION                                          -->
+        <!-- CHỌN KHOẢNG THỜI GIAN THUÊ THIẾT BỊ                                  -->
         <!-- ERD: DonThue.NgayBatDauThue & DonThue.NgayKetThucThue                            -->
-        <!-- ================================================================================ -->
         <div class="date-picker-box bg-light p-3 rounded-3 mb-3 border">
           <label class="form-label small fw-bold mb-2">
             <i class="fa fa-calendar text-primary me-1"></i> Thời gian thuê (NgayBatDauThue &ndash; NgayKetThucThue):
@@ -71,11 +56,8 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
-        <!-- VIETNAMESE: DANH SÁCH THIẾT BỊ ĐÃ CHỌN (ChiTietDonThue)                           -->
-        <!-- ENGLISH: SELECTED DEVICES LIST (ChiTietDonThue)                                  -->
+        <!-- DANH SÁCH THIẾT BỊ ĐÃ CHỌN (ChiTietDonThue)                           -->
         <!-- ERD: ChiTietDonThue (MaDonThue, MaDienThoai, SoLuong, DonGiaNgay)                -->
-        <!-- ================================================================================ -->
         <div class="cart-items-list mb-3">
           <div
             v-for="item in cartStore.items"
@@ -131,11 +113,8 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
-        <!-- VIETNAMESE: LỰA CHỌN PHƯƠNG THỨC THẾ CHÂN / ĐẶT CỌC                              -->
-        <!-- ENGLISH: COLLATERAL / DEPOSIT METHOD SELECTION                                    -->
+        <!-- LỰA CHỌN PHƯƠNG THỨC THẾ CHÂN / ĐẶT CỌC                              -->
         <!-- ERD: DatCoc.PhuongThuc (GIAY_TO_TUY_THAN, CHUYEN_KHOAN, MAY_ANH_MAY_TINH)      -->
-        <!-- ================================================================================ -->
         <div class="deposit-select-box bg-light p-3 rounded-3 mb-3 border">
           <label class="form-label small fw-bold mb-2">
             <i class="fa fa-shield text-warning me-1"></i> Chọn Hình Thức Thế Chân (PhuongThuc):
@@ -162,11 +141,8 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
-        <!-- VIETNAMESE: NHẬP VOUCHER GIẢM GIÁ (PhieuKhuyenMai)                                -->
-        <!-- ENGLISH: PROMO VOUCHER REDEMPTION (PhieuKhuyenMai)                               -->
+        <!-- NHẬP VOUCHER GIẢM GIÁ (PhieuKhuyenMai)                                -->
         <!-- ERD: PhieuKhuyenMai.Code & PhieuKhuyenMai.GiaTriGiam                             -->
-        <!-- ================================================================================ -->
         <div class="voucher-box mb-3">
           <label class="form-label small fw-bold">Mã giảm giá (PhieuKhuyenMai):</label>
           <div class="input-group input-group-sm">
@@ -199,11 +175,8 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
-        <!-- VIETNAMESE: BẢNG TỔNG HỢP CHI PHÍ TIỀN THUÊ                                      -->
-        <!-- ENGLISH: RENTAL COST SUMMARY BREAKDOWN                                           -->
+        <!-- BẢNG TỔNG HỢP CHI PHÍ TIỀN THUÊ                                      -->
         <!-- ERD: DonThue.TongTien                                                            -->
-        <!-- ================================================================================ -->
         <div class="summary-box p-3 bg-light rounded-3 border">
           <div class="d-flex justify-content-between small mb-1">
             <span class="text-muted">Tổng tiền thuê ngày ({{ cartStore.rentalDays }} ngày):</span>
@@ -230,10 +203,7 @@
         </div>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: CHÂN THANH TRƯỢT - NÚT TẠO ĐƠN & LÀM HỢP ĐỒNG ĐIỆN TỬ                    -->
-      <!-- ENGLISH: DRAWER FOOTER - SUBMIT RENTAL ORDER & CREATE DIGITAL CONTRACT               -->
-      <!-- ==================================================================================== -->
+      <!-- CHÂN THANH TRƯỢT - NÚT TẠO ĐƠN & LÀM HỢP ĐỒNG ĐIỆN TỬ                    -->
       <div v-if="cartStore.items.length > 0" class="drawer-footer pt-3 border-top mt-auto">
         <button class="btn btn-primary-smart w-100 justify-content-center py-2.5" @click="handleCheckout">
           <i class="fa fa-check-circle me-1"></i> Xác nhận đặt thuê & Làm hợp đồng
@@ -242,9 +212,7 @@
     </div>
   </div>
 
-  <!-- ======================================================================================== -->
   <!-- MODAL XÁC NHẬN HỢP ĐỒNG & THỦ TỤC THẾ CHÂN 3 HÌNH THỨC (CCCD, QR, LAPTOP TẠI SHOP)       -->
-  <!-- ======================================================================================== -->
   <ContractConfirmModal
     :isOpen="isContractModalOpen"
     @close="isContractModalOpen = false"
@@ -252,10 +220,7 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT CÁC STORE, COMPONENT & DỮ LIỆU CẤU HÌNH CỌC
-// ENGLISH: IMPORT STORES, MODAL COMPONENT, DEPOSIT PRESETS & SWEETALERT2
-// ============================================================================================
+// IMPORT CÁC STORE, COMPONENT & DỮ LIỆU CẤU HÌNH CỌC
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCartStore } from '@/stores/cart.store';
@@ -275,10 +240,7 @@ const userStore = useUserStore();
 const voucherInput = ref('');
 const isContractModalOpen = ref(false);
 
-// ============================================================================================
-// VIETNAMESE: ÁP DỤNG MÃ GIẢM GIÁ (PhieuKhuyenMai)
-// ENGLISH: REDEEM PROMOTIONAL VOUCHER CODE
-// ============================================================================================
+// ÁP DỤNG MÃ GIẢM GIÁ (PhieuKhuyenMai)
 const applyVoucher = () => {
   if (!voucherInput.value.trim()) return;
   const res = cartStore.applyVoucherCode(voucherInput.value);
@@ -299,19 +261,13 @@ const applyVoucher = () => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: HỦY ÁP DỤNG MÃ GIẢM GIÁ
-// ENGLISH: REMOVE APPLIED VOUCHER CODE
-// ============================================================================================
+// HỦY ÁP DỤNG MÃ GIẢM GIÁ
 const removeVoucher = () => {
   cartStore.removeVoucher();
   voucherInput.value = '';
 };
 
-// ============================================================================================
-// VIETNAMESE: MỞ MODAL XÁC NHẬN HỢP ĐỒNG & THỦ TỤC THẾ CHÂN (CCCD / QR / LAPTOP TẠI SHOP)
-// ENGLISH: OPEN CONTRACT CONFIRMATION MODAL WITH 3 CONDITIONAL COLLATERAL FLOWS
-// ============================================================================================
+// MỞ MODAL XÁC NHẬN HỢP ĐỒNG & THỦ TỤC THẾ CHÂN (CCCD / QR / LAPTOP TẠI SHOP)
 const handleCheckout = () => {
   if (!cartStore.items || cartStore.items.length === 0) {
     Swal.fire({
@@ -327,10 +283,7 @@ const handleCheckout = () => {
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS CHO THANH TRƯỢT GIỎ THUÊ (SIDE DRAWER ANIMATION)                             */
-/* ENGLISH: SCOPED STYLES & SLIDE-IN KEYFRAME ANIMATION FOR CART DRAWER                         */
-/* ============================================================================================ */
+/* CSS CHO THANH TRƯỢT GIỎ THUÊ (SIDE DRAWER ANIMATION)                             */
 .cart-drawer-overlay {
   position: fixed;
   top: 0;

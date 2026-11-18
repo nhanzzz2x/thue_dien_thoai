@@ -1,10 +1,8 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: MODAL XÁC NHẬN TẠO ĐƠN & KÝ HỢP ĐỒNG ĐIỆN TỬ THEO 3 HÌNH THỨC THẾ CHÂN         -->
+  <!-- MODAL XÁC NHẬN TẠO ĐƠN & KÝ HỢP ĐỒNG ĐIỆN TỬ THEO 3 HÌNH THỨC THẾ CHÂN         -->
   <!-- 1. Căn cước công dân (CCCD): Bổ sung chức năng chụp ảnh / tải ảnh CCCD 2 mặt              -->
   <!-- 2. Chuyển khoản Ngân hàng / VNPay: Hiện mã QR VietQR thanh toán tiền thuê & tiền cọc       -->
   <!-- 3. Laptop / iPad / Máy ảnh: Thông báo khách mang thiết bị đến địa chỉ của shop kiểm tra hàng-->
-  <!-- ========================================================================================== -->
   <div v-if="isOpen" class="contract-modal-backdrop" @click.self="closeModal">
     <div class="contract-modal-dialog">
       <!-- HEADER MODAL -->
@@ -78,9 +76,7 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
         <!-- ĐIỀU KIỆN 1: CĂN CƯỚC CÔNG DÂN (CCCD) -> CHỤP ẢNH / TẢI ẢNH CCCD 2 MẶT            -->
-        <!-- ================================================================================ -->
         <div v-if="cartStore.selectedDepositMethod === 'GIAY_TO_TUY_THAN'" class="deposit-detail-box cccd-box p-3 rounded-3 border mb-4">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="fw-bold text-primary mb-0">
@@ -241,9 +237,7 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
         <!-- ĐIỀU KIỆN 2: CHUYỂN KHOẢN NGÂN HÀNG / VNPAY -> HIỆN MÃ QR THANH TOÁN TIỀN THUÊ     -->
-        <!-- ================================================================================ -->
         <div v-else-if="cartStore.selectedDepositMethod === 'CHUYEN_KHOAN'" class="deposit-detail-box qr-box p-3 rounded-3 border mb-4 bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
             <h6 class="fw-bold text-success mb-0">
@@ -313,9 +307,7 @@
           </div>
         </div>
 
-        <!-- ================================================================================ -->
         <!-- ĐIỀU KIỆN 3: LAPTOP / IPAD / MÁY ẢNH -> THÔNG BÁO ĐẾN ĐỊA CHỈ CỦA SHOP KIỂM TRA    -->
-        <!-- ================================================================================ -->
         <div v-else-if="cartStore.selectedDepositMethod === 'MAY_ANH_MAY_TINH'" class="deposit-detail-box store-check-box p-3 rounded-3 border mb-4 bg-white">
           <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
             <h6 class="fw-bold text-warning-emphasis mb-0">
@@ -455,9 +447,7 @@ const techDeviceNote = ref('Laptop Asus ROG Strix G16 (Kèm sạc zin)');
 const tempOrderCode = ref(Math.floor(1000 + Math.random() * 9000).toString());
 const tempContractCode = computed(() => `HD_20261112_${tempOrderCode.value}`);
 
-// ============================================================================================
 // LOGIC CHỤP ẢNH & TẢI ẢNH CĂN CƯỚC CÔNG DÂN (CCCD)
-// ============================================================================================
 const cccdFrontImg = ref(null);
 const cccdBackImg = ref(null);
 const activeCamera = ref(null); // 'FRONT' | 'BACK' | null
@@ -566,9 +556,7 @@ const loadSampleCccd = () => {
   });
 };
 
-// ============================================================================================
 // LOGIC TẠO MÃ QR THANH TOÁN TIỀN THUÊ & CỌC (VIETQR)
-// ============================================================================================
 const vietQrUrl = computed(() => {
   const totalAmount = cartStore.finalTotalRental + cartStore.actualCashDeposit;
   const memo = encodeURIComponent(`THUEMAY ${tempOrderCode.value}`);
@@ -594,9 +582,7 @@ const closeModal = () => {
   emit('close');
 };
 
-// ============================================================================================
 // XÁC NHẬN KÝ HỢP ĐỒNG & HOÀN TẤT ĐẶT THUÊ
-// ============================================================================================
 const confirmAndSignContract = () => {
   // 1. Kiểm tra nếu chọn CCCD mà chưa chụp ảnh
   if (cartStore.selectedDepositMethod === 'GIAY_TO_TUY_THAN' && (!cccdFrontImg.value || !cccdBackImg.value)) {
@@ -757,4 +743,3 @@ const confirmAndSignContract = () => {
   justify-content: center;
 }
 </style>
-

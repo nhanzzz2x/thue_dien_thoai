@@ -1,136 +1,137 @@
-// ============================================================================================
-// VIETNAMESE: PINIA STORE QUẢN LÝ TÀI KHOẢN, PHÂN QUYỀN (ADMIN / KHÁCH HÀNG) VÀ XÁC THỰC
-// ENGLISH: PINIA STORE FOR USER AUTHENTICATION, ROLES (ADMIN / CLIENT) & MODAL CONTROL
-// ERD MAPPING: Ánh xạ thực thể NguoiDung, KhachHang, Admin trong sơ đồ CSDL
-// ============================================================================================
-
 import { defineStore } from 'pinia';
+import { AuthService } from '@/services/auth.service';
+
+const USER_STORAGE_KEY = 'trongnhan_current_user';
+
+function loadSavedSession() {
+  try {
+    const raw = localStorage.getItem(USER_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.email) return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
 
 export const useUserStore = defineStore('user', {
-  // ==========================================================================================
-  // VIETNAMESE: TRẠNG THÁI NGƯỜI DÙNG & PHÂN QUYỀN
-  // ENGLISH: USER AUTHENTICATION & ROLE STATE
-  // ==========================================================================================
-  state: () => ({
-    // Đã đăng nhập hay chưa | Is logged in flag
-    isLoggedIn: false,
+  state: () => {
+    const savedUser = loadSavedSession();
+    return {
+      isLoggedIn: Boolean(savedUser),
+      isAdmin: savedUser?.vaiTro === 'ADMIN' || savedUser?.role === 'ADMIN',
+      isAuthModalOpen: false,
+      authMode: 'LOGIN',
+      user: savedUser || {
+        id: 1,
+        maNguoiDung: 'USER_01',
+        email: 'trongnhan@stu.edu.vn',
+        hoTen: 'Trần Trọng Nhân',
+        sdt: '0987654321',
+        cccd: '079201008899',
+        diaChi: '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM',
+        khachMoi: true,
+        maNhaCungCap: 'LOCAL',
+        vaiTro: 'KHACH_HANG'
+      }
+    };
+  },
 
-    // Là quản trị viên hay khách hàng thường | Is Admin role flag
-    isAdmin: false,
-
-    // Trạng thái modal đăng nhập / đăng ký
-    isAuthModalOpen: false,
-    authMode: 'LOGIN', // 'LOGIN' | 'REGISTER'
-
-    // Thông tin người dùng hiện tại (Ánh xạ bảng NguoiDung / KhachHang / Admin)
-    user: {
-      id: 1,
-      email: 'trongnhan@trongnhanmobile.vn',
-      hoTen: 'Trần Trong Nhân',
-      sdt: '0987654321',
-      cccd: '079201008899',
-      diaChi: '195/9 Nguyễn Văn Thương, P.25, Bình Thạnh, TP.HCM',
-      khachMoi: true,
-      vaiTro: 'KHACH_HANG' // 'ADMIN' | 'KHACH_HANG'
-    }
-  }),
-
-  // ==========================================================================================
-  // VIETNAMESE: ACTIONS - ĐĂNG NHẬP, ĐĂNG XUẤT VÀ PHÂN QUYỀN TRUY CẬP
-  // ENGLISH: ACTIONS - LOGIN, LOGOUT & ROLE-BASED ACCESS CONTROL
-  // ==========================================================================================
   actions: {
-    // Mở popup đăng nhập
     openLogin() {
       this.authMode = 'LOGIN';
       this.isAuthModalOpen = true;
     },
 
-    // Mở popup đăng ký
     openRegister() {
       this.authMode = 'REGISTER';
       this.isAuthModalOpen = true;
     },
 
-    // Đóng popup xác thực
     closeAuthModal() {
       this.isAuthModalOpen = false;
     },
 
-    // ========================================================================================
-    // VIETNAMESE: XỬ LÝ ĐĂNG NHẬP VÀ PHÂN ĐỊNH VAI TRÒ ADMIN HOẶC KHÁCH HÀNG
-    // ENGLISH: PROCESS USER LOGIN & DETERMINE USER ROLE (ADMIN VS CUSTOMER)
-    // ========================================================================================
-    login(email, password) {
-      this.isLoggedIn = true;
-      const lowerEmail = (email || '').toLowerCase().trim();
-
-      // KIỂM TRA TÀI KHOẢN QUẢN TRỊ VIÊN ADMIN
-      // Check if credentials belong to Admin
-      if (lowerEmail.includes('admin') || password === 'admin123' || lowerEmail === 'admin@trongnhanmobile.vn') {
-        this.isAdmin = true;
-        this.user = {
-          id: 99,
-          email: email || 'admin@trongnhanmobile.vn',
-          hoTen: 'Quản Trị Viên (Admin)',
-          sdt: '0988123456',
-          cccd: '079201009999',
-          diaChi: 'Hệ Thống Trụ Sở TrongNhanMobile, 195/9 Nguyễn Văn Thương, Bình Thạnh',
-          khachMoi: false,
-          vaiTro: 'ADMIN'
-        };
-      } else {
-        // TÀI KHOẢN KHÁCH HÀNG THUÊ THIẾT BỊ
-        // Client account
-        this.isAdmin = false;
-        this.user = {
-          id: 1,
-          email: email || 'khachhang@trongnhanmobile.vn',
-          hoTen: 'Trần Trong Nhân',
-          sdt: '0987654321',
-          cccd: '079201008899',
-          diaChi: '195/9 Nguyễn Văn Thương, P.25, Bình Thạnh, TP.HCM',
-          khachMoi: true,
-          vaiTro: 'KHACH_HANG'
-        };
-      }
-
-      this.isAuthModalOpen = false;
-      return this.isAdmin;
+    persistUser() {
+      try {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(this.user));
+      } catch (e) {}
     },
 
-    // ========================================================================================
-    // VIETNAMESE: ĐĂNG NHẬP NHANH BẰNG TÀI KHOẢN QUẢN TRỊ ADMIN (PHỤC VỤ TEST & BẢO VỆ ĐỒ ÁN)
-    // ENGLISH: ONE-CLICK ADMIN LOGIN HELPER FOR THESIS DEMO & TESTING
-    // ========================================================================================
-    loginAsAdmin() {
+    async login(email, password) {
+      const data = await AuthService.login(email, password);
+      if (data?.user) {
+        const isAdminRole = data.user.role === 'ADMIN' || data.user.vaiTro === 'ADMIN';
+        this.user = {
+          id: data.user.maNguoiDung,
+          maNguoiDung: data.user.maNguoiDung,
+          email: data.user.email,
+          hoTen: data.user.hoTen || data.user.tenNguoiDung,
+          sdt: data.user.sdt || '',
+          cccd: data.user.cccd || '',
+          diaChi: data.user.diaChi || '',
+          khachMoi: Boolean(data.user.khachMoi),
+          maNhaCungCap: data.user.maNhaCungCap || 'LOCAL',
+          vaiTro: isAdminRole ? 'ADMIN' : 'KHACH_HANG'
+        };
+        this.isLoggedIn = true;
+        this.isAdmin = isAdminRole;
+        this.persistUser();
+        this.isAuthModalOpen = false;
+        return this.isAdmin;
+      }
+      throw new Error('Đăng nhập thất bại');
+    },
+
+    async loginAsAdmin() {
       return this.login('admin@trongnhanmobile.vn', 'admin123');
     },
 
-    // ========================================================================================
-    // VIETNAMESE: ĐĂNG KÝ TÀI KHOẢN KHÁCH HÀNG MỚI (LƯU VÀO STATE BẢNG KhachHang)
-    // ENGLISH: REGISTER NEW CLIENT CUSTOMER ACCOUNT
-    // ========================================================================================
-    register(newUserData) {
-      this.isLoggedIn = true;
-      this.isAdmin = false;
-      this.user = {
-        id: Date.now(),
-        email: newUserData.email || 'khachhang@trongnhanmobile.vn',
-        hoTen: newUserData.hoTen || 'Khách Hàng Mới',
-        sdt: newUserData.sdt || '0901234567',
-        cccd: newUserData.cccd || '079201008899',
-        diaChi: newUserData.diaChi || '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM',
-        khachMoi: true,
-        vaiTro: 'KHACH_HANG'
-      };
-      this.isAuthModalOpen = false;
-      return this.user;
+    async register(newUserData) {
+      const provider = (newUserData.provider || 'LOCAL').toUpperCase();
+
+      const data =
+        provider === 'GOOGLE' || provider === 'FACEBOOK'
+          ? await AuthService.oauthLogin({
+              email: newUserData.email,
+              hoTen: newUserData.hoTen,
+              provider
+            })
+          : await AuthService.register({
+              hoTen: newUserData.hoTen,
+              email: newUserData.email,
+              password: newUserData.password || '123456',
+              sdt: newUserData.sdt,
+              cccd: newUserData.cccd,
+              diaChi: newUserData.diaChi
+            });
+
+      if (data?.user) {
+        const isAdminRole = data.user.role === 'ADMIN' || data.user.vaiTro === 'ADMIN';
+        this.user = {
+          id: data.user.maNguoiDung,
+          maNguoiDung: data.user.maNguoiDung,
+          email: data.user.email,
+          hoTen: data.user.hoTen || data.user.tenNguoiDung,
+          sdt: data.user.sdt || newUserData.sdt || '',
+          cccd: data.user.cccd || newUserData.cccd || '',
+          diaChi: data.user.diaChi || newUserData.diaChi || '',
+          khachMoi: Boolean(data.user.khachMoi ?? true),
+          maNhaCungCap: data.user.maNhaCungCap || provider,
+          vaiTro: isAdminRole ? 'ADMIN' : 'KHACH_HANG'
+        };
+        this.isLoggedIn = true;
+        this.isAdmin = isAdminRole;
+        this.persistUser();
+        this.isAuthModalOpen = false;
+        return this.user;
+      }
+      throw new Error('Không thể tạo tài khoản');
     },
 
-    // Đăng xuất khỏi hệ thống
-    // Logout action
     logout() {
+      AuthService.logout();
+      localStorage.removeItem(USER_STORAGE_KEY);
       this.isLoggedIn = false;
       this.isAdmin = false;
     }

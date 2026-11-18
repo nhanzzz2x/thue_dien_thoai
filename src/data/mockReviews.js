@@ -1,8 +1,5 @@
-// ============================================================================================
-// VIETNAMESE: MOCK DỮ LIỆU ĐÁNH GIÁ & NHẬN XÉT SẢN PHẨM (REVIEWS & RATINGS)
-// ENGLISH: MOCK PRODUCT REVIEWS & STAR RATINGS DATA
+// MOCK DỮ LIỆU ĐÁNH GIÁ & NHẬN XÉT SẢN PHẨM (REVIEWS & RATINGS)
 // ERD MAPPING: Ánh xạ thực thể DanhGia_NhanXet (MaDanhGia, MaDienThoai, MaNguoiDung, SoSao, NoiDung, NgayDanhGia)
-// ============================================================================================
 
 export const defaultMockReviews = [
   // iPhone 16 Pro Max (maDienThoai = 1)

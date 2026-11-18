@@ -1,14 +1,8 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: QUẢN LÝ KHO ĐIỆN THOẠI, MÃ IMEI & CẤU HÌNH (GIAO DIỆN QUẢN TRỊ ADMIN - GIAI ĐOẠN 2)-->
-  <!-- ENGLISH: PHONE INVENTORY, IMEI & HARDWARE CONFIG MANAGEMENT (ADMIN PORTAL - PHASE 2)       -->
+  <!-- QUẢN LÝ KHO ĐIỆN THOẠI, MÃ IMEI & CẤU HÌNH (GIAO DIỆN QUẢN TRỊ ADMIN - GIAI ĐOẠN 2)-->
   <!-- ERD MAPPING: Ánh xạ 100% hai thực thể cốt lõi DienThoai và CauHinh_PhienBan               -->
-  <!-- ========================================================================================== -->
   <div class="phone-management">
-    <!-- ==================================================================================== -->
-    <!-- VIETNAMESE: TIÊU ĐỀ TRANG QUẢN TRỊ & NÚT THÊM THIẾT BỊ MỚI VÀO KHO                   -->
-    <!-- ENGLISH: ADMIN PAGE HEADER & BUTTON TO ADD NEW PHONE TO INVENTORY                     -->
-    <!-- ==================================================================================== -->
+    <!-- TIÊU ĐỀ TRANG QUẢN TRỊ & NÚT THÊM THIẾT BỊ MỚI VÀO KHO                   -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
       <div>
         <h4 class="fw-bold text-dark mb-1">
@@ -31,14 +25,10 @@
       </div>
     </div>
 
-    <!-- ==================================================================================== -->
-    <!-- VIETNAMESE: THANH TÌM KIẾM THEO TÊN/IMEI & BỘ LỌC HÃNG / TRẠNG THÁI MÁY              -->
-    <!-- ENGLISH: SEARCH BAR (BY NAME/IMEI) & FILTER DROPDOWNS (BRAND, AVAILABILITY STATUS)   -->
-    <!-- ==================================================================================== -->
+    <!-- THANH TÌM KIẾM THEO TÊN/IMEI & BỘ LỌC HÃNG / TRẠNG THÁI MÁY              -->
     <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
       <div class="row g-2 align-items-center">
-        <!-- VIETNAMESE: Tìm kiếm từ khóa theo tên máy hoặc mã IMEI/Serial -->
-        <!-- ENGLISH: Search keyword by phone name or IMEI/Serial code     -->
+        <!-- Tìm kiếm từ khóa theo tên máy hoặc mã IMEI/Serial -->
         <div class="col-md-5">
           <div class="input-group">
             <span class="input-group-text bg-light border-end-0"><i class="fa fa-search text-muted"></i></span>
@@ -51,8 +41,7 @@
           </div>
         </div>
 
-        <!-- VIETNAMESE: Lọc theo hãng sản xuất động từ danh sách categories -->
-        <!-- ENGLISH: Filter by dynamic brand list (DienThoai.HangSanXuat)   -->
+        <!-- Lọc theo hãng sản xuất động từ danh sách categories -->
         <div class="col-md-3 col-6">
           <select class="form-select" v-model="filterBrand">
             <option value="ALL">Tất cả hãng sản xuất</option>
@@ -62,8 +51,7 @@
           </select>
         </div>
 
-        <!-- VIETNAMESE: Lọc theo trạng thái máy (SAN_SANG, DANG_THUE, BAO_TRI) -->
-        <!-- ENGLISH: Filter by device state (DienThoai.TinhTrangMay)           -->
+        <!-- Lọc theo trạng thái máy (SAN_SANG, DANG_THUE, BAO_TRI) -->
         <div class="col-md-3 col-6">
           <select class="form-select" v-model="filterStatus">
             <option value="ALL">Tất cả trạng thái máy</option>
@@ -73,7 +61,7 @@
           </select>
         </div>
 
-        <!-- VIETNAMESE: Nút đặt lại bộ lọc về mặc định | ENGLISH: Reset filters -->
+        <!-- Nút đặt lại bộ lọc về mặc định | ENGLISH: Reset filters -->
         <div class="col-md-1 text-end">
           <button class="btn btn-outline-secondary w-100" @click="resetFilters" title="Đặt lại bộ lọc">
             <i class="fa fa-refresh"></i>
@@ -82,10 +70,7 @@
       </div>
     </div>
 
-    <!-- ==================================================================================== -->
-    <!-- VIETNAMESE: BẢNG DANH SÁCH THIẾT BỊ TRONG KHO (BẢNG DienThoai & CauHinh_PhienBan)   -->
-    <!-- ENGLISH: INVENTORY DEVICES DATA TABLE (DienThoai & CauHinh_PhienBan TABLES)         -->
-    <!-- ==================================================================================== -->
+    <!-- BẢNG DANH SÁCH THIẾT BỊ TRONG KHO (BẢNG DienThoai & CauHinh_PhienBan)   -->
     <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
       <div class="table-responsive">
         <table class="table table-hover align-middle small mb-0">
@@ -188,11 +173,8 @@
       </div>
     </div>
 
-    <!-- ==================================================================================== -->
-    <!-- VIETNAMESE: MODAL THÊM MỚI HOẶC CHỈNH SỬA THIẾT BỊ ĐIỆN THOẠI                        -->
-    <!-- ENGLISH: MODAL DIALOG TO CREATE OR EDIT PHONE & HARDWARE SPECS                       -->
+    <!-- MODAL THÊM MỚI HOẶC CHỈNH SỬA THIẾT BỊ ĐIỆN THOẠI                        -->
     <!-- ERD: Đồng thời ghi dữ liệu vào 2 bảng DienThoai và CauHinh_PhienBan                  -->
-    <!-- ==================================================================================== -->
     <div v-if="isModalOpen" class="modal-backdrop-custom d-flex align-items-center justify-content-center p-3" @click.self="isModalOpen = false; closeAllPriceDropdowns();">
       <div class="bg-white rounded-4 p-4 shadow-lg border" style="max-width: 650px; width: 100%; max-height: 90vh; overflow-y: auto;" @click="closeAllPriceDropdowns">
         <div class="d-flex justify-content-between align-items-center pb-2 border-bottom mb-3">
@@ -365,9 +347,7 @@
               </div>
             </div>
 
-            <!-- ============================================================================ -->
             <!-- QUẢN LÝ BỘ SƯU TẬP ẢNH SẢN PHẨM (ALBUM ĐA GÓC CHỤP & TẢI NHIỀU ẢNH)          -->
-            <!-- ============================================================================ -->
             <div class="col-12">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <label class="form-label small fw-bold mb-0">
@@ -521,9 +501,7 @@
       </div>
     </div>
 
-    <!-- ====================================================================================== -->
     <!-- MODAL QUẢN LÝ & THÊM HÃNG ĐIỆN THOẠI MỚI (Brand Category Management Modal)              -->
-    <!-- ====================================================================================== -->
     <div v-if="isCategoryModalOpen" class="modal-backdrop-custom d-flex align-items-center justify-content-center p-3">
       <div class="modal-dialog-custom bg-white rounded-4 p-4 shadow-lg border" style="max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto;">
         <!-- Header Modal -->
@@ -642,9 +620,7 @@
       </div>
     </div>
 
-    <!-- ====================================================================================== -->
     <!-- MODAL QUÉT CAMERA SỐ IMEI / MÃ VẠCH / QR CODE CHUẨN XÁC                                -->
-    <!-- ====================================================================================== -->
     <div v-if="isImeiScannerOpen" class="modal-backdrop-custom d-flex align-items-center justify-content-center p-3">
       <div class="modal-dialog-custom bg-white rounded-4 p-4 shadow-lg border" style="max-width: 470px; width: 100%;">
         <div class="d-flex justify-content-between align-items-center pb-2 border-bottom mb-2">
@@ -750,9 +726,7 @@
       </div>
     </div>
 
-    <!-- ====================================================================================== -->
     <!-- MODAL CHỤP ẢNH ĐIỆN THOẠI TRỰC TIẾP BẰNG CAMERA                                       -->
-    <!-- ====================================================================================== -->
     <div v-if="isPhoneCameraOpen" class="modal-backdrop-custom d-flex align-items-center justify-content-center p-3">
       <div class="modal-dialog-custom bg-white rounded-4 p-4 shadow-lg border" style="max-width: 460px; width: 100%;">
         <div class="d-flex justify-content-between align-items-center pb-2 border-bottom mb-3">
@@ -778,10 +752,7 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT CÁC MODULE VUE & STORE ĐIỆN THOẠI
-// ENGLISH: IMPORT VUE CORE LIBS & PHONE STORE
-// ============================================================================================
+// IMPORT CÁC MODULE VUE & STORE ĐIỆN THOẠI
 import { ref, computed } from 'vue';
 import Swal from 'sweetalert2';
 import { usePhoneStore } from '@/stores/phone.store';
@@ -908,9 +879,7 @@ const setTienCocPreset = (num) => {
   tienCocDisplay.value = num.toLocaleString('vi-VN');
 };
 
-// ============================================================================================
 // LOGIC QUẢN LÝ ALBUM ẢNH SẢN PHẨM: TẢI NHIỀU ẢNH, DÁN LINK URL & CHỤP TỪ CAMERA
-// ============================================================================================
 const phoneFileInputRef = ref(null);
 const isPhoneCameraOpen = ref(false);
 const phoneVideoRef = ref(null);
@@ -1065,9 +1034,7 @@ const capturePhonePhoto = () => {
   });
 };
 
-// ============================================================================================
 // LOGIC QUÉT MÃ VẠCH (BARCODE CODE 128 / IMEI) & QR CODE QUA CAMERA (REAL-TIME SCANNER)
-// ============================================================================================
 const isImeiScannerOpen = ref(false);
 const imeiVideoRef = ref(null);
 const qrFileInputRef = ref(null);
@@ -1489,10 +1456,7 @@ const onQrFileUploaded = async (e) => {
   reader.readAsDataURL(file);
 };
 
-// ============================================================================================
-// VIETNAMESE: DANH SÁCH THIẾT BỊ ĐÃ ĐƯỢC TÌM KIẾM VÀ LỌC
-// ENGLISH: COMPUTED FILTERED PHONES LIST FOR ADMIN TABLE VIEW
-// ============================================================================================
+// DANH SÁCH THIẾT BỊ ĐÃ ĐƯỢC TÌM KIẾM VÀ LỌC
 
 // database => api (backend) => service => [store] => ui
 
@@ -1527,10 +1491,7 @@ const resetFilters = () => {
   filterStatus.value = 'ALL';
 };
 
-// ============================================================================================
-// VIETNAMESE: XÁC ĐỊNH CLASS MÀU CHO HUY HIỆU TRẠNG THÁI MÁY
-// ENGLISH: GET BADGE CSS CLASS BASED ON DEVICE AVAILABILITY
-// ============================================================================================
+// XÁC ĐỊNH CLASS MÀU CHO HUY HIỆU TRẠNG THÁI MÁY
 const getStatusClass = (status) => {
   switch (status) {
     case 'SAN_SANG': return 'bg-success text-white';
@@ -1540,10 +1501,7 @@ const getStatusClass = (status) => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: ĐỔI NHANH TRẠNG THÁI MÁY (Sẵn sàng -> Đang thuê -> Bảo trì -> Sẵn sàng)
-// ENGLISH: QUICK CYCLE DEVICE STATUS (SAN_SANG -> DANG_THUE -> BAO_TRI -> SAN_SANG)
-// ============================================================================================
+// ĐỔI NHANH TRẠNG THÁI MÁY (Sẵn sàng -> Đang thuê -> Bảo trì -> Sẵn sàng)
 const toggleStatus = (phone) => {
   let nextStatus = 'SAN_SANG';
   if (phone.TinhTrangMay === 'SAN_SANG') nextStatus = 'DANG_THUE';
@@ -1553,10 +1511,7 @@ const toggleStatus = (phone) => {
   phoneStore.setPhoneStatus(phone.maDienThoai, nextStatus);
 };
 
-// ============================================================================================
-// VIETNAMESE: MỞ MODAL THÊM THIẾT BỊ MỚI VỚI DỮ LIỆU MẪU MẶC ĐỊNH & IMEI TỰ SINH
-// ENGLISH: OPEN ADD MODAL WITH DEFAULT VALUES & AUTO-GENERATED SAMPLE IMEI
-// ============================================================================================
+// MỞ MODAL THÊM THIẾT BỊ MỚI VỚI DỮ LIỆU MẪU MẶC ĐỊNH & IMEI TỰ SINH
 const openAddModal = () => {
   closeAllPriceDropdowns();
   isEditMode.value = false;
@@ -1581,10 +1536,7 @@ const openAddModal = () => {
   isModalOpen.value = true;
 };
 
-// ============================================================================================
-// VIETNAMESE: MỞ MODAL CHỈNH SỬA VỚI DỮ LIỆU ĐIỆN THOẠI HIỆN TẠI
-// ENGLISH: OPEN EDIT MODAL POPULATED WITH EXISTING PHONE DATA
-// ============================================================================================
+// MỞ MODAL CHỈNH SỬA VỚI DỮ LIỆU ĐIỆN THOẠI HIỆN TẠI
 const openEditModal = (phone) => {
   closeAllPriceDropdowns();
   isEditMode.value = true;
@@ -1613,11 +1565,8 @@ const openEditModal = (phone) => {
   isModalOpen.value = true;
 };
 
-// ============================================================================================
-// VIETNAMESE: LƯU THIẾT BỊ (THÊM MỚI HOẶC CẬP NHẬT)
-// ENGLISH: SAVE PHONE RECORD (INSERT OR UPDATE IN PHONE STORE)
+// LƯU THIẾT BỊ (THÊM MỚI HOẶC CẬP NHẬT)
 // ERD: INSERT INTO DienThoai ... / UPDATE DienThoai SET ...
-// ============================================================================================
 const savePhone = async () => {
   const images = (formData.value.hinhAnh && formData.value.hinhAnh.length)
     ? formData.value.hinhAnh
@@ -1680,11 +1629,8 @@ const savePhone = async () => {
   isModalOpen.value = false;
 };
 
-// ============================================================================================
-// VIETNAMESE: XÓA THIẾT BỊ KHỎI KHO KÈM CẢNH BÁO XÁC NHẬN
-// ENGLISH: DELETE PHONE FROM INVENTORY WITH CONFIRMATION PROMPT
+// XÓA THIẾT BỊ KHỎI KHO KÈM CẢNH BÁO XÁC NHẬN
 // ERD: DELETE FROM DienThoai WHERE MaDienThoai = ?
-// ============================================================================================
 const handleDelete = (phone) => {
   Swal.fire({
     title: 'Xóa thiết bị?',
@@ -1702,10 +1648,7 @@ const handleDelete = (phone) => {
   });
 };
 
-// ============================================================================================
-// VIETNAMESE: QUẢN TRỊ ADMIN - THÊM HÃNG ĐIỆN THOẠI MỚI VÀO HỆ THỐNG
-// ENGLISH: SUBMIT ADD BRAND CATEGORY TO SYSTEM
-// ============================================================================================
+// QUẢN TRỊ ADMIN - THÊM HÃNG ĐIỆN THOẠI MỚI VÀO HỆ THỐNG
 const submitAddCategory = () => {
   try {
     const added = phoneStore.addCategory({
@@ -1739,10 +1682,7 @@ const submitAddCategory = () => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: QUẢN TRỊ ADMIN - XÓA HÃNG ĐIỆN THOẠI
-// ENGLISH: DELETE BRAND CATEGORY FROM SYSTEM
-// ============================================================================================
+// QUẢN TRỊ ADMIN - XÓA HÃNG ĐIỆN THOẠI
 const handleDeleteCategory = (cat) => {
   Swal.fire({
     title: `Xóa hãng ${cat.name}?`,
@@ -1766,10 +1706,7 @@ const handleDeleteCategory = (cat) => {
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS TÙY CHỈNH CHO TRANG QUẢN LÝ THIẾT BỊ ADMIN                                  */
-/* ENGLISH: CUSTOM SCOPED STYLES FOR ADMIN PHONE INVENTORY MANAGEMENT                          */
-/* ============================================================================================ */
+/* CSS TÙY CHỈNH CHO TRANG QUẢN LÝ THIẾT BỊ ADMIN                                  */
 .phone-admin-thumb {
   width: 48px;
   height: 48px;
@@ -1838,9 +1775,7 @@ const handleDeleteCategory = (cat) => {
   border-color: #198754;
 }
 
-/* ============================================================================================ */
 /* CSS CHO KHU VỰC QUẢN LÝ BỘ SƯU TẬP ẢNH SẢN PHẨM (MULTI-IMAGE GALLERY MANAGER)                */
-/* ============================================================================================ */
 .image-gallery-manager {
   max-height: 280px;
   overflow-y: auto;

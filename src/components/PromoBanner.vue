@@ -1,8 +1,6 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- BANNER KHUYẾN MÃI & MÃ GIẢM GIÁ VOUCHER (PROMO CAMPAIGN BANNER)                          -->
   <!-- Ánh xạ ERD: Thực thể `KhuyenMai` (Ưu đãi ngày thuê) & `PhieuKhuyenMai` (Voucher nhập mã)  -->
-  <!-- ========================================================================================= -->
   <div class="promo-banner-section my-5">
     <div class="container">
       <div class="promo-card p-4 p-md-5 rounded-4 shadow-sm text-white position-relative overflow-hidden">
@@ -74,9 +72,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC SCRIPT VUE 3: LOGIC BANNER KHUYẾN MÃI
-// =========================================================================================
 
 import { mockVouchers } from '@/data/mockData';        // Danh sách voucher mẫu (ERD: PhieuKhuyenMai)
 import { convertToVND } from '@/utils/formatters';     // Hàm chuyển đổi số sang tiền VNĐ

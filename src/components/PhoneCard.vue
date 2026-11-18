@@ -1,15 +1,11 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- THẺ ĐIỆN THOẠI TRONG DANH SÁCH (PHONE CARD ITEM COMPONENT)                                -->
   <!-- Ánh xạ ERD: Thực thể `DienThoai` & quan hệ `coCauHinh` với `CauHinh_PhienBan`             -->
-  <!-- ========================================================================================= -->
   <div class="col-xl-3 col-lg-4 col-md-6 col-6 mb-3 mb-md-4">
     <!-- Thẻ bao bọc card: Thêm class 'rented-card' làm mờ nếu máy đang có khách thuê -->
     <div class="phone-card h-100 d-flex flex-column" :class="{ 'rented-card': phone.TinhTrangMay !== 'SAN_SANG' }">
       
-      <!-- ===================================================================================== -->
       <!-- KHỐI ẢNH THIẾT BỊ VÀ CÁC HUY HIỆU (IMAGE WRAPPER & BADGES)                            -->
-      <!-- ===================================================================================== -->
       <div class="card-img-wrapper position-relative">
         <!-- 1. Huy hiệu trạng thái máy (Device Availability Badge - ERD: DienThoai.TinhTrangMay) -->
         <span
@@ -53,9 +49,7 @@
         </div>
       </div>
 
-      <!-- ===================================================================================== -->
       <!-- KHỐI NỘI DUNG CHI TIẾT (CARD BODY: TITLE, SPECS, PRICING & ACTIONS)                    -->
-      <!-- ===================================================================================== -->
       <div class="card-body-content p-3 d-flex flex-column flex-grow-1">
         <!-- Hãng sản xuất và Hệ điều hành (Brand & OS - ERD: TheLoai.ten_loai, CauHinh.HeDieuHanh) -->
         <div class="d-flex justify-content-between align-items-center mb-1">
@@ -160,9 +154,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC SCRIPT VUE 3 COMPOSITION API (PHONE CARD LOGIC)
-// =========================================================================================
 
 import { computed } from 'vue';
 import { usePhoneStore } from '@/stores/phone.store';    // Pinia Phone Store
@@ -332,9 +324,7 @@ const handleRentClick = () => {
   cursor: pointer;
 }
 
-/* ============================================================================================ */
 /* RESPONSIVE CHO MÀN HÌNH ĐIỆN THOẠI (DƯỚI 576PX - 2 CỘT CHUẨN APP THƯƠNG MẠI ĐIỆN TỬ)        */
-/* ============================================================================================ */
 @media (max-width: 576px) {
   .card-img-wrapper {
     padding: 12px 6px;

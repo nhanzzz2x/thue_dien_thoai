@@ -22,10 +22,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePhoneStore } from '@/stores/phone.store';
+import { useOrderStore } from '@/stores/order.store';
 import MobileBottomNav from '@/components/MobileBottomNav.vue';
 
 const route = useRoute();
 const phoneStore = usePhoneStore();
+const orderStore = useOrderStore();
 const showBackToTop = ref(false);
 
 const isAdminRoute = computed(() => {
@@ -40,14 +42,31 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+let syncTimer = null;
+
+const syncMysqlRealtime = async () => {
+  if (document.hidden) return;
+  await Promise.all([
+    phoneStore.fetchPhones(),
+    orderStore.fetchOrders()
+  ]);
+};
+
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll);
-  // Tự động kéo dữ liệu mới nhất từ MySQL mỗi khi ứng dụng khởi chạy
-  await phoneStore.fetchPhones();
+  window.addEventListener('focus', syncMysqlRealtime);
+  document.addEventListener('visibilitychange', syncMysqlRealtime);
+
+  // Tải ngay khi mở trang & tự động lắng nghe thay đổi trực tiếp từ MySQL WampServer mỗi 3 giây
+  await syncMysqlRealtime();
+  syncTimer = setInterval(syncMysqlRealtime, 3000);
 });
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('focus', syncMysqlRealtime);
+  document.removeEventListener('visibilitychange', syncMysqlRealtime);
+  if (syncTimer) clearInterval(syncTimer);
 });
 </script>
 

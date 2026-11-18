@@ -1,18 +1,12 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: TRANG LỊCH SỬ THUÊ & THEO DÕI TIẾN ĐỘ ĐƠN HÀNG DÀNH CHO KHÁCH HÀNG              -->
-  <!-- ENGLISH: CUSTOMER RENTAL HISTORY & ORDER WORKFLOW TRACKING PAGE                            -->
+  <!-- TRANG LỊCH SỬ THUÊ & THEO DÕI TIẾN ĐỘ ĐƠN HÀNG DÀNH CHO KHÁCH HÀNG              -->
   <!-- ERD MAPPING: Ánh xạ DonThue, ChiTietDonThue, DatCoc, HopDong_HoaDon, TrangThai            -->
-  <!-- ========================================================================================== -->
   <div class="rental-history-page">
     <Header />
     <NavigationBar />
 
     <main class="container my-4">
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: TIÊU ĐỀ TRANG & NÚT THUÊ THÊM THIẾT BỊ                                   -->
-      <!-- ENGLISH: PAGE TITLE & ACTION TO RENT MORE DEVICES                                    -->
-      <!-- ==================================================================================== -->
+      <!-- TIÊU ĐỀ TRANG & NÚT THUÊ THÊM THIẾT BỊ                                   -->
       <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
           <h3 class="fw-bold text-dark mb-1">
@@ -28,11 +22,8 @@
         </router-link>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: CÁC TAB LỌC TRẠNG THÁI ĐƠN HÀNG NHANH                                    -->
-      <!-- ENGLISH: QUICK STATUS FILTER TABS FOR RENTAL ORDERS                                  -->
+      <!-- CÁC TAB LỌC TRẠNG THÁI ĐƠN HÀNG NHANH                                    -->
       <!-- ERD: DonThue.TrangThai (CHO_DUYET, DANG_THUE, HOAN_TAT_TRA_COC...)                   -->
-      <!-- ==================================================================================== -->
       <div class="status-tabs-nav d-flex flex-wrap gap-2 mb-4">
         <button
           v-for="tab in statusTabs"
@@ -47,38 +38,30 @@
         </button>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: DANH SÁCH THẺ ĐƠN THUÊ (CARD LIST)                                       -->
-      <!-- ENGLISH: LIST OF RENTAL ORDER CARDS                                                  -->
+      <!-- DANH SÁCH THẺ ĐƠN THUÊ (CARD LIST)                                       -->
       <!-- ERD: Bảng DonThue (MaDonThue, NgayTao, TongTien, TrangThai)                          -->
-      <!-- ==================================================================================== -->
       <div v-if="filteredUserOrders.length > 0" class="order-list-wrapper d-flex flex-column gap-3">
         <div
           v-for="order in filteredUserOrders"
           :key="order.maDonThue"
           class="order-card bg-white border rounded-4 p-4 shadow-sm"
         >
-          <!-- VIETNAMESE: Phần đầu thẻ đơn thuê - Mã đơn, Ngày tạo và Huy hiệu trạng thái -->
-          <!-- ENGLISH: Order Card Header - Order Code, Creation Date & Status Badge        -->
+          <!-- Phần đầu thẻ đơn thuê - Mã đơn, Ngày tạo và Huy hiệu trạng thái -->
           <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 border-bottom mb-3 gap-2">
             <div>
               <span class="fw-bold fs-6 text-dark me-2">Mã đơn: {{ order.maDonThue }}</span>
               <span class="text-muted small">| Ngày tạo: {{ order.ngayTao }}</span>
             </div>
 
-            <!-- VIETNAMESE: Huy hiệu hiển thị màu sắc theo từng trạng thái vòng đời đơn thuê -->
-            <!-- ENGLISH: Dynamic badge color representing order lifecycle state              -->
+            <!-- Huy hiệu hiển thị màu sắc theo từng trạng thái vòng đời đơn thuê -->
             <span class="badge px-3 py-2 rounded-pill fs-7 fw-semibold" :class="getStatusBadgeClass(order.trangThai)">
               <i class="fa me-1" :class="getStatusIcon(order.trangThai)"></i>
               {{ getStatusText(order.trangThai) }}
             </span>
           </div>
 
-          <!-- ================================================================================ -->
-          <!-- VIETNAMESE: DANH SÁCH THIẾT BỊ TRONG ĐƠN THUÊ NÀY (BẢNG ChiTietDonThue)           -->
-          <!-- ENGLISH: LIST OF RENTED PHONES IN THIS ORDER (ChiTietDonThue Table)              -->
+          <!-- DANH SÁCH THIẾT BỊ TRONG ĐƠN THUÊ NÀY (BẢNG ChiTietDonThue)           -->
           <!-- ERD: ChiTietDonThue (MaDonThue, MaDienThoai, SoLuong, DonGiaNgay, SoIMEI)        -->
-          <!-- ================================================================================ -->
           <div class="order-devices mb-3">
             <div
               v-for="device in order.danhSachMay"
@@ -101,11 +84,8 @@
             </div>
           </div>
 
-          <!-- ================================================================================ -->
-          <!-- VIETNAMESE: THỜI HẠN THUÊ & THÔNG TIN TIỀN CỌC / THẾ CHÂN                        -->
-          <!-- ENGLISH: RENTAL PERIOD & COLLATERAL / DEPOSIT METRICS                             -->
+          <!-- THỜI HẠN THUÊ & THÔNG TIN TIỀN CỌC / THẾ CHÂN                        -->
           <!-- ERD: DonThue.NgayBatDauThue, DonThue.NgayKetThucThue, DatCoc.SoTienCoc            -->
-          <!-- ================================================================================ -->
           <div class="rental-terms-box bg-light p-3 rounded-3 mb-3">
             <div class="row g-2 small">
               <div class="col-md-3 col-6">
@@ -127,11 +107,8 @@
             </div>
           </div>
 
-          <!-- ================================================================================ -->
-          <!-- VIETNAMESE: THANH TIẾN ĐỘ 5 BƯỚC MÁY TRẠNG THÁI (STATE MACHINE VISUAL STEPPER)    -->
-          <!-- ENGLISH: 5-STEP VISUAL PROGRESS STEPPER FOR ORDER WORKFLOW                       -->
+          <!-- THANH TIẾN ĐỘ 5 BƯỚC MÁY TRẠNG THÁI (STATE MACHINE VISUAL STEPPER)    -->
           <!-- LOGIC: CHO_DUYET -> DA_XAC_NHAN_COC -> DANG_THUE -> DA_TRA_MAY -> HOAN_TAT_TRA_COC-->
-          <!-- ================================================================================ -->
           <div class="stepper-wrapper py-2 mb-3">
             <div class="stepper d-flex justify-content-between position-relative">
               <div
@@ -148,10 +125,7 @@
             </div>
           </div>
 
-          <!-- ================================================================================ -->
-          <!-- VIETNAMESE: TỔNG KẾT CHI PHÍ & CÁC NÚT THAO TÁC (XEM HỢP ĐỒNG / HỦY ĐƠN)          -->
-          <!-- ENGLISH: FINANCIAL SUMMARY & ACTIONS (VIEW CONTRACT / CANCEL ORDER)              -->
-          <!-- ================================================================================ -->
+          <!-- TỔNG KẾT CHI PHÍ & CÁC NÚT THAO TÁC (XEM HỢP ĐỒNG / HỦY ĐƠN)          -->
           <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top gap-2">
             <div>
               <span class="small text-muted me-2">Tiền thuê: <strong>{{ convertToVND(order.tongTienThue) }}</strong></span>
@@ -181,8 +155,7 @@
         </div>
       </div>
 
-      <!-- VIETNAMESE: Hiển thị khi chưa có đơn nào khớp với bộ lọc -->
-      <!-- ENGLISH: Empty state view when no orders match current filter tab -->
+      <!-- Hiển thị khi chưa có đơn nào khớp với bộ lọc -->
       <div v-else class="text-center py-5 bg-white rounded-4 border p-5">
         <i class="fa fa-inbox text-muted fs-1 mb-3"></i>
         <h5 class="fw-bold">Chưa có đơn thuê nào trong mục này</h5>
@@ -193,10 +166,7 @@
       </div>
     </main>
 
-    <!-- ====================================================================================== -->
-    <!-- VIETNAMESE: MODAL XEM & IN HỢP ĐỒNG THUÊ THIẾT BỊ ĐIỆN TỬ (HopDong_HoaDon ERD)          -->
-    <!-- ENGLISH: ELECTRONIC RENTAL CONTRACT & HANDOVER MODAL (HopDong_HoaDon ERD)             -->
-    <!-- ====================================================================================== -->
+    <!-- MODAL XEM & IN HỢP ĐỒNG THUÊ THIẾT BỊ ĐIỆN TỬ (HopDong_HoaDon ERD)          -->
     <div v-if="selectedOrderForContract" class="modal-backdrop-custom d-flex align-items-center justify-content-center p-3">
       <div class="modal-dialog-custom bg-white rounded-4 p-4 shadow-lg border" style="max-width: 650px; width: 100%; max-height: 90vh; overflow-y: auto;">
         <div class="d-flex justify-content-between align-items-center pb-2 border-bottom mb-3">
@@ -209,7 +179,7 @@
         <div class="contract-body small">
           <p class="text-center text-muted mb-2">Số: <strong>HD-{{ selectedOrderForContract.maDonThue }}</strong> &bull; Ngày lập: {{ selectedOrderForContract.ngayTao }}</p>
 
-          <!-- VIETNAMESE: Bên cho thuê (Bên A) | ENGLISH: Lessor (Party A) -->
+          <!-- Bên cho thuê (Bên A) | ENGLISH: Lessor (Party A) -->
           <div class="bg-light p-3 rounded-3 mb-3">
             <h6 class="fw-bold mb-1">BÊN CHO THUÊ (BÊN A):</h6>
             <p class="mb-0"><strong>HỆ THỐNG TRONGNHANMOBILE VIỆT NAM (SHOP THUÊ ĐIỆN THOẠI)</strong></p>
@@ -217,7 +187,7 @@
             <p class="mb-0"><i class="fa fa-phone text-primary me-1"></i> Hotline hỗ trợ & Zalo: 0908.123.456</p>
           </div>
 
-          <!-- VIETNAMESE: Bên thuê (Bên B) | ENGLISH: Lessee (Party B) -->
+          <!-- Bên thuê (Bên B) | ENGLISH: Lessee (Party B) -->
           <div class="bg-light p-3 rounded-3 mb-3">
             <h6 class="fw-bold mb-1">BÊN THUÊ (BÊN B):</h6>
             <p class="mb-0">Khách hàng: <strong>{{ selectedOrderForContract.khachHang.hoTen }}</strong></p>
@@ -225,7 +195,7 @@
             <p class="mb-0">Địa chỉ nhận thiết bị: {{ selectedOrderForContract.khachHang.diaChi }}</p>
           </div>
 
-          <!-- VIETNAMESE: Điều khoản pháp lý bàn giao & hoàn cọc | ENGLISH: Terms & conditions -->
+          <!-- Điều khoản pháp lý bàn giao & hoàn cọc | ENGLISH: Terms & conditions -->
           <h6 class="fw-bold mb-2">ĐIỀU KHOẢN VÀ THIẾT BỊ THUÊ:</h6>
           <ul class="ps-3 mb-3">
             <li v-for="dev in selectedOrderForContract.danhSachMay" :key="dev.maDienThoai">
@@ -289,10 +259,7 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT CÁC MODULE VUE & STORE ORDER
-// ENGLISH: IMPORT VUE HOOKS & ORDER STORE
-// ============================================================================================
+// IMPORT CÁC MODULE VUE & STORE ORDER
 import { ref, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { useOrderStore } from '@/stores/order.store';
@@ -329,19 +296,13 @@ const getTabCount = (tabValue) => {
   return orderStore.orders.filter(o => o.trangThai === tabValue).length;
 };
 
-// ============================================================================================
-// VIETNAMESE: DANH SÁCH ĐƠN THUÊ ĐÃ LỌC THEO TAB TRẠNG THÁI
-// ENGLISH: FILTERED ORDERS LIST ACCORDING TO CURRENT TAB SELECTION
-// ============================================================================================
+// DANH SÁCH ĐƠN THUÊ ĐÃ LỌC THEO TAB TRẠNG THÁI
 const filteredUserOrders = computed(() => {
   if (currentTab.value === 'ALL') return orderStore.orders;
   return orderStore.orders.filter(o => o.trangThai === currentTab.value);
 });
 
-// ============================================================================================
-// VIETNAMESE: ĐỊNH SẮC MÀU HUY HIỆU TRẠNG THÁI (CSS BADGE CLASS)
-// ENGLISH: RESOLVE CSS CLASS FOR STATUS BADGE BASED ON ORDER STATE
-// ============================================================================================
+// ĐỊNH SẮC MÀU HUY HIỆU TRẠNG THÁI (CSS BADGE CLASS)
 const getStatusBadgeClass = (status) => {
   switch (status) {
     case 'CHO_DUYET': return 'bg-warning text-dark';
@@ -354,10 +315,7 @@ const getStatusBadgeClass = (status) => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: BIỂU TƯỢNG (ICON) THEO TRẠNG THÁI
-// ENGLISH: FONT-AWESOME ICON FOR EACH STATUS
-// ============================================================================================
+// BIỂU TƯỢNG (ICON) THEO TRẠNG THÁI
 const getStatusIcon = (status) => {
   switch (status) {
     case 'CHO_DUYET': return 'fa-clock-o';
@@ -370,10 +328,7 @@ const getStatusIcon = (status) => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: CHUYỂN ĐỔI MÃ TRẠNG THÁI THÀNH VĂN BẢN HIỂN THỊ TIẾNG VIỆT
-// ENGLISH: TRANSLATE STATUS CODE TO USER-FRIENDLY VIETNAMESE LABEL
-// ============================================================================================
+// CHUYỂN ĐỔI MÃ TRẠNG THÁI THÀNH VĂN BẢN HIỂN THỊ TIẾNG VIỆT
 const getStatusText = (status) => {
   switch (status) {
     case 'CHO_DUYET': return 'Chờ duyệt cọc';
@@ -386,10 +341,7 @@ const getStatusText = (status) => {
   }
 };
 
-// ============================================================================================
-// VIETNAMESE: TÍNH TOÁN 5 BƯỚC TIẾN TRÌNH CHO THANH STEPPER THEO MÁY TRẠNG THÁI
-// ENGLISH: CALCULATE 5-STEP LIFECYCLE PROGRESS BASED ON CURRENT ORDER STATUS
-// ============================================================================================
+// TÍNH TOÁN 5 BƯỚC TIẾN TRÌNH CHO THANH STEPPER THEO MÁY TRẠNG THÁI
 const getSteps = (status) => {
   const stepsOrder = ['CHO_DUYET', 'DA_XAC_NHAN_COC', 'DANG_THUE', 'DA_TRA_MAY', 'HOAN_TAT_TRA_COC'];
   const currentIndex = stepsOrder.indexOf(status);
@@ -428,10 +380,7 @@ const getSteps = (status) => {
   ];
 };
 
-// ============================================================================================
-// VIETNAMESE: MỞ MODAL XEM CHI TIẾT HỢP ĐỒNG ĐIỆN TỬ
-// ENGLISH: OPEN ELECTRONIC CONTRACT MODAL
-// ============================================================================================
+// MỞ MODAL XEM CHI TIẾT HỢP ĐỒNG ĐIỆN TỬ
 const viewContract = (order) => {
   selectedOrderForContract.value = order;
 };
@@ -442,10 +391,7 @@ const printContract = () => {
   window.print();
 };
 
-// ============================================================================================
-// VIETNAMESE: HỦY ĐƠN THUÊ (Chỉ áp dụng khi đơn đang ở trạng thái CHO_DUYET)
-// ENGLISH: CANCEL ORDER ACTION (Only applicable when order is CHO_DUYET)
-// ============================================================================================
+// HỦY ĐƠN THUÊ (Chỉ áp dụng khi đơn đang ở trạng thái CHO_DUYET)
 const cancelOrder = (orderId) => {
   Swal.fire({
     title: 'Xác nhận hủy đơn?',
@@ -472,10 +418,7 @@ const cancelOrder = (orderId) => {
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS TÙY CHỈNH CHO TRANG LỊCH SỬ THUÊ & BỘ STEPPER TIẾN ĐỘ                        */
-/* ENGLISH: CUSTOM SCOPED STYLES FOR RENTAL HISTORY & STEPPER                                   */
-/* ============================================================================================ */
+/* CSS TÙY CHỈNH CHO TRANG LỊCH SỬ THUÊ & BỘ STEPPER TIẾN ĐỘ                        */
 .rental-history-page {
   min-height: 100vh;
   background-color: #f8fafc;

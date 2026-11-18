@@ -1,9 +1,6 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: TRANG DANH MỤC ĐIỆN THOẠI THEO HÃNG / PHÂN KHÚC (TRANG MỚI RIÊNG BIỆT)        -->
-  <!-- ENGLISH: DEDICATED CATEGORY & BRAND PAGE (SEPARATE VIEW WITHOUT SCROLLING JUMPS)           -->
+  <!-- TRANG DANH MỤC ĐIỆN THOẠI THEO HÃNG / PHÂN KHÚC (TRANG MỚI RIÊNG BIỆT)        -->
   <!-- ERD MAPPING: Ánh xạ thực thể TheLoai, DienThoai, CauHinh_PhienBan                          -->
-  <!-- ========================================================================================== -->
   <div class="category-page-layout">
     <!-- Header hệ thống -->
     <Header />
@@ -11,9 +8,7 @@
     <!-- Navigation Bar chứa các danh mục hãng máy -->
     <NavigationBar />
 
-    <!-- ====================================================================================== -->
     <!-- BANNER DANH MỤC CHUYÊN BIỆT (CATEGORY HERO BANNER & BREADCRUMB)                         -->
-    <!-- ====================================================================================== -->
     <div class="category-banner-section py-4 border-bottom">
       <div class="container">
         <!-- Breadcrumb dẫn hướng -->
@@ -58,9 +53,7 @@
       </div>
     </div>
 
-    <!-- ====================================================================================== -->
     <!-- KHU VỰC BỘ LỌC ĐA TIÊU CHÍ & DANH SÁCH THẺ ĐIỆN THOẠI                                   -->
-    <!-- ====================================================================================== -->
     <main class="container my-4 flex-grow-1">
       <!-- Bộ lọc phần cứng, Chipset, RAM, Giá -->
       <PhoneFilter />
@@ -104,9 +97,7 @@
 </template>
 
 <script setup>
-// ============================================================================================
 // LOGIC XỬ LÝ TRANG DANH MỤC RIÊNG BIỆT (CATEGORY PAGE CONTROLLER)
-// ============================================================================================
 import { computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePhoneStore } from '@/stores/phone.store';
@@ -261,4 +252,3 @@ onMounted(async () => {
   border-radius: 16px;
 }
 </style>
-

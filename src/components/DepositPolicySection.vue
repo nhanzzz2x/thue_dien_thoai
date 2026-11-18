@@ -1,15 +1,9 @@
 <template>
-  <!-- ========================================================================================== -->
-  <!-- VIETNAMESE: PHẦN CHÍNH SÁCH THẾ CHÂN & HOÀN CỌC ĐA TÀI SẢN (TRANG CHỦ)                     -->
-  <!-- ENGLISH: MULTI-ASSET COLLATERAL & 100% REFUND POLICY SECTION (HOME PAGE)                   -->
+  <!-- PHẦN CHÍNH SÁCH THẾ CHÂN & HOÀN CỌC ĐA TÀI SẢN (TRANG CHỦ)                     -->
   <!-- ERD MAPPING: Ánh xạ thực thể DatCoc, ChiTietPhieuThue, HopDong_GiaoNhan                    -->
-  <!-- ========================================================================================== -->
   <section id="deposit-policy-section" class="deposit-policy-section py-5 my-5">
     <div class="container">
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: TIÊU ĐỀ KHU VỰC CHÍNH SÁCH BẢO ĐẢM TÀI SẢN                              -->
-      <!-- ENGLISH: POLICY SECTION HEADER & SUBTITLE                                            -->
-      <!-- ==================================================================================== -->
+      <!-- TIÊU ĐỀ KHU VỰC CHÍNH SÁCH BẢO ĐẢM TÀI SẢN                              -->
       <div class="section-header text-center mb-5">
         <span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill mb-2">
           <i class="fa fa-shield me-1"></i> NGHIỆP VỤ THẾ CHÂN & HOÀN CỌC CHUẨN ĐỒ ÁN
@@ -21,11 +15,8 @@
         </p>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: 3 THẺ DANH MỤC HÌNH THỨC THẾ CHÂN LINH HOẠT                             -->
-      <!-- ENGLISH: 3 COLLATERAL METHOD CARDS (ID CARD, CASH TRANSFER, TECH DEVICES)             -->
+      <!-- 3 THẺ DANH MỤC HÌNH THỨC THẾ CHÂN LINH HOẠT                             -->
       <!-- ERD: DatCoc.PhuongThuc                                                               -->
-      <!-- ==================================================================================== -->
       <div class="row g-4 mb-5">
         <div
           v-for="method in depositMethods"
@@ -52,11 +43,8 @@
         </div>
       </div>
 
-      <!-- ==================================================================================== -->
-      <!-- VIETNAMESE: QUY TRÌNH 4 BƯỚC THUÊ MÁY & QUYẾT TOÁN HOÀN CỌC MINH BẠCH                -->
-      <!-- ENGLISH: 4-STEP RENTAL & 100% COLLATERAL REFUND WORKFLOW                             -->
+      <!-- QUY TRÌNH 4 BƯỚC THUÊ MÁY & QUYẾT TOÁN HOÀN CỌC MINH BẠCH                -->
       <!-- ERD: Mô tả luồng chuyển tiếp trạng thái DonThue & HopDong_GiaoNhan                   -->
-      <!-- ==================================================================================== -->
       <div class="workflow-card bg-white p-4 p-md-5 rounded-4 shadow-sm border">
         <h4 class="fw-bold text-center mb-4">
           <i class="fa fa-retweet text-primary me-2"></i> Quy Trình 4 Bước Thuê Điện Thoại & Quyết Toán Hoàn Cọc
@@ -105,18 +93,12 @@
 </template>
 
 <script setup>
-// ============================================================================================
-// VIETNAMESE: IMPORT DỮ LIỆU CÁC PHƯƠNG THỨC THẾ CHÂN
-// ENGLISH: IMPORT DEPOSIT & COLLATERAL METHODS METADATA
-// ============================================================================================
+// IMPORT DỮ LIỆU CÁC PHƯƠNG THỨC THẾ CHÂN
 import { depositMethods } from '@/data/mockData';
 </script>
 
 <style scoped>
-/* ============================================================================================ */
-/* VIETNAMESE: CSS CHO PHẦN CHÍNH SÁCH THẾ CHÂN & CÁC THẺ PHƯƠNG THỨC                         */
-/* ENGLISH: SCOPED STYLES FOR COLLATERAL POLICY & METHOD CARDS                                  */
-/* ============================================================================================ */
+/* CSS CHO PHẦN CHÍNH SÁCH THẾ CHÂN & CÁC THẺ PHƯƠNG THỨC                         */
 .deposit-policy-section {
   background: #f1f5f9;
   border-radius: 24px;

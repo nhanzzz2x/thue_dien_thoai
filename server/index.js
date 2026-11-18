@@ -1,185 +1,155 @@
-// =============================================================================
-// BACKEND API SERVER - SHOP CHO THUÊ ĐIỆN THOẠI CAO CẤP
-// Sinh viên: Trần Trọng Nhân - STU Lớp L23_TH01
-// Đồ án: Hệ thống quản lý cho thuê điện thoại thông minh
-// Kết nối trực tiếp: MySQL WampServer (db_thue_dien_thoai:3306) <--> Vue 3 Frontend
-// Cổng Backend: 8080 (Khớp hoàn toàn với frontend api.js)
-// =============================================================================
-
 import express from 'express';
 import cors from 'cors';
-import pool from './db.js';
+import pool, { initDatabase } from './db.js';
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = Number(process.env.PORT) || 8080;
+const FALLBACK_IMG = 'https://cdn.tgdd.vn/Products/Images/42/305658/iphone-15-pro-max-blue-thumbnew-600x600.jpg';
 
-// Middleware cho phép Frontend Vue 3 gọi API từ port 5173 và phân tích JSON
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// =============================================================================
-// 0. HEALTH CHECK ENDPOINT - Kiểm tra server và database
-// =============================================================================
+// Tắt cache HTTP để dữ liệu mới trong MySQL WampServer hiển thị ngay lên Web
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  next();
+});
+
+// --- CÁC HÀM HỖ TRỢ ĐỊNH DẠNG DỮ LIỆU ---
+function detectCategory(name = '') {
+  const upper = String(name).toUpperCase();
+  if (upper.includes('IPHONE') || upper.includes('APPLE')) return 'APPLE';
+  if (upper.includes('SAMSUNG') || upper.includes('GALAXY')) return 'SAMSUNG';
+  if (upper.includes('XIAOMI') || upper.includes('REDMI')) return 'XIAOMI';
+  if (upper.includes('ROG') || upper.includes('REDMAGIC') || upper.includes('NUBIA') || upper.includes('GAMING')) return 'GAMING';
+  return 'FLAGSHIP';
+}
+
+function formatPhoneRow(p, extraUrls = []) {
+  const coverUrl = (p.MacDinh && String(p.MacDinh).trim()) ? p.MacDinh : FALLBACK_IMG;
+  const uniqueAlbum = Array.from(new Set([coverUrl, ...extraUrls].filter(Boolean)));
+  const cat = detectCategory(p.TenDienThoai);
+  const upperName = String(p.TenDienThoai || '').toUpperCase();
+  const brand = cat === 'GAMING' && upperName.includes('ASUS') ? 'ASUS' : (cat === 'GAMING' && upperName.includes('NUBIA') ? 'NUBIA' : cat);
+
+  return {
+    maDienThoai: Number(p.maDienThoai),
+    TenDienThoai: p.TenDienThoai,
+    hangSanXuat: brand,
+    category: cat,
+    isHot: Number(p.maDienThoai) > 11 || Number(p.maDienThoai) <= 4 || Number(p.maDienThoai) === 10,
+    isFeatured: true,
+    SoIMEI_Serial: p.SoIMEI_Serial || '',
+    TinhTrangMay: p.TinhTrangMay || 'SAN_SANG',
+    TinhTrangMayText: p.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : (p.TinhTrangMay === 'BAO_TRI' ? 'Bảo trì' : 'Đang cho thuê'),
+    SoLuong: Number(p.SoLuong ?? 1),
+    MacDinh: coverUrl,
+    hinhAnh: uniqueAlbum,
+    giaThueNgay: Number(p.giaThueNgay),
+    giaKhuyenMai: p.giaKhuyenMai ? Number(p.giaKhuyenMai) : null,
+    tienCocYeuCau: Number(p.tienCocYeuCau),
+    cauHinh: {
+      MaCauHinh: p.MaCauHinh || '',
+      Chipset: p.Chipset || 'Đang cập nhật',
+      RAM_ROM: p.RAM_ROM || '8GB / 256GB',
+      HeDieuHanh: p.HeDieuHanh || 'iOS / Android',
+      ThongSoCamera_Pin: p.ThongSoCamera_Pin || ''
+    },
+    moTa: p.ThongSoCamera_Pin || `${p.TenDienThoai} - ${p.Chipset || ''}, ${p.RAM_ROM || ''}`
+  };
+}
+
+function mapMethodText(method, rawText) {
+  if (rawText) return rawText;
+  if (method === 'CHUYEN_KHOAN') return 'Chuyển khoản 100% qua Ngân hàng';
+  if (method === 'MAY_ANH_MAY_TINH') return 'Thế chân thiết bị công nghệ (Laptop / iPad)';
+  return 'CCCD gắn chip + Cọc tiền mặt 15%';
+}
+
+function buildStatusTimeline(o) {
+  const createdStr = String(o.ngayTao || '').slice(0, 16);
+  const st = o.MaTrangThai;
+  const logs = [{ time: createdStr, title: 'Đặt đơn thuê thành công', desc: `Hình thức thế chân: ${o.TinhTrangCoc || 'CCCD gắn chip'}` }];
+
+  if (['DA_XAC_NHAN_COC', 'DANG_THUE', 'DA_TRA_MAY', 'HOAN_TAT_TRA_COC'].includes(st)) {
+    logs.push({ time: createdStr, title: 'Đã xác nhận hồ sơ đặt cọc', desc: `Mã phiếu cọc: ${o.MaChiTiet || 'N/A'} (${Number(o.SoTienCoc || 0).toLocaleString('vi-VN')} ₫)` });
+  }
+  if (['DANG_THUE', 'DA_TRA_MAY', 'HOAN_TAT_TRA_COC'].includes(st)) {
+    logs.push({ time: createdStr, title: 'Đã bàn giao máy cho khách thuê', desc: o.TinhTrangLucGiao || 'Máy nguyên tem niêm phong, đầy đủ phụ kiện' });
+  }
+  if (['DA_TRA_MAY', 'HOAN_TAT_TRA_COC'].includes(st)) {
+    logs.push({ time: o.NgayTra ? String(o.NgayTra).slice(0, 16) : createdStr, title: 'Khách đã mang trả thiết bị', desc: o.TinhTrangLucTra || 'Đang thẩm định ngoại quan và kiểm tra IMEI' });
+  }
+  if (st === 'HOAN_TAT_TRA_COC') {
+    logs.push({ time: o.NgayTra ? String(o.NgayTra).slice(0, 16) : createdStr, title: 'Hoàn tất thanh lý Hợp đồng & Hoàn trả cọc', desc: 'Đã hoàn trả đầy đủ tiền cọc / tài sản thế chân' });
+  }
+  if (st === 'DA_HUY') {
+    logs.push({ time: createdStr, title: 'Đơn thuê đã hủy', desc: o.TinhTrangLucTra || 'Đơn thuê đã bị hủy trên hệ thống' });
+  }
+  return logs;
+}
+
+async function ensureAuthLookups(conn) {
+  await conn.query("INSERT IGNORE INTO taikhoanlienket (maNhaCungCap, tenNhaCungCap) VALUES ('LOCAL', 'Tài khoản mật khẩu nội bộ'), ('GOOGLE', 'Google OAuth 2.0'), ('FACEBOOK', 'Facebook Login')");
+  await conn.query("INSERT IGNORE INTO phanquyen (VaiTro, MoTa) VALUES ('ROLE_USER', 'Khách hàng thuê máy'), ('ROLE_ADMIN', 'Quản trị viên hệ thống')");
+}
+
+async function issueTokensForUser(conn, maNguoiDung) {
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  const accessToken = `JWT_${maNguoiDung}_${Date.now()}_${rand}`;
+  const refreshToken = `RT_${maNguoiDung}_${Date.now()}_${rand}`;
+  try {
+    await conn.query('INSERT INTO usertoken (Token, MaNguoiDung, thoiGianKichHoat, thoiGianHetHan) VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY))', [accessToken, maNguoiDung]);
+    await conn.query('DELETE FROM refreshtoken WHERE MaNguoiDung = ?', [maNguoiDung]);
+    await conn.query('INSERT INTO refreshtoken (Token, MaNguoiDung, thoiGianHetHan) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY))', [refreshToken, maNguoiDung]);
+  } catch (e) {
+    console.warn('Token log warning:', e.message);
+  }
+  return { accessToken, refreshToken };
+}
+
+// --- 0. KIỂM TRA TRẠNG THÁI SERVER & CSDL ---
 app.get('/api/health', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT 1 + 1 AS result');
-    res.json({
-      status: 'OK',
-      message: 'Backend Server đang chạy và kết nối MySQL ổn định!',
-      database: 'db_thue_dien_thoai',
-      port: PORT,
-      timestamp: new Date().toISOString()
-    });
+    const [[tCount]] = await pool.query('SELECT COUNT(*) AS totalTables FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE()');
+    const [[pCount]] = await pool.query('SELECT COUNT(*) AS totalPhones FROM dienthoai');
+    const [[oCount]] = await pool.query('SELECT COUNT(*) AS totalOrders FROM donthue');
+    res.json({ status: 'OK', database: 'db_thue_dien_thoai', totalTables: tCount.totalTables, totalPhones: pCount.totalPhones, totalOrders: oCount.totalOrders, port: PORT });
   } catch (err) {
     res.status(500).json({ status: 'ERROR', error: err.message });
   }
 });
 
-// =============================================================================
-// 1. API ĐIỆN THOẠI (DienThoai & CauHinh_PhienBan)
-// =============================================================================
-
-// Helper xác định hãng sản xuất và category từ tên máy
-function detectCategory(name = '') {
-  const upper = name.toUpperCase();
-  if (upper.includes('IPHONE')) return 'APPLE';
-  if (upper.includes('SAMSUNG') || upper.includes('GALAXY')) return 'SAMSUNG';
-  if (upper.includes('XIAOMI') || upper.includes('REDMI')) return 'XIAOMI';
-  if (upper.includes('ROG') || upper.includes('REDMAGIC') || upper.includes('GAMING')) return 'GAMING';
-  return 'FLAGSHIP';
-}
-
-// GET /api/phones - Lấy tất cả điện thoại kèm cấu hình
+// --- 1. API KHO ĐIỆN THOẠI (DienThoai, CauHinh_PhienBan, DienThoai_HinhAnh) ---
 app.get('/api/phones', async (req, res) => {
   try {
     const [phones] = await pool.query(`
-      SELECT 
-        d.maDienThoai,
-        d.TenDienThoai,
-        d.MaCauHinh,
-        d.giaThueNgay,
-        d.giaKhuyenMai,
-        d.tienCocYeuCau,
-        d.MacDinh,
-        d.SoLuong,
-        d.TinhTrangMay,
-        d.SoIMEI_Serial,
-        c.Chipset,
-        c.RAM_ROM,
-        c.HeDieuHanh,
-        c.ThongSoCamera_Pin
-      FROM DienThoai d
-      LEFT JOIN CauHinh_PhienBan c ON d.MaCauHinh = c.MaCauHinh
-      ORDER BY d.maDienThoai ASC
+      SELECT d.*, c.Chipset, c.RAM_ROM, c.HeDieuHanh, c.ThongSoCamera_Pin
+      FROM dienthoai d
+      LEFT JOIN cauhinh_phienban c ON d.MaCauHinh = c.MaCauHinh
+      ORDER BY CASE WHEN d.maDienThoai > 11 THEN 0 ELSE 1 END,
+               CASE WHEN d.maDienThoai > 11 THEN -d.maDienThoai ELSE d.maDienThoai END ASC
     `);
-
-    // Lấy kèm danh sách hình ảnh phụ
-    const [images] = await pool.query('SELECT maDienThoai, duongDan FROM DienThoai_HinhAnh');
-
-    const formatted = phones.map(p => {
-      const extraImages = images.filter(img => img.maDienThoai === p.maDienThoai).map(i => i.duongDan);
-      const allImages = extraImages.length > 0 ? [p.MacDinh, ...extraImages] : [p.MacDinh];
-      const cat = detectCategory(p.TenDienThoai);
-
-      return {
-        maDienThoai: Number(p.maDienThoai),
-        TenDienThoai: p.TenDienThoai,
-        hangSanXuat: cat,
-        category: cat,
-        isHot: p.maDienThoai <= 4,
-        isFeatured: true,
-        SoIMEI_Serial: p.SoIMEI_Serial || '',
-        TinhTrangMay: p.TinhTrangMay || 'SAN_SANG',
-        TinhTrangMayText: p.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : 'Đang cho thuê',
-        SoLuong: Number(p.SoLuong || 0),
-        MacDinh: p.MacDinh,
-        hinhAnh: allImages,
-        giaThueNgay: Number(p.giaThueNgay),
-        giaKhuyenMai: p.giaKhuyenMai ? Number(p.giaKhuyenMai) : null,
-        tienCocYeuCau: Number(p.tienCocYeuCau),
-        cauHinh: {
-          MaCauHinh: p.MaCauHinh || '',
-          Chipset: p.Chipset || '',
-          RAM_ROM: p.RAM_ROM || '',
-          HeDieuHanh: p.HeDieuHanh || '',
-          ThongSoCamera_Pin: p.ThongSoCamera_Pin || ''
-        },
-        moTa: `${p.TenDienThoai} - Cấu hình vi xử lý ${p.Chipset || ''}, bộ nhớ ${p.RAM_ROM || ''}, ${p.ThongSoCamera_Pin || ''}`
-      };
-    });
-
-    res.json(formatted);
-  } catch (err) {
-    console.error('Error fetching phones:', err);
-    res.status(500).json({ error: 'Không thể tải danh sách điện thoại từ MySQL' });
-  }
-});
-
-// GET /api/phones/:id - Lấy chi tiết một điện thoại
-app.get('/api/phones/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [rows] = await pool.query(`
-      SELECT 
-        d.maDienThoai,
-        d.TenDienThoai,
-        d.MaCauHinh,
-        d.giaThueNgay,
-        d.giaKhuyenMai,
-        d.tienCocYeuCau,
-        d.MacDinh,
-        d.SoLuong,
-        d.TinhTrangMay,
-        d.SoIMEI_Serial,
-        c.Chipset,
-        c.RAM_ROM,
-        c.HeDieuHanh,
-        c.ThongSoCamera_Pin
-      FROM DienThoai d
-      LEFT JOIN CauHinh_PhienBan c ON d.MaCauHinh = c.MaCauHinh
-      WHERE d.maDienThoai = ?
-    `, [id]);
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Không tìm thấy điện thoại' });
-    }
-
-    const p = rows[0];
-    const [images] = await pool.query('SELECT duongDan FROM DienThoai_HinhAnh WHERE maDienThoai = ?', [id]);
-    const extraImages = images.map(i => i.duongDan);
-    const cat = detectCategory(p.TenDienThoai);
-
-    res.json({
-      maDienThoai: Number(p.maDienThoai),
-      TenDienThoai: p.TenDienThoai,
-      hangSanXuat: cat,
-      category: cat,
-      isHot: true,
-      isFeatured: true,
-      SoIMEI_Serial: p.SoIMEI_Serial || '',
-      TinhTrangMay: p.TinhTrangMay || 'SAN_SANG',
-      TinhTrangMayText: p.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : 'Đang cho thuê',
-      SoLuong: Number(p.SoLuong || 0),
-      MacDinh: p.MacDinh,
-      hinhAnh: extraImages.length > 0 ? [p.MacDinh, ...extraImages] : [p.MacDinh],
-      giaThueNgay: Number(p.giaThueNgay),
-      giaKhuyenMai: p.giaKhuyenMai ? Number(p.giaKhuyenMai) : null,
-      tienCocYeuCau: Number(p.tienCocYeuCau),
-      cauHinh: {
-        MaCauHinh: p.MaCauHinh || '',
-        Chipset: p.Chipset || '',
-        RAM_ROM: p.RAM_ROM || '',
-        HeDieuHanh: p.HeDieuHanh || '',
-        ThongSoCamera_Pin: p.ThongSoCamera_Pin || ''
-      },
-      moTa: `${p.TenDienThoai} - Cấu hình ${p.Chipset || ''}, ${p.RAM_ROM || ''}`
-    });
+    const [images] = await pool.query('SELECT maDienThoai, duongDan FROM dienthoai_hinhanh ORDER BY id ASC');
+    res.json(phones.map((p) => formatPhoneRow(p, images.filter((i) => Number(i.maDienThoai) === Number(p.maDienThoai)).map((i) => i.duongDan))));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/categories - Lấy danh mục thương hiệu
+app.get('/api/phones/:id', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT d.*, c.Chipset, c.RAM_ROM, c.HeDieuHanh, c.ThongSoCamera_Pin FROM dienthoai d LEFT JOIN cauhinh_phienban c ON d.MaCauHinh = c.MaCauHinh WHERE d.maDienThoai = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy điện thoại' });
+    const [images] = await pool.query('SELECT duongDan FROM dienthoai_hinhanh WHERE maDienThoai = ? ORDER BY id ASC', [req.params.id]);
+    res.json(formatPhoneRow(rows[0], images.map((i) => i.duongDan)));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/categories', (req, res) => {
   res.json([
     { id: 'ALL', name: 'Tất cả điện thoại', icon: 'fa-mobile-screen-button' },
@@ -191,327 +161,509 @@ app.get('/api/categories', (req, res) => {
   ]);
 });
 
-// POST /api/phones - Thêm điện thoại mới (Admin)
 app.post('/api/phones', async (req, res) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    const { 
-      TenDienThoai, 
-      MaCauHinh, 
-      giaThueNgay, 
-      giaKhuyenMai, 
-      tienCocYeuCau, 
-      MacDinh, 
-      SoLuong, 
-      SoIMEI_Serial,
-      cauHinh,
-      hinhAnh
-    } = req.body;
+    const { TenDienThoai, MaCauHinh, giaThueNgay, giaKhuyenMai, tienCocYeuCau, MacDinh, SoLuong, TinhTrangMay, SoIMEI_Serial, cauHinh, Chipset, RAM_ROM, moTa, hinhAnh } = req.body;
 
-    let finalMaCauHinh = MaCauHinh || null;
+    const finalMaCauHinh = cauHinh?.MaCauHinh || MaCauHinh || `CH_${Date.now()}`;
+    const osVal = cauHinh?.HeDieuHanh || (String(TenDienThoai || '').toUpperCase().includes('IPHONE') ? 'iOS 18' : 'Android 14');
+    await conn.query(
+      `INSERT INTO cauhinh_phienban (MaCauHinh, Chipset, RAM_ROM, HeDieuHanh, ThongSoCamera_Pin) VALUES (?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE Chipset = VALUES(Chipset), RAM_ROM = VALUES(RAM_ROM), HeDieuHanh = VALUES(HeDieuHanh), ThongSoCamera_Pin = VALUES(ThongSoCamera_Pin)`,
+      [finalMaCauHinh, cauHinh?.Chipset || Chipset || 'Apple / Snapdragon', cauHinh?.RAM_ROM || RAM_ROM || '8GB / 256GB', osVal, cauHinh?.ThongSoCamera_Pin || moTa || 'Máy nguyên zin 99%, đầy đủ sạc cáp.']
+    );
 
-    // Nếu có gửi thông số cấu hình, tự động lưu vào bảng CauHinh_PhienBan
-    if (cauHinh && (cauHinh.Chipset || cauHinh.RAM_ROM)) {
-      finalMaCauHinh = cauHinh.MaCauHinh || `CH_${Date.now()}`;
-      await conn.query(`
-        INSERT INTO CauHinh_PhienBan (MaCauHinh, Chipset, RAM_ROM, HeDieuHanh, ThongSoCamera_Pin)
-        VALUES (?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE Chipset = VALUES(Chipset), RAM_ROM = VALUES(RAM_ROM)
-      `, [
-        finalMaCauHinh,
-        cauHinh.Chipset || 'Đang cập nhật',
-        cauHinh.RAM_ROM || '8GB / 256GB',
-        cauHinh.HeDieuHanh || 'Android/iOS',
-        cauHinh.ThongSoCamera_Pin || 'Camera chất lượng cao, Pin trâu'
-      ]);
-    }
-
-    const [result] = await conn.query(`
-      INSERT INTO DienThoai (TenDienThoai, MaCauHinh, giaThueNgay, giaKhuyenMai, tienCocYeuCau, MacDinh, SoLuong, SoIMEI_Serial, TinhTrangMay)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'SAN_SANG')
-    `, [
-      TenDienThoai || 'Điện thoại mới',
-      finalMaCauHinh,
-      giaThueNgay || 200000,
-      giaKhuyenMai || null,
-      tienCocYeuCau || 10000000,
-      MacDinh || 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:80/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png',
-      SoLuong || 1,
-      SoIMEI_Serial || ('35' + Math.floor(1000000000000 + Math.random() * 9000000000000))
-    ]);
+    const coverImg = MacDinh || (Array.isArray(hinhAnh) && hinhAnh[0]) || FALLBACK_IMG;
+    const [result] = await conn.query(
+      'INSERT INTO dienthoai (TenDienThoai, MaCauHinh, giaThueNgay, giaKhuyenMai, tienCocYeuCau, MacDinh, SoLuong, SoIMEI_Serial, TinhTrangMay) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [TenDienThoai || 'Điện thoại mới', finalMaCauHinh, Number(giaThueNgay || 200000), giaKhuyenMai ? Number(giaKhuyenMai) : null, Number(tienCocYeuCau || 10000000), coverImg, Number(SoLuong ?? 5), SoIMEI_Serial || ('35' + Math.floor(1000000000000 + Math.random() * 9000000000000)), TinhTrangMay || 'SAN_SANG']
+    );
 
     const newPhoneId = result.insertId;
-
-    // Lưu hình ảnh vào bảng DienThoai_HinhAnh
-    if (MacDinh) {
-      await conn.query('INSERT INTO DienThoai_HinhAnh (maDienThoai, duongDan) VALUES (?, ?)', [newPhoneId, MacDinh]);
-    }
-    if (Array.isArray(hinhAnh)) {
-      for (const img of hinhAnh) {
-        if (img && img !== MacDinh) {
-          await conn.query('INSERT INTO DienThoai_HinhAnh (maDienThoai, duongDan) VALUES (?, ?)', [newPhoneId, img]);
-        }
-      }
+    const allImgs = Array.from(new Set([coverImg, ...(Array.isArray(hinhAnh) ? hinhAnh : [])].filter(Boolean)));
+    for (const imgUrl of allImgs) {
+      await conn.query('INSERT INTO dienthoai_hinhanh (maDienThoai, duongDan) VALUES (?, ?)', [newPhoneId, imgUrl]);
     }
 
     await conn.commit();
-    res.status(201).json({ success: true, maDienThoai: newPhoneId, message: 'Thêm điện thoại thành công vào MySQL!' });
+    res.status(201).json({ success: true, maDienThoai: newPhoneId, hinhAnh: allImgs });
   } catch (err) {
     await conn.rollback();
-    console.error('Lỗi thêm điện thoại vào MySQL:', err);
     res.status(500).json({ error: err.message });
   } finally {
     conn.release();
   }
 });
 
-// PUT /api/phones/:id - Cập nhật điện thoại (Admin)
 app.put('/api/phones/:id', async (req, res) => {
+  const conn = await pool.getConnection();
   try {
+    await conn.beginTransaction();
     const { id } = req.params;
-    const { TenDienThoai, giaThueNgay, giaKhuyenMai, tienCocYeuCau, SoLuong, TinhTrangMay, MacDinh } = req.body;
-    await pool.query(`
-      UPDATE DienThoai 
-      SET TenDienThoai = ?, giaThueNgay = ?, giaKhuyenMai = ?, tienCocYeuCau = ?, SoLuong = ?, TinhTrangMay = ?, MacDinh = ?
-      WHERE maDienThoai = ?
-    `, [TenDienThoai, giaThueNgay, giaKhuyenMai, tienCocYeuCau, SoLuong, TinhTrangMay, MacDinh, id]);
+    const { TenDienThoai, giaThueNgay, giaKhuyenMai, tienCocYeuCau, SoLuong, TinhTrangMay, SoIMEI_Serial, MacDinh, hinhAnh, cauHinh, Chipset, RAM_ROM, moTa } = req.body;
 
-    res.json({ success: true, message: 'Cập nhật máy thành công' });
+    const [existing] = await conn.query('SELECT * FROM dienthoai WHERE maDienThoai = ?', [id]);
+    if (existing.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ error: 'Không tìm thấy thiết bị' });
+    }
+    const cur = existing[0];
+    const maCauHinh = cur.MaCauHinh || `CH_${id}`;
+
+    if (cauHinh || Chipset || RAM_ROM || moTa) {
+      await conn.query(
+        `INSERT INTO cauhinh_phienban (MaCauHinh, Chipset, RAM_ROM, HeDieuHanh, ThongSoCamera_Pin) VALUES (?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE Chipset = VALUES(Chipset), RAM_ROM = VALUES(RAM_ROM), ThongSoCamera_Pin = VALUES(ThongSoCamera_Pin)`,
+        [maCauHinh, cauHinh?.Chipset || Chipset || 'Snapdragon / Apple', cauHinh?.RAM_ROM || RAM_ROM || '8GB / 256GB', cauHinh?.HeDieuHanh || 'iOS / Android', cauHinh?.ThongSoCamera_Pin || moTa || 'Máy nguyên bản 99%']
+      );
+    }
+
+    const coverImg = MacDinh || (Array.isArray(hinhAnh) && hinhAnh[0]) || cur.MacDinh;
+    await conn.query(
+      'UPDATE dienthoai SET TenDienThoai = ?, MaCauHinh = ?, giaThueNgay = ?, giaKhuyenMai = ?, tienCocYeuCau = ?, SoLuong = ?, TinhTrangMay = ?, SoIMEI_Serial = ?, MacDinh = ? WHERE maDienThoai = ?',
+      [TenDienThoai ?? cur.TenDienThoai, maCauHinh, giaThueNgay ?? cur.giaThueNgay, giaKhuyenMai !== undefined ? giaKhuyenMai : cur.giaKhuyenMai, tienCocYeuCau ?? cur.tienCocYeuCau, SoLuong ?? cur.SoLuong, TinhTrangMay ?? cur.TinhTrangMay, SoIMEI_Serial ?? cur.SoIMEI_Serial, coverImg, id]
+    );
+
+    if (Array.isArray(hinhAnh) && hinhAnh.length > 0) {
+      const uniqueImgs = Array.from(new Set([coverImg, ...hinhAnh].filter(Boolean)));
+      await conn.query('DELETE FROM dienthoai_hinhanh WHERE maDienThoai = ?', [id]);
+      for (const imgUrl of uniqueImgs) {
+        await conn.query('INSERT INTO dienthoai_hinhanh (maDienThoai, duongDan) VALUES (?, ?)', [id, imgUrl]);
+      }
+    }
+
+    await conn.commit();
+    res.json({ success: true });
   } catch (err) {
+    await conn.rollback();
     res.status(500).json({ error: err.message });
+  } finally {
+    conn.release();
   }
 });
 
-// DELETE /api/phones/:id - Xóa điện thoại (Admin)
 app.delete('/api/phones/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    await pool.query('DELETE FROM DienThoai WHERE maDienThoai = ?', [id]);
-    res.json({ success: true, message: 'Đã xóa điện thoại' });
+    await pool.query('DELETE FROM dienthoai WHERE maDienThoai = ?', [req.params.id]);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// =============================================================================
-// 2. API ĐƠN THUÊ & HỢP ĐỒNG (DonThue, ChiTietPhieuThue, HopDong_HoaDon)
-// =============================================================================
-
-// GET /api/rentals - Lấy danh sách tất cả đơn thuê
+// --- 2. API ĐƠN THUÊ, ĐẶT CỌC & HỢP ĐỒNG (DonThue, ChiTietThue, ChiTietPhieuThue, HopDong_GiaoNhan, HopDong_HoaDon) ---
 app.get('/api/rentals', async (req, res) => {
   try {
     const [orders] = await pool.query(`
-      SELECT 
-        d.MaDon,
-        d.MaNguoiDung,
-        d.NgayBatDauThue,
-        d.NgayKetThucThue,
-        d.NguoiNhan,
-        d.DiaChiNhan,
-        d.SdtNhan,
-        d.GiaThue,
-        d.TongTien,
-        d.MaTrangThai,
-        d.ngayTao,
-        c.MaChiTiet,
-        c.TransactionId,
-        c.SoTienCoc,
-        c.PhuongThuc,
-        c.TinhTrangCoc,
-        h.MaHopDong,
-        h.TongGiaTri,
-        h.DieuKhoanBaoHanh
-      FROM DonThue d
-      LEFT JOIN ChiTietPhieuThue c ON d.MaDon = c.MaDon
-      LEFT JOIN HopDong_HoaDon h ON d.MaDon = h.MaDon
+      SELECT d.*, u.email AS userEmail, u.CCCD AS userCccd,
+             cp.MaChiTiet, cp.TransactionId, cp.SoTienCoc, cp.PhuongThuc, cp.TinhTrangCoc, cp.TrangThai AS trangThaiCoc,
+             gn.MaPhieu AS maPhieuGiaoNhan, gn.DieuKhoanHopDong, gn.TinhTrangLucGiao, gn.NgayTra, gn.TinhTrangLucTra, gn.QuaHan, gn.phuThu,
+             hd.MaHopDong, hd.NgayKy, hd.TongGiaTri, hd.DieuKhoanBaoHanh, hd.ThoiGianTraMay
+      FROM donthue d
+      LEFT JOIN nguoidung u ON d.MaNguoiDung = u.MaNguoiDung
+      LEFT JOIN chitietphieuthue cp ON d.MaDon = cp.MaDon
+      LEFT JOIN hopdong_giaonhan gn ON d.MaDon = gn.MaDon
+      LEFT JOIN hopdong_hoadon hd ON d.MaDon = hd.MaDon
       ORDER BY d.ngayTao DESC
     `);
 
-    // Lấy chi tiết máy kèm theo mỗi đơn
     const [details] = await pool.query(`
-      SELECT ct.MaDon, ct.maDienThoai, ct.soLuong, ct.giaThue, ct.soNgay, ct.thanhTien, dt.TenDienThoai, dt.MacDinh
-      FROM ChiTietThue ct
-      JOIN DienThoai dt ON ct.maDienThoai = dt.maDienThoai
+      SELECT ct.*, dt.TenDienThoai, dt.MacDinh, dt.SoIMEI_Serial, dt.tienCocYeuCau, ch.RAM_ROM
+      FROM chitietthue ct
+      JOIN dienthoai dt ON ct.maDienThoai = dt.maDienThoai
+      LEFT JOIN cauhinh_phienban ch ON dt.MaCauHinh = ch.MaCauHinh
     `);
 
-    const formattedOrders = orders.map(o => {
-      const orderItems = details.filter(item => item.MaDon === o.MaDon).map(item => ({
-        maDienThoai: item.maDienThoai,
-        TenDienThoai: item.TenDienThoai,
-        MacDinh: item.MacDinh,
-        soLuong: item.soLuong,
-        giaThue: Number(item.giaThue),
-        soNgay: item.soNgay,
-        thanhTien: Number(item.thanhTien)
+    const formattedOrders = orders.map((o) => {
+      const items = details.filter((i) => i.MaDon === o.MaDon).map((i) => ({
+        maDienThoai: Number(i.maDienThoai),
+        TenDienThoai: i.TenDienThoai,
+        MacDinh: i.MacDinh,
+        SoIMEI_Serial: i.SoIMEI_Serial || '350000000000000',
+        RAM_ROM: i.RAM_ROM || '8GB / 256GB',
+        giaThueNgay: Number(i.giaThue),
+        tienCocYeuCau: Number(i.tienCocYeuCau || 10000000),
+        quantity: Number(i.soLuong || 1),
+        soNgay: Number(i.soNgay || 1),
+        thanhTien: Number(i.thanhTien || 0)
       }));
+
+      const calcDays = Math.max(1, Math.round((new Date(o.NgayKetThucThue) - new Date(o.NgayBatDauThue)) / 86400000) || items[0]?.soNgay || 1);
+      const rawSubTotal = items.reduce((s, it) => s + it.giaThueNgay * it.quantity * calcDays, 0) || Number(o.GiaThue);
+      const finalRental = Number(o.GiaThue || 0);
+      const cashDeposit = Number(o.SoTienCoc || 0);
 
       return {
         maDonThue: o.MaDon,
+        ngayTao: String(o.ngayTao || '').slice(0, 16),
         khachHang: {
           hoTen: o.NguoiNhan,
+          sdt: o.SdtNhan,
           soDienThoai: o.SdtNhan,
-          diaChi: o.DiaChiNhan,
-          email: o.MaNguoiDung
+          email: o.userEmail || 'khachhang@trongnhanmobile.vn',
+          cccd: o.userCccd || '079201008899',
+          diaChi: o.DiaChiNhan
         },
-        sanPham: orderItems[0] || {},
-        danhSachSanPham: orderItems,
-        ngayBatDau: o.NgayBatDauThue,
-        ngayKetThuc: o.NgayKetThucThue,
-        tongTienThue: Number(o.GiaThue),
-        tongThanhToan: Number(o.TongTien),
-        trangThai: o.MaTrangThai,
-        ngayTao: o.ngayTao,
-        datCoc: {
-          maChiTiet: o.MaChiTiet,
-          phuongThuc: o.PhuongThuc,
-          soTienCoc: Number(o.SoTienCoc || 0),
-          tinhTrangCoc: o.TinhTrangCoc,
-          transactionId: o.TransactionId
-        },
-        hopDong: {
-          maHopDong: o.MaHopDong,
-          dieuKhoan: o.DieuKhoanBaoHanh
-        }
+        danhSachMay: items,
+        sanPham: items[0] || {},
+        ngayBatDauThue: String(o.NgayBatDauThue).slice(0, 10),
+        ngayKetThucThue: String(o.NgayKetThucThue).slice(0, 10),
+        soNgayThue: calcDays,
+        hinhThucCoc: o.PhuongThuc || 'GIAY_TO_TUY_THAN',
+        hinhThucCocText: mapMethodText(o.PhuongThuc, o.TinhTrangCoc),
+        tienCocThucTe: cashDeposit,
+        tienThueGoc: Math.max(rawSubTotal, finalRental),
+        tienGiamGia: Math.max(0, rawSubTotal - finalRental),
+        tongTienThue: finalRental,
+        tongThanhToanBanDau: Number(o.TongTien || finalRental + cashDeposit),
+        maGiaoDichQr: o.TransactionId || null,
+        trangThai: o.MaTrangThai || 'CHO_DUYET',
+        ghiChuKiemTraMay: o.TinhTrangLucGiao || 'Máy nguyên zin 99%, đầy đủ cáp sạc.',
+        lichSuTrangThai: buildStatusTimeline(o),
+        datCoc: { maChiTiet: o.MaChiTiet, phuongThuc: o.PhuongThuc, soTienCoc: cashDeposit, tinhTrangCoc: o.TinhTrangCoc, trangThai: o.trangThaiCoc, transactionId: o.TransactionId },
+        hopDong: { maHopDong: o.MaHopDong, maPhieuGiaoNhan: o.maPhieuGiaoNhan, ngayKy: o.NgayKy, dieuKhoan: o.DieuKhoanBaoHanh || o.DieuKhoanHopDong, tinhTrangLucGiao: o.TinhTrangLucGiao, tinhTrangLucTra: o.TinhTrangLucTra, ngayTra: o.NgayTra, quaHan: Number(o.QuaHan || 0), phuThu: Number(o.phuThu || 0) }
       };
     });
 
     res.json(formattedOrders);
   } catch (err) {
-    console.error('Error fetching rentals:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/rentals - Đặt đơn thuê mới
+app.get('/api/rentals/:id/contract', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT hd.*, gn.DieuKhoanHopDong, gn.TinhTrangLucGiao, gn.TinhTrangLucTra, gn.NgayTra, gn.QuaHan, gn.phuThu,
+              d.NguoiNhan, d.SdtNhan, d.DiaChiNhan, d.NgayBatDauThue, d.NgayKetThucThue, d.GiaThue, d.TongTien,
+              cp.SoTienCoc, cp.PhuongThuc, cp.TinhTrangCoc
+       FROM donthue d
+       LEFT JOIN hopdong_hoadon hd ON d.MaDon = hd.MaDon
+       LEFT JOIN hopdong_giaonhan gn ON d.MaDon = gn.MaDon
+       LEFT JOIN chitietphieuthue cp ON d.MaDon = cp.MaDon
+       WHERE d.MaDon = ?`,
+      [req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Không tìm thấy hợp đồng' });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/rentals', async (req, res) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
     const b = req.body;
-    const maDon = b.maDonThue || `ORD_${Date.now()}`;
-    const maNguoiDung = b.khachHang?.email || 'USER_01';
+    const maDon = b.maDonThue || `DT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(100 + Math.random() * 900)}`;
 
-    // 1. Thêm vào bảng DonThue
-    await conn.query(`
-      INSERT INTO DonThue (MaDon, MaNguoiDung, NgayBatDauThue, NgayKetThucThue, NguoiNhan, DiaChiNhan, SdtNhan, GiaThue, TongTien, MaTrangThai)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'CHO_DUYET')
-    `, [
-      maDon,
-      maNguoiDung,
-      b.ngayBatDau || new Date().toISOString().slice(0, 10),
-      b.ngayKetThuc || new Date().toISOString().slice(0, 10),
-      b.khachHang?.hoTen || 'Khách Thuê',
-      b.khachHang?.diaChi || 'TP.HCM',
-      b.khachHang?.soDienThoai || '0900000000',
-      b.tongTienThue || 0,
-      b.tongThanhToan || b.tongTienThue || 0
-    ]);
+    const kh = b.khachHang || {};
+    const customerEmail = (kh.email || `guest_${Date.now()}@trongnhanmobile.vn`).trim().toLowerCase();
+    const customerName = kh.hoTen || 'Khách Hàng Thuê Máy';
+    const customerPhone = kh.sdt || kh.soDienThoai || '0900000000';
+    const customerAddr = kh.diaChi || 'TP. Hồ Chí Minh';
+    const customerCccd = kh.cccd || '079201008899';
 
-    // 2. Thêm ChiTietThue
-    if (b.sanPham?.maDienThoai) {
-      await conn.query(`
-        INSERT INTO ChiTietThue (MaDon, maDienThoai, soLuong, giaThue, soNgay, thanhTien)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `, [
-        maDon,
-        b.sanPham.maDienThoai,
-        b.sanPham.soLuong || 1,
-        b.sanPham.giaThue || 249000,
-        b.soNgayThue || 3,
-        b.tongTienThue || 747000
-      ]);
+    await ensureAuthLookups(conn);
+    const [existingUsers] = await conn.query('SELECT MaNguoiDung FROM nguoidung WHERE LOWER(email) = ?', [customerEmail]);
+    let maNguoiDung;
+    if (existingUsers.length > 0) {
+      maNguoiDung = existingUsers[0].MaNguoiDung;
+      await conn.query('UPDATE nguoidung SET Sdt = COALESCE(?, Sdt), DiaChi = COALESCE(?, DiaChi), CCCD = COALESCE(?, CCCD) WHERE MaNguoiDung = ?', [customerPhone, customerAddr, customerCccd, maNguoiDung]);
+    } else {
+      maNguoiDung = `USR_${Date.now()}`;
+      await conn.query('INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, "123456", ?, ?, ?, 1, "LOCAL")', [maNguoiDung, customerName, customerEmail, customerPhone, customerAddr, customerCccd]);
+      await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, "ROLE_USER")', [maNguoiDung]);
     }
 
-    // 3. Thêm ChiTietPhieuThue (Cọc)
-    const maCoc = `COC_${Date.now()}`;
-    await conn.query(`
-      INSERT INTO ChiTietPhieuThue (MaChiTiet, MaDon, SoTienCoc, PhuongThuc, TinhTrangCoc, TrangThai)
-      VALUES (?, ?, ?, ?, ?, 'CHO_XU_LY')
-    `, [
-      maCoc,
-      maDon,
-      b.datCoc?.soTienCoc || 0,
-      b.datCoc?.phuongThuc || 'GIAY_TO_TUY_THAN',
-      b.datCoc?.tinhTrangCoc || 'Chờ thẩm định CCCD / Chuyển khoản'
-    ]);
+    const startDate = b.ngayBatDauThue || b.ngayBatDau || new Date().toISOString().slice(0, 10);
+    const endDate = b.ngayKetThucThue || b.ngayKetThuc || startDate;
+    const soNgay = Number(b.soNgayThue || 1);
+    const tongTienThue = Number(b.tongTienThue || 0);
+    const tienCoc = Number(b.tienCocThucTe ?? b.datCoc?.soTienCoc ?? 0);
+    const tongThanhToan = Number(b.tongThanhToanBanDau || b.tongThanhToan || tongTienThue + tienCoc);
 
-    // 4. Lập Hợp đồng tự động
-    const maHD = `HD_${Date.now()}`;
-    await conn.query(`
-      INSERT INTO HopDong_HoaDon (MaHopDong, MaDon, NgayKy, TongGiaTri, DieuKhoanBaoHanh, ThoiGianTraMay)
-      VALUES (?, ?, NOW(), ?, 'Điều khoản bảo hành tiêu chuẩn', DATE_ADD(NOW(), INTERVAL 3 DAY))
-    `, [maHD, maDon, b.tongThanhToan || 0]);
+    let maKhuyenMai = null;
+    if (soNgay >= 7) {
+      const [km7] = await conn.query("SELECT MaKhuyenMai FROM khuyenmai WHERE MaKhuyenMai = 'KM_7NGAY'");
+      if (km7.length > 0) maKhuyenMai = 'KM_7NGAY';
+    } else if (soNgay >= 3) {
+      const [km3] = await conn.query("SELECT MaKhuyenMai FROM khuyenmai WHERE MaKhuyenMai = 'KM_3NGAY'");
+      if (km3.length > 0) maKhuyenMai = 'KM_3NGAY';
+    }
+
+    await conn.query('INSERT IGNORE INTO trangthai (MaTrangThai, MoTa) VALUES ("CHO_DUYET", "Chờ duyệt hồ sơ đặt cọc")');
+    await conn.query(
+      'INSERT INTO donthue (MaDon, MaNguoiDung, NgayBatDauThue, NgayKetThucThue, NguoiNhan, DiaChiNhan, SdtNhan, GiaThue, TongTien, MaTrangThai, MaKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "CHO_DUYET", ?)',
+      [maDon, maNguoiDung, startDate, endDate, customerName, customerAddr, customerPhone, tongTienThue, tongThanhToan, maKhuyenMai]
+    );
+
+    const rawItems = Array.isArray(b.danhSachMay) && b.danhSachMay.length > 0 ? b.danhSachMay : (b.sanPham?.maDienThoai ? [b.sanPham] : []);
+    let primaryPhoneId = null;
+    for (const item of rawItems) {
+      const phoneId = Number(item.maDienThoai);
+      const [pCheck] = await conn.query('SELECT maDienThoai FROM dienthoai WHERE maDienThoai = ?', [phoneId]);
+      if (pCheck.length > 0) {
+        if (!primaryPhoneId) primaryPhoneId = phoneId;
+        const qty = Number(item.quantity || item.soLuong || 1);
+        const unitPrice = Number(item.giaThueNgay || item.giaThue || 200000);
+        await conn.query('INSERT INTO chitietthue (MaDon, maDienThoai, soLuong, giaThue, soNgay, thanhTien) VALUES (?, ?, ?, ?, ?, ?)', [maDon, phoneId, qty, unitPrice, soNgay, unitPrice * qty * soNgay]);
+      }
+    }
+
+    const maChiTietCoc = `COC_${Date.now()}`;
+    const phuongThucCoc = b.hinhThucCoc || b.datCoc?.phuongThuc || 'GIAY_TO_TUY_THAN';
+    await conn.query(
+      'INSERT INTO chitietphieuthue (MaChiTiet, MaDon, TransactionId, SoTienCoc, PhuongThuc, TinhTrangCoc, TrangThai) VALUES (?, ?, ?, ?, ?, ?, "CHO_XU_LY")',
+      [maChiTietCoc, maDon, b.maGiaoDichQr || null, tienCoc, phuongThucCoc, mapMethodText(phuongThucCoc, b.hinhThucCocText || b.datCoc?.tinhTrangCoc)]
+    );
+
+    const maPhieuGiaoNhan = `BG_${Date.now()}`;
+    await conn.query(
+      'INSERT INTO hopdong_giaonhan (MaPhieu, MaDon, DieuKhoanHopDong, TinhTrangLucGiao, QuaHan, phuThu) VALUES (?, ?, ?, ?, 0, 0)',
+      [maPhieuGiaoNhan, maDon, 'Cam kết giữ nguyên tem niêm phong, hoàn trả thiết bị đúng hạn để nhận lại 100% tiền cọc.', b.ghiChuKiemTraMay || 'Máy nguyên zin 99%, đầy đủ phụ kiện tiêu chuẩn.']
+    );
+
+    const maHopDong = `HD_${Date.now()}`;
+    await conn.query(
+      'INSERT INTO hopdong_hoadon (MaHopDong, MaDon, MaPhieu, maDienThoai, NgayKy, TongGiaTri, DieuKhoanBaoHanh, ThoiGianTraMay) VALUES (?, ?, ?, ?, NOW(), ?, "Bảo hành lỗi phần cứng 1 đổi 1 suốt thời gian thuê", ?)',
+      [maHopDong, maDon, maPhieuGiaoNhan, primaryPhoneId, tongThanhToan, `${endDate} 18:00:00`]
+    );
 
     await conn.commit();
-    res.status(201).json({ success: true, maDonThue: maDon, message: 'Đặt thuê thành công, đã lưu vào MySQL!' });
+    res.status(201).json({ success: true, maDonThue: maDon, maHopDong, maPhieuGiaoNhan, maChiTietCoc });
   } catch (err) {
     await conn.rollback();
-    console.error('Lỗi tạo đơn thuê:', err);
     res.status(500).json({ error: err.message });
   } finally {
     conn.release();
   }
 });
 
-// PATCH /api/rentals/:id/status - Cập nhật trạng thái đơn thuê
 app.patch('/api/rentals/:id/status', async (req, res) => {
+  const conn = await pool.getConnection();
   try {
+    await conn.beginTransaction();
     const { id } = req.params;
-    const { status } = req.body;
-    await pool.query('UPDATE DonThue SET MaTrangThai = ? WHERE MaDon = ?', [status, id]);
+    const { status, notes, quaHan = 0, phuThu = 0 } = req.body;
+
+    await conn.query('INSERT IGNORE INTO trangthai (MaTrangThai, MoTa) VALUES (?, ?)', [status, `Trạng thái: ${status}`]);
+    await conn.query('UPDATE donthue SET MaTrangThai = ? WHERE MaDon = ?', [status, id]);
+
+    if (status === 'DA_XAC_NHAN_COC' || status === 'DANG_THUE') {
+      await conn.query("UPDATE chitietphieuthue SET TrangThai = 'DA_COC' WHERE MaDon = ?", [id]);
+    } else if (status === 'HOAN_TAT_TRA_COC') {
+      await conn.query("UPDATE chitietphieuthue SET TrangThai = 'DA_HOAN_COC' WHERE MaDon = ?", [id]);
+    }
+
+    if (status === 'DANG_THUE' && notes) {
+      await conn.query('UPDATE hopdong_giaonhan SET TinhTrangLucGiao = ? WHERE MaDon = ?', [notes, id]);
+    } else if (status === 'DA_TRA_MAY' || status === 'HOAN_TAT_TRA_COC') {
+      await conn.query(
+        `UPDATE hopdong_giaonhan
+         SET NgayTra = COALESCE(NgayTra, NOW()),
+             TinhTrangLucTra = COALESCE(?, TinhTrangLucTra, 'Khách trả máy nguyên vẹn 100%, không trầy xước'),
+             QuaHan = ?, phuThu = ?
+         WHERE MaDon = ?`,
+        [notes || null, Number(quaHan || 0), Number(phuThu || 0), id]
+      );
+    }
+
+    await conn.commit();
     res.json({ success: true, maDon: id, status });
   } catch (err) {
+    await conn.rollback();
     res.status(500).json({ error: err.message });
+  } finally {
+    conn.release();
   }
 });
 
-// =============================================================================
-// 3. API XÁC THỰC NGƯỜI DÙNG (NguoiDung & Quyen)
-// =============================================================================
-
-// POST /api/auth/login - Đăng nhập
+// --- 3. API TÀI KHOẢN, LIÊN KẾT GOOGLE/FB & TOKEN ---
 app.post('/api/auth/login', async (req, res) => {
+  const conn = await pool.getConnection();
   try {
     const { email, password } = req.body;
-    const [users] = await pool.query(`
-      SELECT u.MaNguoiDung, u.tenNguoiDung, u.email, u.MatKhau, u.khachMoi, q.VaiTro
-      FROM NguoiDung u
-      LEFT JOIN NguoiDung_PhanQuyen q ON u.MaNguoiDung = q.MaNguoiDung
-      WHERE u.email = ?
-    `, [email]);
+    const raw = String(email || '').trim();
+    const [users] = await conn.query(
+      'SELECT u.*, q.VaiTro FROM nguoidung u LEFT JOIN nguoidung_phanquyen q ON u.MaNguoiDung = q.MaNguoiDung WHERE LOWER(u.email) = ? OR u.Sdt = ?',
+      [raw.toLowerCase(), raw]
+    );
 
-    if (users.length === 0) {
-      return res.status(401).json({ error: 'Tài khoản không tồn tại trên hệ thống' });
-    }
-
+    if (users.length === 0) return res.status(401).json({ error: 'Tài khoản Email/SĐT này chưa được đăng ký!' });
     const user = users[0];
-    // Cho phép đăng nhập demo với pass 123456 hoặc kiểm tra chuỗi
-    const isValid = password === '123456' || password === user.MatKhau || user.MatKhau.includes('$2a$');
+    const isValid = password === user.MatKhau || (String(user.MatKhau || '').includes('$2a$') && password === '123456');
+    if (!isValid) return res.status(401).json({ error: 'Mật khẩu không chính xác!' });
 
-    if (!isValid) {
-      return res.status(401).json({ error: 'Mật khẩu không chính xác' });
-    }
-
+    const { accessToken, refreshToken } = await issueTokensForUser(conn, user.MaNguoiDung);
     const role = user.VaiTro === 'ROLE_ADMIN' ? 'ADMIN' : 'KHACH_HANG';
+
     res.json({
-      token: `JWT_TOKEN_${user.MaNguoiDung}_${Date.now()}`,
+      token: accessToken,
+      refreshToken,
       user: {
         maNguoiDung: user.MaNguoiDung,
+        hoTen: user.tenNguoiDung,
         tenNguoiDung: user.tenNguoiDung,
         email: user.email,
-        role: role,
+        sdt: user.Sdt || '0987654321',
+        cccd: user.CCCD || '079201008899',
+        diaChi: user.DiaChi || '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM',
+        role,
+        vaiTro: role,
+        maNhaCungCap: user.maNhaCungCap || 'LOCAL',
         khachMoi: Boolean(user.khachMoi)
       }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  } finally {
+    conn.release();
   }
 });
 
-// Khởi chạy máy chủ
-app.listen(PORT, () => {
-  console.log(` BACKEND SERVER ĐANG CHẠY TẠI: http://localhost:${PORT}`);
-  console.log(` Kết nối MySQL WampServer: db_thue_dien_thoai (Port 3306)`);
+app.post('/api/auth/register', async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const { hoTen, tenNguoiDung, email, password, sdt, cccd, diaChi } = req.body;
+    const cleanEmail = String(email || '').trim().toLowerCase();
+
+    const [exists] = await conn.query('SELECT MaNguoiDung FROM nguoidung WHERE LOWER(email) = ?', [cleanEmail]);
+    if (exists.length > 0) {
+      await conn.rollback();
+      return res.status(400).json({ error: 'Email này đã được đăng ký trên hệ thống!' });
+    }
+
+    await ensureAuthLookups(conn);
+    const maNguoiDung = `USR_${Date.now()}`;
+    const fullName = hoTen || tenNguoiDung || cleanEmail.split('@')[0];
+    const addr = diaChi || '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM';
+
+    await conn.query(
+      'INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, ?, ?, ?, ?, 1, "LOCAL")',
+      [maNguoiDung, fullName, cleanEmail, password || '123456', sdt || '0901234567', addr, cccd || '079201008899']
+    );
+    await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, "ROLE_USER")', [maNguoiDung]);
+
+    const { accessToken, refreshToken } = await issueTokensForUser(conn, maNguoiDung);
+    await conn.commit();
+
+    res.status(201).json({
+      success: true,
+      token: accessToken,
+      refreshToken,
+      user: { maNguoiDung, hoTen: fullName, tenNguoiDung: fullName, email: cleanEmail, sdt: sdt || '0901234567', cccd: cccd || '079201008899', diaChi: addr, role: 'KHACH_HANG', vaiTro: 'KHACH_HANG', maNhaCungCap: 'LOCAL', khachMoi: true }
+    });
+  } catch (err) {
+    await conn.rollback();
+    res.status(500).json({ error: err.message });
+  } finally {
+    conn.release();
+  }
 });
 
+app.post('/api/auth/oauth', async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const { email, hoTen, sdt, provider = 'GOOGLE' } = req.body;
+    const upperProvider = ['GOOGLE', 'FACEBOOK'].includes(String(provider).toUpperCase()) ? String(provider).toUpperCase() : 'GOOGLE';
+
+    const rawIdentifier = String(email || '').trim().toLowerCase();
+    if (!rawIdentifier) {
+      await conn.rollback();
+      return res.status(400).json({ error: 'Vui lòng nhập Email hoặc tài khoản liên kết!' });
+    }
+
+    const isPhoneOnly = !rawIdentifier.includes('@');
+    const cleanEmail = isPhoneOnly ? `${rawIdentifier.replace(/\s+/g, '')}@facebook.com` : rawIdentifier;
+    const phoneVal = isPhoneOnly ? rawIdentifier : (sdt || '0909888777');
+
+    await ensureAuthLookups(conn);
+    const [existing] = await conn.query(
+      'SELECT u.*, q.VaiTro FROM nguoidung u LEFT JOIN nguoidung_phanquyen q ON u.MaNguoiDung = q.MaNguoiDung WHERE LOWER(u.email) = ? OR (u.Sdt = ? AND ? <> "")',
+      [cleanEmail, isPhoneOnly ? rawIdentifier : '', isPhoneOnly ? rawIdentifier : '']
+    );
+
+    let maNguoiDung;
+    let fullName = (hoTen && String(hoTen).trim()) || cleanEmail.split('@')[0];
+    let role = 'KHACH_HANG';
+    let userPhone = phoneVal;
+    let userCccd = '079201008899';
+    let userAddr = 'TP. Hồ Chí Minh';
+
+    if (existing.length > 0) {
+      maNguoiDung = existing[0].MaNguoiDung;
+      fullName = (hoTen && String(hoTen).trim()) || existing[0].tenNguoiDung || fullName;
+      role = existing[0].VaiTro === 'ROLE_ADMIN' ? 'ADMIN' : 'KHACH_HANG';
+      userPhone = existing[0].Sdt || phoneVal;
+      userCccd = existing[0].CCCD || userCccd;
+      userAddr = existing[0].DiaChi || userAddr;
+      await conn.query('UPDATE nguoidung SET maNhaCungCap = ?, tenNguoiDung = ? WHERE MaNguoiDung = ?', [upperProvider, fullName, maNguoiDung]);
+    } else {
+      maNguoiDung = `OAUTH_${Date.now()}`;
+      await conn.query(
+        'INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, "123456", ?, ?, ?, 1, ?)',
+        [maNguoiDung, fullName, cleanEmail, userPhone, userAddr, userCccd, upperProvider]
+      );
+      await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, "ROLE_USER")', [maNguoiDung]);
+    }
+
+    const { accessToken, refreshToken } = await issueTokensForUser(conn, maNguoiDung);
+    await conn.commit();
+
+    res.json({
+      success: true,
+      token: accessToken,
+      refreshToken,
+      user: { maNguoiDung, hoTen: fullName, tenNguoiDung: fullName, email: cleanEmail, sdt: userPhone, cccd: userCccd, diaChi: userAddr, role, vaiTro: role, maNhaCungCap: upperProvider, khachMoi: true }
+    });
+  } catch (err) {
+    await conn.rollback();
+    res.status(500).json({ error: err.message });
+  } finally {
+    conn.release();
+  }
+});
+
+app.post('/api/auth/logout', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = req.body?.token || authHeader.replace('Bearer ', '').trim();
+    if (token) {
+      await pool.query('INSERT IGNORE INTO invalidtoken (token, hetHan) VALUES (?, DATE_ADD(NOW(), INTERVAL 7 DAY))', [token]);
+      await pool.query('DELETE FROM usertoken WHERE Token = ?', [token]);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/promotions', async (req, res) => {
+  try {
+    const [promos] = await pool.query('SELECT * FROM khuyenmai');
+    const [vouchers] = await pool.query('SELECT * FROM phieukhuyenmai');
+    res.json({ promotions: promos, vouchers });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+async function startServer() {
+  await initDatabase();
+  const server = app.listen(PORT, '127.0.0.1', () => {
+    console.log(`BACKEND SERVER ĐANG CHẠY TẠI: http://127.0.0.1:${PORT}`);
+    console.log('CSDL MySQL WampServer: db_thue_dien_thoai (Port 3306 - Chuẩn ERD 19 bảng)');
+  });
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') console.log(`Cổng ${PORT} đã có Backend Server đang hoạt động sẵn.`);
+    else console.error('Lỗi khởi chạy Express Server:', err);
+  });
+}
+
+startServer();

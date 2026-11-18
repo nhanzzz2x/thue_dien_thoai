@@ -1,9 +1,5 @@
-// ============================================================================================
-// VIETNAMESE: PINIA STORE QUẢN LÝ KHO ĐIỆN THOẠI, TÌM KIẾM, BỘ LỌC VÀ SO SÁNH THIẾT BỊ
-// ENGLISH: PINIA STORE FOR MANAGING PHONE INVENTORY, SEARCH, ADVANCED FILTERS & COMPARISON
+// PINIA STORE QUẢN LÝ KHO ĐIỆN THOẠI, TÌM KIẾM, BỘ LỌC VÀ SO SÁNH THIẾT BỊ
 // ERD MAPPING: Ánh xạ 1-1 với 2 thực thể DienThoai và CauHinh_PhienBan trong CSDL
-// PERSISTENCE: Lưu trữ localStorage ('trongnhan_custom_phones') & Đồng bộ Real-time giữa các tab
-// ============================================================================================
 
 import { defineStore } from 'pinia';
 import { mockPhones, mockCategories } from '@/data/mockData';
@@ -29,6 +25,7 @@ function getInitialPhones() {
             if (
               !p.MacDinh ||
               p.MacDinh.includes('gsmarena.com') ||
+              p.MacDinh.includes('rog-phone-8-pro') ||
               p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
               p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
               p.MacDinh.includes('samsung-galaxy-z-fold-6-xam_1.png') ||
@@ -38,14 +35,6 @@ function getInitialPhones() {
               p.hinhAnh = mock.hinhAnh;
               hasChanges = true;
             }
-          }
-        });
-
-        // Thêm các thiết bị mới từ mockPhones nếu chưa có
-        mockPhones.forEach(m => {
-          if (!parsed.some(p => p.maDienThoai === m.maDienThoai)) {
-            parsed.push(m);
-            hasChanges = true;
           }
         });
 
@@ -114,7 +103,8 @@ export const usePhoneStore = defineStore('phone', {
 
     // Danh sách thiết bị đang đưa vào bảng so sánh cấu hình (Tối đa 3 máy)
     compareList: [],
-    isCompareModalOpen: false
+    isCompareModalOpen: false,
+    isMysqlConnected: false
   }),
 
   getters: {
@@ -193,34 +183,14 @@ export const usePhoneStore = defineStore('phone', {
   },
 
   actions: {
-    // Đồng bộ lại danh sách máy từ localStorage
+    // Đồng bộ lại danh sách máy từ localStorage (chỉ dùng khi Backend MySQL chưa bật)
     syncFromStorage() {
+      if (this.isMysqlConnected) return;
       try {
         const saved = localStorage.getItem(PHONES_STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const mockMap = new Map(mockPhones.map(m => [m.maDienThoai, m]));
-            parsed.forEach(p => {
-              const mock = mockMap.get(p.maDienThoai);
-              if (
-                mock &&
-                (!p.MacDinh ||
-                  p.MacDinh.includes('gsmarena.com') ||
-                  p.MacDinh.includes('samsung-galaxy-z-flip-6-xanh-mint_1.png') ||
-                  p.MacDinh.includes('nubia-red-magic-9-pro-plus-den_1.png') ||
-                  p.MacDinh.includes('samsung-galaxy-z-fold-6-xam_1.png') ||
-                  p.MacDinh.includes('cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-z-flip-6'))
-              ) {
-                p.MacDinh = mock.MacDinh;
-                p.hinhAnh = mock.hinhAnh;
-              }
-            });
-            mockPhones.forEach(m => {
-              if (!parsed.some(p => p.maDienThoai === m.maDienThoai)) {
-                parsed.push(m);
-              }
-            });
+          if (Array.isArray(parsed)) {
             this.phones = parsed;
             return;
           }
@@ -231,17 +201,22 @@ export const usePhoneStore = defineStore('phone', {
       this.phones = [...mockPhones];
     },
 
-    // Tự động tải từ MySQL Backend API (nếu có server chạy)
+    // Tự động tải & đồng bộ thời gian thực từ MySQL WampServer
     async fetchPhones() {
       try {
         const data = await PhoneService.getAllPhones();
-        if (data && Array.isArray(data) && data.length > 0) {
-          this.phones = data;
-          persistPhones(this.phones);
+        if (Array.isArray(data)) {
+          this.isMysqlConnected = true;
+          if (JSON.stringify(this.phones) !== JSON.stringify(data)) {
+            this.phones = data;
+            persistPhones(this.phones);
+          }
         } else {
+          this.isMysqlConnected = false;
           this.syncFromStorage();
         }
       } catch (err) {
+        this.isMysqlConnected = false;
         this.syncFromStorage();
       }
     },
@@ -320,9 +295,13 @@ export const usePhoneStore = defineStore('phone', {
       // Lưu ngay vào localStorage
       persistPhones(this.phones);
 
-      // Gửi đồng bộ tới backend MySQL (nếu có server chạy)
+      // Gửi đồng bộ tới backend MySQL (nếu có server chạy) và đồng bộ lại ID tự tăng của MySQL
       try {
-        await PhoneService.createPhone(phoneToAdd);
+        const created = await PhoneService.createPhone(phoneToAdd);
+        if (created && created.maDienThoai) {
+          phoneToAdd.maDienThoai = Number(created.maDienThoai);
+          persistPhones(this.phones);
+        }
       } catch (err) {
         console.warn('Backend offline, đã lưu máy mới vào localStorage:', err);
       }

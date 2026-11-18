@@ -1,8 +1,6 @@
 <template>
-  <!-- ========================================================================================= -->
   <!-- QUẢN LÝ TIỀN CỌC & TÀI SẢN THẾ CHÂN (DEPOSIT & COLLATERAL MANAGEMENT)                      -->
   <!-- Ánh xạ ERD: Thực thể `DatCoc` / `ChiTietPhieuThue` quan hệ 1-1 với `DonThue`             -->
-  <!-- ========================================================================================= -->
   <div class="deposit-management">
     <!-- Header: Tiêu đề trang & Thống kê tổng tiền cọc đang giữ tại quầy (Total Deposit Holding) -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
@@ -11,8 +9,7 @@
           <i class="fa fa-lock text-primary me-2"></i> Quản Lý Tiền Cọc & Tài Sản Thế Chân
         </h4>
         <p class="text-muted small mb-0">
-          <!-- VI: Theo dõi két an toàn lưu trữ CCCD, các giao dịch chuyển khoản cọc và tài sản thế chân (Laptop, Thiết bị công nghệ) -->
-          <!-- EN: Track secure locker storage for National IDs, bank transfer transactions, and collateral assets (Laptops, Tech Devices) -->
+          <!-- Theo dõi két an toàn lưu trữ CCCD, các giao dịch chuyển khoản cọc và tài sản thế chân (Laptop, Thiết bị công nghệ) -->
           Theo dõi két an toàn lưu trữ CCCD, các giao dịch chuyển khoản cọc và tài sản thế chân (Laptop, Thiết bị công nghệ).
         </p>
       </div>
@@ -25,10 +22,8 @@
       </div>
     </div>
 
-    <!-- ======================================================================================= -->
     <!-- 3 THẺ THỐNG KÊ 3 HÌNH THỨC THẾ CHÂN (3 COLLATERAL METHOD STATISTIC CARDS)               -->
     <!-- ERD Field: `DatCoc.phuong_thuc` (GIAY_TO_TUY_THAN, CHUYEN_KHOAN, MAY_ANH_MAY_TINH)     -->
-    <!-- ======================================================================================= -->
     <div class="row g-3 mb-4">
       <!-- 1. Cọc bằng Căn Cước Công Dân (National ID Card Collateral) -->
       <div class="col-md-4 col-sm-6">
@@ -82,10 +77,8 @@
       </div>
     </div>
 
-    <!-- ======================================================================================= -->
     <!-- BẢNG THEO DÕI CHI TIẾT TỪNG KHOẢN CỌC (COLLATERAL & DEPOSIT DETAILED TABLE)            -->
     <!-- Ánh xạ các trường: `maDonThue`, `khachHang`, `hinhThucCoc`, `tienCocThucTe`, `trangThai` -->
-    <!-- ======================================================================================= -->
     <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
       <div class="table-responsive">
         <table class="table table-hover align-middle small mb-0">
@@ -160,7 +153,6 @@
               <!-- Cột hành động (Action Buttons) -->
               <td class="text-end">
                 <!-- Khi khách đã mang máy đến trả (DA_TRA_MAY), nút Trả Cọc sẽ sáng lên để Admin bấm hoàn tiền -->
-                <!-- EN: When device is returned (DA_TRA_MAY), refund button is enabled for Admin to complete deposit return -->
                 <button
                   v-if="order.trangThai === 'DA_TRA_MAY'"
                   class="btn btn-sm btn-success"
@@ -182,9 +174,7 @@
 </template>
 
 <script setup>
-// =========================================================================================
 // KHU VỰC LOGIC JAVASCRIPT / VUE 3 COMPOSITION API (SCRIPT SECTION)
-// =========================================================================================
 
 import Swal from 'sweetalert2';                          // Thư viện popup thông báo đẹp mắt (SweetAlert2 popup library)
 import { useOrderStore } from '@/stores/order.store';    // Pinia Store quản lý đơn thuê (Pinia Order Store)
@@ -193,17 +183,13 @@ import { convertToVND } from '@/utils/formatters';       // Hàm tiện ích đ�
 // Khởi tạo instance của orderStore (Initialize store instance)
 const orderStore = useOrderStore();
 
-// =========================================================================================
 // HÀM 1: Đếm số lượng đơn thuê theo hình thức cọc (Count orders by collateral method)
 // Tham số: methodId (GIAY_TO_TUY_THAN | CHUYEN_KHOAN | MAY_ANH_MAY_TINH)
-// =========================================================================================
 const countByMethod = (methodId) => {
   return orderStore.orders.filter(o => o.hinhThucCoc === methodId && o.trangThai !== 'DA_HUY').length;
 };
 
-// =========================================================================================
 // HÀM 2: Lấy biểu tượng FontAwesome tương ứng với từng hình thức cọc (Get method icon)
-// =========================================================================================
 const getMethodIcon = (method) => {
   switch (method) {
     case 'GIAY_TO_TUY_THAN': return 'fa-id-card text-primary';      // Biểu tượng thẻ CCCD
@@ -213,9 +199,7 @@ const getMethodIcon = (method) => {
   }
 };
 
-// =========================================================================================
 // HÀM 3: Gán màu sắc CSS Bootstrap theo mã trạng thái (Get status badge CSS class)
-// =========================================================================================
 const getStatusBadgeClass = (status) => {
   switch (status) {
     case 'CHO_DUYET': return 'bg-warning text-dark';      // Màu vàng: Chờ duyệt cọc
@@ -228,9 +212,7 @@ const getStatusBadgeClass = (status) => {
   }
 };
 
-// =========================================================================================
 // HÀM 4: Chuyển đổi mã trạng thái tiếng Anh sang tiếng Việt hiển thị (Translate status)
-// =========================================================================================
 const getStatusText = (status) => {
   switch (status) {
     case 'CHO_DUYET': return 'Chờ duyệt';
@@ -243,10 +225,8 @@ const getStatusText = (status) => {
   }
 };
 
-// =========================================================================================
 // HÀM 5: Thao tác xác nhận hoàn trả cọc nhanh cho khách (Quick refund handler)
 // Nghiệp vụ: Chuyển đơn sang trạng thái `HOAN_TAT_TRA_COC`, giải phóng tiền cọc trong két
-// =========================================================================================
 const quickRefund = (order) => {
   Swal.fire({
     title: 'Xác nhận hoàn cọc?',
