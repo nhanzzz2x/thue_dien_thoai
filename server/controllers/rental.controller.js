@@ -200,8 +200,8 @@ export async function createRental(req, res) {
 
     const maHopDong = `HD_${Date.now()}`;
     await conn.query(
-      'INSERT INTO hopdong_hoadon (MaHopDong, MaDon, MaPhieu, maDienThoai, NgayKy, TongGiaTri, DieuKhoanBaoHanh, ThoiGianTraMay) VALUES (?, ?, ?, ?, NOW(), ?, "Bảo hành lỗi phần cứng 1 đổi 1 suốt thời gian thuê", ?)',
-      [maHopDong, maDon, maPhieuGiaoNhan, primaryPhoneId, tongThanhToan, `${endDate} 18:00:00`]
+      'INSERT INTO hopdong_hoadon (MaHopDong, MaDon, MaPhieu, maDienThoai, NgayKy, TongGiaTri, DieuKhoanBaoHanh, ThoiGianTraMay) VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)',
+      [maHopDong, maDon, maPhieuGiaoNhan, primaryPhoneId, tongThanhToan, 'Bảo hành lỗi phần cứng 1 đổi 1 suốt thời gian thuê', `${endDate} 18:00:00`]
     );
 
     await conn.commit();
