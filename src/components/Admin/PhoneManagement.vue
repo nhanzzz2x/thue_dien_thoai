@@ -1662,7 +1662,6 @@ const savePhone = async () => {
     });
   }
 
-  await phoneStore.fetchPhones();
   isModalOpen.value = false;
 };
 

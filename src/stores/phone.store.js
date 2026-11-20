@@ -215,16 +215,37 @@ export const usePhoneStore = defineStore('phone', {
       this.phones = [...mockPhones];
     },
 
-    // Tự động tải & đồng bộ thời gian thực từ MySQL WampServer
+    // Tự động tải & đồng bộ thời gian thực từ MySQL WampServer / Cloud Aiven
     async fetchPhones() {
       try {
         const data = await PhoneService.getAllPhones();
         if (Array.isArray(data)) {
           this.isMysqlConnected = true;
-          if (JSON.stringify(this.phones) !== JSON.stringify(data)) {
-            this.phones = data;
-            persistPhones(this.phones);
-          }
+          const currentMap = new Map(this.phones.map(p => [p.maDienThoai, p]));
+          const normalized = data.map(p => {
+            const cur = currentMap.get(p.maDienThoai);
+            let brand = (p.hangSanXuat || p.category || '').toUpperCase();
+            if ((!brand || brand === 'FLAGSHIP' || brand === 'ALL') && cur && cur.hangSanXuat && cur.hangSanXuat !== 'FLAGSHIP') {
+              brand = cur.hangSanXuat;
+            }
+            if (!brand || brand === 'FLAGSHIP' || brand === 'ALL') {
+              const upper = String(p.TenDienThoai || '').toUpperCase();
+              if (upper.includes('OPPO') || upper.includes('FIND') || upper.includes('RENO')) brand = 'OPPO';
+              else if (upper.includes('IPHONE') || upper.includes('APPLE')) brand = 'APPLE';
+              else if (upper.includes('SAMSUNG') || upper.includes('GALAXY')) brand = 'SAMSUNG';
+              else if (upper.includes('XIAOMI') || upper.includes('REDMI')) brand = 'XIAOMI';
+              else if (upper.includes('VIVO')) brand = 'VIVO';
+              else if (upper.includes('REALME')) brand = 'REALME';
+              else brand = 'OTHER';
+            }
+            return {
+              ...p,
+              hangSanXuat: brand,
+              category: brand
+            };
+          });
+          this.phones = normalized;
+          persistPhones(this.phones);
         } else {
           this.isMysqlConnected = false;
           this.syncFromStorage();
