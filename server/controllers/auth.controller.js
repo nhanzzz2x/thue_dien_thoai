@@ -67,10 +67,10 @@ export async function register(req, res) {
     const addr = diaChi || '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM';
 
     await conn.query(
-      'INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, ?, ?, ?, ?, 1, "LOCAL")',
-      [maNguoiDung, fullName, cleanEmail, password || '123456', sdt || '0901234567', addr, cccd || '079201008899']
+      'INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)',
+      [maNguoiDung, fullName, cleanEmail, password || '123456', sdt || '0901234567', addr, cccd || '079201008899', 'LOCAL']
     );
-    await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, "ROLE_USER")', [maNguoiDung]);
+    await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, ?)', [maNguoiDung, 'ROLE_USER']);
 
     const { accessToken, refreshToken } = await issueTokensForUser(conn, maNguoiDung);
     await conn.commit();
@@ -143,10 +143,10 @@ export async function oauthLogin(req, res) {
     } else {
       maNguoiDung = `OAUTH_${Date.now()}`;
       await conn.query(
-        'INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, "123456", ?, ?, ?, 1, ?)',
-        [maNguoiDung, fullName, cleanEmail, userPhone, userAddr, userCccd, upperProvider]
+        'INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)',
+        [maNguoiDung, fullName, cleanEmail, '123456', userPhone, userAddr, userCccd, upperProvider]
       );
-      await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, "ROLE_USER")', [maNguoiDung]);
+      await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, ?)', [maNguoiDung, 'ROLE_USER']);
     }
 
     const { accessToken, refreshToken } = await issueTokensForUser(conn, maNguoiDung);

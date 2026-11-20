@@ -79,8 +79,11 @@ async function runImport() {
     console.log(` Đang đọc nội dung file: ${sqlFilePath}...`);
     const sqlContent = fs.readFileSync(sqlFilePath, 'utf8');
 
-    console.log(' SQL tạo bảng và thêm dữ liệu mẫu...');
+    console.log('⏳ Đang thực thi các lệnh SQL tạo bảng và thêm dữ liệu mẫu...');
+    // Tắt kiểm tra khoá ngoại để có thể xoá và tạo lại bảng mà không bị xung đột khoá ngoại
+    await connection.query('SET FOREIGN_KEY_CHECKS = 0');
     await connection.query(sqlContent);
+    await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
     // Kiểm tra kết quả
     const [tables] = await connection.query('SHOW TABLES');

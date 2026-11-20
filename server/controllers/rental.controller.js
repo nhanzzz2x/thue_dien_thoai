@@ -146,8 +146,8 @@ export async function createRental(req, res) {
       await conn.query('UPDATE nguoidung SET Sdt = COALESCE(?, Sdt), DiaChi = COALESCE(?, DiaChi), CCCD = COALESCE(?, CCCD) WHERE MaNguoiDung = ?', [customerPhone, customerAddr, customerCccd, maNguoiDung]);
     } else {
       maNguoiDung = `USR_${Date.now()}`;
-      await conn.query('INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, "123456", ?, ?, ?, 1, "LOCAL")', [maNguoiDung, customerName, customerEmail, customerPhone, customerAddr, customerCccd]);
-      await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, "ROLE_USER")', [maNguoiDung]);
+      await conn.query('INSERT INTO nguoidung (MaNguoiDung, tenNguoiDung, email, MatKhau, Sdt, DiaChi, CCCD, khachMoi, maNhaCungCap) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)', [maNguoiDung, customerName, customerEmail, '123456', customerPhone, customerAddr, customerCccd, 'LOCAL']);
+      await conn.query('INSERT IGNORE INTO nguoidung_phanquyen (MaNguoiDung, VaiTro) VALUES (?, ?)', [maNguoiDung, 'ROLE_USER']);
     }
 
     const startDate = b.ngayBatDauThue || b.ngayBatDau || new Date().toISOString().slice(0, 10);
@@ -166,9 +166,9 @@ export async function createRental(req, res) {
       if (km3.length > 0) maKhuyenMai = 'KM_3NGAY';
     }
 
-    await conn.query('INSERT IGNORE INTO trangthai (MaTrangThai, MoTa) VALUES ("CHO_DUYET", "Chờ duyệt hồ sơ đặt cọc")');
+    await conn.query("INSERT IGNORE INTO trangthai (MaTrangThai, MoTa) VALUES ('CHO_DUYET', 'Chờ duyệt hồ sơ đặt cọc')");
     await conn.query(
-      'INSERT INTO donthue (MaDon, MaNguoiDung, NgayBatDauThue, NgayKetThucThue, NguoiNhan, DiaChiNhan, SdtNhan, GiaThue, TongTien, MaTrangThai, MaKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "CHO_DUYET", ?)',
+      "INSERT INTO donthue (MaDon, MaNguoiDung, NgayBatDauThue, NgayKetThucThue, NguoiNhan, DiaChiNhan, SdtNhan, GiaThue, TongTien, MaTrangThai, MaKhuyenMai) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'CHO_DUYET', ?)",
       [maDon, maNguoiDung, startDate, endDate, customerName, customerAddr, customerPhone, tongTienThue, tongThanhToan, maKhuyenMai]
     );
 
@@ -188,7 +188,7 @@ export async function createRental(req, res) {
     const maChiTietCoc = `COC_${Date.now()}`;
     const phuongThucCoc = b.hinhThucCoc || b.datCoc?.phuongThuc || 'GIAY_TO_TUY_THAN';
     await conn.query(
-      'INSERT INTO chitietphieuthue (MaChiTiet, MaDon, TransactionId, SoTienCoc, PhuongThuc, TinhTrangCoc, TrangThai) VALUES (?, ?, ?, ?, ?, ?, "CHO_XU_LY")',
+      "INSERT INTO chitietphieuthue (MaChiTiet, MaDon, TransactionId, SoTienCoc, PhuongThuc, TinhTrangCoc, TrangThai) VALUES (?, ?, ?, ?, ?, ?, 'CHO_XU_LY')",
       [maChiTietCoc, maDon, b.maGiaoDichQr || null, tienCoc, phuongThucCoc, mapMethodText(phuongThucCoc, b.hinhThucCocText || b.datCoc?.tinhTrangCoc)]
     );
 
