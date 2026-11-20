@@ -79,7 +79,7 @@ async function runImport() {
     console.log(` Đang đọc nội dung file: ${sqlFilePath}...`);
     const sqlContent = fs.readFileSync(sqlFilePath, 'utf8');
 
-    console.log('⏳ Đang thực thi các lệnh SQL tạo bảng và thêm dữ liệu mẫu...');
+    console.log(' SQL tạo bảng và thêm dữ liệu mẫu...');
     await connection.query(sqlContent);
 
     // Kiểm tra kết quả
@@ -100,7 +100,7 @@ async function runImport() {
     console.log('====================================================');
     console.log(' Database trên Aiven đã sẵn sàng hoạt động 100%!');
   } catch (error) {
-    console.error('❌ Lỗi nạp dữ liệu:', error.message);
+    console.error(' Lỗi nạp dữ liệu:', error.message);
   } finally {
     if (connection) {
       await connection.end();
