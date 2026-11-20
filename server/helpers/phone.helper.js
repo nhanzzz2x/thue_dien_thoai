@@ -7,9 +7,14 @@ export function detectCategory(name = '') {
   const upper = String(name).toUpperCase();
   if (upper.includes('IPHONE') || upper.includes('APPLE')) return 'APPLE';
   if (upper.includes('SAMSUNG') || upper.includes('GALAXY')) return 'SAMSUNG';
-  if (upper.includes('XIAOMI') || upper.includes('REDMI')) return 'XIAOMI';
-  if (upper.includes('ROG') || upper.includes('REDMAGIC') || upper.includes('NUBIA') || upper.includes('GAMING')) return 'GAMING';
-  return 'FLAGSHIP';
+  if (upper.includes('OPPO') || upper.includes('FIND') || upper.includes('RENO')) return 'OPPO';
+  if (upper.includes('XIAOMI') || upper.includes('REDMI') || upper.includes('POCO')) return 'XIAOMI';
+  if (upper.includes('VIVO') || upper.includes('IQOO')) return 'VIVO';
+  if (upper.includes('REALME')) return 'REALME';
+  if (upper.includes('ROG') || upper.includes('REDMAGIC') || upper.includes('NUBIA') || upper.includes('GAMING') || upper.includes('LEGION')) return 'GAMING';
+  if (upper.includes('PIXEL') || upper.includes('GOOGLE')) return 'GOOGLE';
+  if (upper.includes('SONY') || upper.includes('XPERIA')) return 'SONY';
+  return 'OTHER';
 }
 
 export function formatPhoneRow(p, extraUrls = []) {

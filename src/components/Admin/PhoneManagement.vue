@@ -197,8 +197,12 @@
             <div class="col-md-4">
               <label class="form-label small fw-bold">Hãng Sản Xuất *</label>
               <select class="form-select" v-model="formData.hangSanXuat" required>
+                <option value="" disabled>-- Chọn hãng sản xuất --</option>
                 <option v-for="cat in availableBrandCategories" :key="cat.id" :value="cat.id">
                   {{ cat.name }}
+                </option>
+                <option v-if="formData.hangSanXuat && !availableBrandCategories.some(c => c.id === formData.hangSanXuat)" :value="formData.hangSanXuat">
+                  {{ formData.hangSanXuat }}
                 </option>
               </select>
             </div>

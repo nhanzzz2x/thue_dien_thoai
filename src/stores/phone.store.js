@@ -63,13 +63,27 @@ function persistPhones(phones) {
   }
 }
 
-// Khởi tạo danh mục ban đầu (nạp từ localStorage nếu quản trị viên đã từng thêm hãng mới)
+// Khởi tạo danh mục ban đầu (nạp từ localStorage và tự động gộp các hãng mới như OPPO, Vivo...)
 function getInitialCategories() {
   try {
     const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const existingIds = new Set(parsed.map(c => c.id));
+        let changed = false;
+        for (const cat of mockCategories) {
+          if (!existingIds.has(cat.id)) {
+            parsed.push(cat);
+            existingIds.add(cat.id);
+            changed = true;
+          }
+        }
+        if (changed) {
+          localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(parsed));
+        }
+        return parsed;
+      }
     }
   } catch (e) {
     console.warn('Lỗi đọc categories từ localStorage:', e);
