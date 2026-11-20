@@ -197,12 +197,18 @@
             <div class="col-md-4">
               <label class="form-label small fw-bold">Hãng Sản Xuất *</label>
               <select class="form-select" v-model="formData.hangSanXuat" required>
-                <option value="" disabled>-- Chọn hãng sản xuất --</option>
-                <option v-for="cat in availableBrandCategories" :key="cat.id" :value="cat.id">
+                <option value="OPPO">OPPO</option>
+                <option value="APPLE">Apple iPhone</option>
+                <option value="SAMSUNG">Samsung Galaxy</option>
+                <option value="XIAOMI">Xiaomi & Redmi</option>
+                <option value="VIVO">Vivo</option>
+                <option value="REALME">Realme</option>
+                <option value="GAMING">Gaming Phone (ROG, RedMagic)</option>
+                <option value="GOOGLE">Google Pixel</option>
+                <option value="SONY">Sony Xperia</option>
+                <option value="OTHER">Hãng Khác</option>
+                <option v-for="cat in availableBrandCategories.filter(c => !['OPPO','APPLE','SAMSUNG','XIAOMI','VIVO','REALME','GAMING','GOOGLE','SONY','OTHER'].includes(c.id))" :key="cat.id" :value="cat.id">
                   {{ cat.name }}
-                </option>
-                <option v-if="formData.hangSanXuat && !availableBrandCategories.some(c => c.id === formData.hangSanXuat)" :value="formData.hangSanXuat">
-                  {{ formData.hangSanXuat }}
                 </option>
               </select>
             </div>
@@ -1550,9 +1556,22 @@ const openEditModal = (phone) => {
     ? [...phone.hinhAnh]
     : (phone.MacDinh ? [phone.MacDinh] : []);
 
+  // Tự động suy luận hãng chính xác nếu dữ liệu cũ bị trống hoặc dính FLAGSHIP
+  const upper = String(phone.TenDienThoai || '').toUpperCase();
+  let defaultBrand = phone.hangSanXuat || phone.category;
+  if (!defaultBrand || defaultBrand === 'FLAGSHIP' || defaultBrand === 'ALL') {
+    if (upper.includes('OPPO') || upper.includes('FIND') || upper.includes('RENO')) defaultBrand = 'OPPO';
+    else if (upper.includes('IPHONE') || upper.includes('APPLE')) defaultBrand = 'APPLE';
+    else if (upper.includes('SAMSUNG') || upper.includes('GALAXY')) defaultBrand = 'SAMSUNG';
+    else if (upper.includes('XIAOMI') || upper.includes('REDMI')) defaultBrand = 'XIAOMI';
+    else if (upper.includes('VIVO')) defaultBrand = 'VIVO';
+    else if (upper.includes('REALME')) defaultBrand = 'REALME';
+    else defaultBrand = 'OTHER';
+  }
+
   formData.value = {
     TenDienThoai: phone.TenDienThoai,
-    hangSanXuat: phone.hangSanXuat,
+    hangSanXuat: defaultBrand,
     SoIMEI_Serial: phone.SoIMEI_Serial,
     giaThueNgay: phone.giaThueNgay,
     tienCocYeuCau: phone.tienCocYeuCau,
@@ -1571,62 +1590,9 @@ const openEditModal = (phone) => {
 
 // LƯU THIẾT BỊ (THÊM MỚI HOẶC CẬP NHẬT)
 // ERD: INSERT INTO DienThoai ... / UPDATE DienThoai SET ...
-const savePhone = async () => {
-  const images = (formData.value.hinhAnh && formData.value.hinhAnh.length)
-    ? formData.value.hinhAnh
-    : (formData.value.MacDinh ? [formData.value.MacDinh] : []);
 
-  if (images.length === 0) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Thiếu hình ảnh!',
-      text: 'Vui lòng tải lên hoặc dán link ít nhất 1 hình ảnh sản phẩm vào album.'
-    });
-    return;
-  }
 
-  const primaryCover = formData.value.MacDinh || images[0] || 'https://cdn.tgdd.vn/Products/Images/42/305658/iphone-15-pro-max-blue-thumbnew-600x600.jpg';
 
-  const payload = {
-    TenDienThoai: formData.value.TenDienThoai,
-    hangSanXuat: formData.value.hangSanXuat,
-    category: formData.value.hangSanXuat,
-    SoIMEI_Serial: formData.value.SoIMEI_Serial,
-    giaThueNgay: Number(formData.value.giaThueNgay) || 250000,
-    tienCocYeuCau: Number(formData.value.tienCocYeuCau) || 12000000,
-    TinhTrangMay: formData.value.TinhTrangMay || 'SAN_SANG',
-    SoLuong: 5,
-    isFeatured: true,
-    isHot: true,
-    MacDinh: primaryCover,
-    hinhAnh: images,
-    moTa: formData.value.moTa || 'Máy nguyên zin 100%, ngoại quan 99%, pin 100%.',
-    cauHinh: {
-      Chipset: formData.value.Chipset || 'Apple A17 Pro',
-      RAM_ROM: formData.value.RAM_ROM || '8GB / 256GB',
-      HeDieuHanh: formData.value.hangSanXuat === 'APPLE' ? 'iOS' : 'Android',
-      KichThuocManHinh: '6.7 inch OLED',
-      DungLuongPin: '5000 mAh'
-    }
-  };
-
-  if (isEditMode.value) {
-    await phoneStore.updatePhone(currentEditId.value, payload);
-    Swal.fire({
-      icon: 'success',
-      title: 'Đã cập nhật thiết bị!',
-      text: 'Thông tin điện thoại và album ảnh đã được lưu thành công.',
-      timer: 2000,
-      showConfirmButton: false
-    });
-  } else {
-    await phoneStore.addPhone(payload);
-    Swal.fire({
-      icon: 'success',
-      title: 'Thêm thiết bị thành công!',
-      text: 'Thiết bị mới và album ảnh đã được lưu vào kho và lập tức hiển thị ngoài trang chủ cho khách thuê!',
-      timer: 2200,
-      showConfirmButton: false
     });
   }
 
