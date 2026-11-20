@@ -16,11 +16,11 @@ function autoStartMysqlBackendPlugin() {
       const probe = net.createConnection({ host: '127.0.0.1', port: 8080 });
       probe.on('connect', () => {
         probe.end();
-        console.log('ℹ️ Phát hiện Backend MySQL đã chạy sẵn trên cổng 8080.');
+        console.log('ℹ Phát hiện Backend MySQL đã chạy sẵn trên cổng 8080.');
       });
       probe.on('error', () => {
         import('./server/index.js').catch(err => {
-          console.error('❌ Không thể tự khởi chạy server/index.js:', err.message);
+          console.error(' K hông thể tự khởi chạy server/index.js:', err.message);
         });
       });
     }
