@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Kết nối trực tiếp tới Backend Express + MySQL WampServer tại cổng 8080
-export const API_BASE_URL = 'http://127.0.0.1:8080';
+// URL Backend: Sử dụng URL môi trường VITE_API_URL nếu có, hoặc để trống (gọi cùng domain trên Vercel / proxy Vite)
+export const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

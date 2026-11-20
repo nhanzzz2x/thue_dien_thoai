@@ -37,13 +37,14 @@ app.use('/api/rentals', rentalRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/promotions', promotionRoutes);
 
-// Khởi động máy chủ và kết nối CSDL MySQL WampServer
+// Khởi động máy chủ và kết nối CSDL MySQL
 async function startServer() {
   await initDatabase();
-  const server = app.listen(PORT, '127.0.0.1', () => {
+  const HOST = process.env.HOST || '0.0.0.0';
+  const server = app.listen(PORT, HOST, () => {
     console.log('====================================================');
-    console.log(`BACKEND SERVER ĐANG CHẠY TẠI: http://127.0.0.1:${PORT}`);
-    console.log('CSDL MySQL WampServer: db_thue_dien_thoai (Port 3306)');
+    console.log(`BACKEND SERVER ĐANG CHẠY TẠI: http://${HOST}:${PORT}`);
+    console.log(`CSDL MySQL: ${process.env.DB_NAME || 'defaultdb'} (Aiven Cloud)`);
     console.log('Cấu trúc server đã được module hóa thành các router độc lập:');
     console.log(' - /api/health      -> routes/health.routes.js');
     console.log(' - /api/phones      -> routes/phone.routes.js');
@@ -63,6 +64,9 @@ async function startServer() {
   });
 }
 
-startServer();
+// Khởi chạy server khi chạy độc lập (Node.js/Render/Local), không lắng nghe cổng trên môi trường serverless Vercel
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 export default app;

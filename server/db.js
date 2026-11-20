@@ -1,21 +1,34 @@
 import mysql from 'mysql2/promise';
 
+// Cấu hình kết nối MySQL: Mặc định kết nối thẳng tới Cloud Database Aiven đã tạo
+const DB_HOST = process.env.DB_HOST || 'mysql-2a5658c9-znhanxox-2fe3.e.aivencloud.com';
+const DB_PORT = Number(process.env.DB_PORT) || 11294;
+const DB_USER = process.env.DB_USER || 'avnadmin';
+const DB_PASSWORD = process.env.DB_PASSWORD || '';
+const DB_NAME = process.env.DB_NAME || 'defaultdb';
+
+const isCloud = Boolean(
+  process.env.DB_SSL === 'true' ||
+  (DB_HOST !== '127.0.0.1' && DB_HOST !== 'localhost')
+);
+
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || '127.0.0.1',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'db_thue_dien_thoai',
-  port: Number(process.env.DB_PORT) || 3306,
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
+  port: DB_PORT,
   waitForConnections: true,
-  connectionLimit: 15,
+  connectionLimit: 10,
   maxIdle: 10,
   idleTimeout: 60000,
   queueLimit: 0,
-  connectTimeout: 10000,
+  connectTimeout: 20000,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000,
   charset: 'utf8mb4',
-  dateStrings: true
+  dateStrings: true,
+  ssl: isCloud ? { rejectUnauthorized: false } : undefined
 });
 
 export async function initDatabase() {
@@ -23,10 +36,10 @@ export async function initDatabase() {
     const conn = await pool.getConnection();
     await conn.ping();
     conn.release();
-    console.log('Đã kết nối ổn định MySQL WampServer (127.0.0.1:3306 / db_thue_dien_thoai)!');
+    console.log(`Đã kết nối thành công MySQL (${DB_HOST}:${DB_PORT} / ${DB_NAME})!`);
     return true;
   } catch (err) {
-    console.error('Lỗi kết nối MySQL WampServer:', err.message);
+    console.error('Lỗi kết nối MySQL:', err.message);
     return false;
   }
 }
