@@ -20,15 +20,14 @@ export function detectCategory(name = '') {
 export function formatPhoneRow(p, extraUrls = []) {
   const coverUrl = (p.MacDinh && String(p.MacDinh).trim()) ? p.MacDinh : FALLBACK_IMG;
   const uniqueAlbum = Array.from(new Set([coverUrl, ...extraUrls].filter(Boolean)));
-  const cat = detectCategory(p.TenDienThoai);
-  const upperName = String(p.TenDienThoai || '').toUpperCase();
-  const brand = cat === 'GAMING' && upperName.includes('ASUS') ? 'ASUS' : (cat === 'GAMING' && upperName.includes('NUBIA') ? 'NUBIA' : cat);
+  const cat = p.hangSanXuat || detectCategory(p.TenDienThoai);
+  const brand = p.hangSanXuat || cat;
 
   return {
     maDienThoai: Number(p.maDienThoai),
     TenDienThoai: p.TenDienThoai,
     hangSanXuat: brand,
-    category: cat,
+    category: brand,
     isHot: Number(p.maDienThoai) > 11 || Number(p.maDienThoai) <= 4 || Number(p.maDienThoai) === 10,
     isFeatured: true,
     SoIMEI_Serial: p.SoIMEI_Serial || '',

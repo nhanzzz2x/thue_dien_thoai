@@ -210,6 +210,9 @@
                 <option v-for="cat in availableBrandCategories.filter(c => !['OPPO','APPLE','SAMSUNG','XIAOMI','VIVO','REALME','GAMING','GOOGLE','SONY','OTHER'].includes(c.id))" :key="cat.id" :value="cat.id">
                   {{ cat.name }}
                 </option>
+                <option v-if="formData.hangSanXuat && !['OPPO','APPLE','SAMSUNG','XIAOMI','VIVO','REALME','GAMING','GOOGLE','SONY','OTHER'].includes(formData.hangSanXuat)" :value="formData.hangSanXuat">
+                  {{ formData.hangSanXuat }}
+                </option>
               </select>
             </div>
 
@@ -763,7 +766,7 @@
 
 <script setup>
 // IMPORT CÁC MODULE VUE & STORE ĐIỆN THOẠI
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { usePhoneStore } from '@/stores/phone.store';
 import { convertToVND, onImgError } from '@/utils/formatters';
@@ -771,6 +774,11 @@ import { convertToVND, onImgError } from '@/utils/formatters';
 // Khởi tạo phone store
 // Initialize phone store
 const phoneStore = usePhoneStore();
+
+// Tải dữ liệu thiết bị mới nhất từ MySQL Aiven khi vào trang quản trị
+onMounted(async () => {
+  await phoneStore.fetchPhones();
+});
 
 // Biến quản lý tìm kiếm và lọc
 // Search & filter state variables
@@ -1558,7 +1566,7 @@ const openEditModal = (phone) => {
 
   // Tự động suy luận hãng chính xác nếu dữ liệu cũ bị trống hoặc dính FLAGSHIP
   const upper = String(phone.TenDienThoai || '').toUpperCase();
-  let defaultBrand = phone.hangSanXuat || phone.category;
+  let defaultBrand = (phone.hangSanXuat || phone.category || '').toUpperCase();
   if (!defaultBrand || defaultBrand === 'FLAGSHIP' || defaultBrand === 'ALL') {
     if (upper.includes('OPPO') || upper.includes('FIND') || upper.includes('RENO')) defaultBrand = 'OPPO';
     else if (upper.includes('IPHONE') || upper.includes('APPLE')) defaultBrand = 'APPLE';
@@ -1577,7 +1585,7 @@ const openEditModal = (phone) => {
     tienCocYeuCau: phone.tienCocYeuCau,
     Chipset: phone.cauHinh?.Chipset || '',
     RAM_ROM: phone.cauHinh?.RAM_ROM || '',
-    TinhTrangMay: phone.TinhTrangMay,
+    TinhTrangMay: phone.TinhTrangMay || 'SAN_SANG',
     MacDinh: phone.MacDinh || existingImages[0] || '',
     hinhAnh: existingImages,
     moTa: phone.moTa || ''
@@ -1590,12 +1598,71 @@ const openEditModal = (phone) => {
 
 // LƯU THIẾT BỊ (THÊM MỚI HOẶC CẬP NHẬT)
 // ERD: INSERT INTO DienThoai ... / UPDATE DienThoai SET ...
+const savePhone = async () => {
+  const images = (formData.value.hinhAnh && formData.value.hinhAnh.length)
+    ? formData.value.hinhAnh
+    : (formData.value.MacDinh ? [formData.value.MacDinh] : []);
 
+  if (images.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Thiếu hình ảnh!',
+      text: 'Vui lòng tải lên hoặc dán link ít nhất 1 hình ảnh sản phẩm vào album.'
+    });
+    return;
+  }
 
+  const primaryCover = formData.value.MacDinh || images[0] || 'https://cdn.tgdd.vn/Products/Images/42/305658/iphone-15-pro-max-blue-thumbnew-600x600.jpg';
+  const brand = (formData.value.hangSanXuat || 'OPPO').toUpperCase();
 
+  const payload = {
+    TenDienThoai: formData.value.TenDienThoai,
+    hangSanXuat: brand,
+    category: brand,
+    SoIMEI_Serial: formData.value.SoIMEI_Serial,
+    giaThueNgay: Number(formData.value.giaThueNgay) || 250000,
+    tienCocYeuCau: Number(formData.value.tienCocYeuCau) || 12000000,
+    TinhTrangMay: formData.value.TinhTrangMay || 'SAN_SANG',
+    SoLuong: 5,
+    isFeatured: true,
+    isHot: true,
+    MacDinh: primaryCover,
+    hinhAnh: images,
+    moTa: formData.value.moTa || 'Máy nguyên zin 100%, ngoại quan 99%, pin 100%.',
+    cauHinh: {
+      Chipset: formData.value.Chipset || 'Snapdragon / Dimensity / Apple A17 Pro',
+      RAM_ROM: formData.value.RAM_ROM || '8GB / 256GB',
+      HeDieuHanh: brand.includes('APPLE') ? 'iOS' : 'Android',
+      KichThuocManHinh: '6.7 inch OLED',
+      DungLuongPin: '5000 mAh'
+    }
+  };
+
+  if (isEditMode.value) {
+    await phoneStore.updatePhone(currentEditId.value, payload);
+    Swal.fire({
+      icon: 'success',
+      title: 'Đã cập nhật thiết bị!',
+      text: 'Thông tin điện thoại và hãng sản xuất đã được lưu thành công.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } else {
+    await phoneStore.addPhone(payload);
+    // Tự động xóa bộ lọc để thiết bị mới xuất hiện ngay đầu danh sách
+    filterBrand.value = 'ALL';
+    filterStatus.value = 'ALL';
+    searchKey.value = '';
+    Swal.fire({
+      icon: 'success',
+      title: 'Đã thêm thiết bị mới!',
+      text: 'Thiết bị đã được thêm vào kho và sẵn sàng hiển thị cho khách thuê!',
+      timer: 2200,
+      showConfirmButton: false
     });
   }
 
+  await phoneStore.fetchPhones();
   isModalOpen.value = false;
 };
 

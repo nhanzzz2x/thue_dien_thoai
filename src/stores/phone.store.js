@@ -290,12 +290,13 @@ export const usePhoneStore = defineStore('phone', {
 
     // Thao tác Admin: Thêm thiết bị mới
     async addPhone(newPhone) {
+      const brand = (newPhone.hangSanXuat || newPhone.category || 'OPPO').toUpperCase();
       const maxId = this.phones.reduce((max, p) => (p.maDienThoai > max ? p.maDienThoai : max), 0);
       const phoneToAdd = {
         ...newPhone,
         maDienThoai: maxId + 1,
-        hangSanXuat: newPhone.hangSanXuat || 'APPLE',
-        category: newPhone.category || newPhone.hangSanXuat || 'APPLE',
+        hangSanXuat: brand,
+        category: brand,
         isHot: newPhone.isHot ?? false,
         isFeatured: newPhone.isFeatured ?? true,
         SoLuong: newPhone.SoLuong ?? 5,
@@ -314,6 +315,10 @@ export const usePhoneStore = defineStore('phone', {
         const created = await PhoneService.createPhone(phoneToAdd);
         if (created && created.maDienThoai) {
           phoneToAdd.maDienThoai = Number(created.maDienThoai);
+          if (created.hangSanXuat) {
+            phoneToAdd.hangSanXuat = created.hangSanXuat;
+            phoneToAdd.category = created.hangSanXuat;
+          }
           persistPhones(this.phones);
         }
       } catch (err) {
@@ -326,12 +331,14 @@ export const usePhoneStore = defineStore('phone', {
     // Thao tác Admin: Cập nhật thiết bị
     async updatePhone(id, updatedData) {
       const numId = Number(id);
+      const brand = (updatedData.hangSanXuat || updatedData.category || '').toUpperCase();
       const index = this.phones.findIndex(p => p.maDienThoai === numId);
       if (index !== -1) {
         this.phones[index] = {
           ...this.phones[index],
           ...updatedData,
-          category: updatedData.hangSanXuat || this.phones[index].category,
+          hangSanXuat: brand || this.phones[index].hangSanXuat,
+          category: brand || this.phones[index].category,
           TinhTrangMayText: updatedData.TinhTrangMay === 'SAN_SANG' ? 'Sẵn sàng thuê' : (updatedData.TinhTrangMay === 'BAO_TRI' ? 'Bảo trì' : 'Đang thuê')
         };
         persistPhones(this.phones);

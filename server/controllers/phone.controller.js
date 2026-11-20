@@ -2,7 +2,7 @@
 // Xử lý toàn bộ logic nghiệp vụ kho điện thoại, cấu hình phần cứng và album ảnh
 
 import pool from '../db.js';
-import { formatPhoneRow, FALLBACK_IMG } from '../helpers/phone.helper.js';
+import { formatPhoneRow, detectCategory, FALLBACK_IMG } from '../helpers/phone.helper.js';
 
 // 1. Lấy toàn bộ danh sách điện thoại trong kho
 export async function getAllPhones(req, res) {
@@ -43,6 +43,8 @@ export async function createPhone(req, res) {
     await conn.beginTransaction();
     const {
       TenDienThoai,
+      hangSanXuat,
+      category,
       MaCauHinh,
       giaThueNgay,
       giaKhuyenMai,
@@ -58,14 +60,15 @@ export async function createPhone(req, res) {
       hinhAnh
     } = req.body;
 
+    const brand = (hangSanXuat || category || detectCategory(TenDienThoai)).toUpperCase();
     const finalMaCauHinh = cauHinh?.MaCauHinh || MaCauHinh || `CH_${Date.now()}`;
-    const osVal = cauHinh?.HeDieuHanh || (String(TenDienThoai || '').toUpperCase().includes('IPHONE') ? 'iOS 18' : 'Android 14');
+    const osVal = cauHinh?.HeDieuHanh || (brand.includes('APPLE') ? 'iOS 18' : 'Android 14');
     await conn.query(
       `INSERT INTO cauhinh_phienban (MaCauHinh, Chipset, RAM_ROM, HeDieuHanh, ThongSoCamera_Pin) VALUES (?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE Chipset = VALUES(Chipset), RAM_ROM = VALUES(RAM_ROM), HeDieuHanh = VALUES(HeDieuHanh), ThongSoCamera_Pin = VALUES(ThongSoCamera_Pin)`,
       [
         finalMaCauHinh,
-        cauHinh?.Chipset || Chipset || 'Apple / Snapdragon',
+        cauHinh?.Chipset || Chipset || 'Snapdragon / Dimensity / Apple',
         cauHinh?.RAM_ROM || RAM_ROM || '8GB / 256GB',
         osVal,
         cauHinh?.ThongSoCamera_Pin || moTa || 'Máy nguyên zin 99%, đầy đủ sạc cáp.'
@@ -74,9 +77,10 @@ export async function createPhone(req, res) {
 
     const coverImg = MacDinh || (Array.isArray(hinhAnh) && hinhAnh[0]) || FALLBACK_IMG;
     const [result] = await conn.query(
-      'INSERT INTO dienthoai (TenDienThoai, MaCauHinh, giaThueNgay, giaKhuyenMai, tienCocYeuCau, MacDinh, SoLuong, SoIMEI_Serial, TinhTrangMay) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO dienthoai (TenDienThoai, hangSanXuat, MaCauHinh, giaThueNgay, giaKhuyenMai, tienCocYeuCau, MacDinh, SoLuong, SoIMEI_Serial, TinhTrangMay) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         TenDienThoai || 'Điện thoại mới',
+        brand,
         finalMaCauHinh,
         Number(giaThueNgay || 200000),
         giaKhuyenMai ? Number(giaKhuyenMai) : null,
@@ -95,7 +99,7 @@ export async function createPhone(req, res) {
     }
 
     await conn.commit();
-    res.status(201).json({ success: true, maDienThoai: newPhoneId, hinhAnh: allImgs });
+    res.status(201).json({ success: true, maDienThoai: newPhoneId, hangSanXuat: brand, hinhAnh: allImgs });
   } catch (err) {
     await conn.rollback();
     res.status(500).json({ error: err.message });
@@ -112,6 +116,8 @@ export async function updatePhone(req, res) {
     const { id } = req.params;
     const {
       TenDienThoai,
+      hangSanXuat,
+      category,
       giaThueNgay,
       giaKhuyenMai,
       tienCocYeuCau,
@@ -133,6 +139,7 @@ export async function updatePhone(req, res) {
     }
     const cur = existing[0];
     const maCauHinh = cur.MaCauHinh || `CH_${id}`;
+    const brand = (hangSanXuat || category || cur.hangSanXuat || detectCategory(TenDienThoai || cur.TenDienThoai)).toUpperCase();
 
     if (cauHinh || Chipset || RAM_ROM || moTa) {
       await conn.query(
@@ -140,9 +147,9 @@ export async function updatePhone(req, res) {
          ON DUPLICATE KEY UPDATE Chipset = VALUES(Chipset), RAM_ROM = VALUES(RAM_ROM), ThongSoCamera_Pin = VALUES(ThongSoCamera_Pin)`,
         [
           maCauHinh,
-          cauHinh?.Chipset || Chipset || 'Snapdragon / Apple',
+          cauHinh?.Chipset || Chipset || 'Snapdragon / Dimensity / Apple',
           cauHinh?.RAM_ROM || RAM_ROM || '8GB / 256GB',
-          cauHinh?.HeDieuHanh || 'iOS / Android',
+          cauHinh?.HeDieuHanh || (brand.includes('APPLE') ? 'iOS' : 'Android'),
           cauHinh?.ThongSoCamera_Pin || moTa || 'Máy nguyên bản 99%'
         ]
       );
@@ -150,9 +157,10 @@ export async function updatePhone(req, res) {
 
     const coverImg = MacDinh || (Array.isArray(hinhAnh) && hinhAnh[0]) || cur.MacDinh;
     await conn.query(
-      'UPDATE dienthoai SET TenDienThoai = ?, MaCauHinh = ?, giaThueNgay = ?, giaKhuyenMai = ?, tienCocYeuCau = ?, SoLuong = ?, TinhTrangMay = ?, SoIMEI_Serial = ?, MacDinh = ? WHERE maDienThoai = ?',
+      'UPDATE dienthoai SET TenDienThoai = ?, hangSanXuat = ?, MaCauHinh = ?, giaThueNgay = ?, giaKhuyenMai = ?, tienCocYeuCau = ?, SoLuong = ?, TinhTrangMay = ?, SoIMEI_Serial = ?, MacDinh = ? WHERE maDienThoai = ?',
       [
         TenDienThoai ?? cur.TenDienThoai,
+        brand,
         maCauHinh,
         giaThueNgay ?? cur.giaThueNgay,
         giaKhuyenMai !== undefined ? giaKhuyenMai : cur.giaKhuyenMai,
@@ -174,7 +182,7 @@ export async function updatePhone(req, res) {
     }
 
     await conn.commit();
-    res.json({ success: true });
+    res.json({ success: true, hangSanXuat: brand });
   } catch (err) {
     await conn.rollback();
     res.status(500).json({ error: err.message });
